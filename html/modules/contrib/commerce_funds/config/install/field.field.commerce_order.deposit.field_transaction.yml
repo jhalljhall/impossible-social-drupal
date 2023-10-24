@@ -1,0 +1,28 @@
+langcode: en
+status: true
+dependencies:
+  config:
+    - commerce_funds.commerce_funds_transaction_type.deposit
+    - commerce_order.commerce_order_type.deposit
+    - field.storage.commerce_order.field_transaction
+id: commerce_order.deposit.field_transaction
+field_name: field_transaction
+entity_type: commerce_order
+bundle: deposit
+label: Transaction
+description: ''
+required: false
+translatable: false
+default_value: {  }
+default_value_callback: ''
+settings:
+  handler: 'default:commerce_funds_transaction'
+  handler_settings:
+    target_bundles:
+      deposit: deposit
+    sort:
+      field: _none
+      direction: ASC
+    auto_create: false
+    auto_create_bundle: ''
+field_type: entity_reference

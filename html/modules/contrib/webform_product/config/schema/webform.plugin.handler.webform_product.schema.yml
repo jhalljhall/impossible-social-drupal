@@ -1,0 +1,55 @@
+webform.handler.webform_product:
+  type: mapping
+  label: Webform product
+  mapping:
+    store:
+      type: integer
+      label: Store id
+    order_type:
+      type: string
+      label: Order type machine name
+    order_item_title:
+      type: label
+      label: Order item title
+    order_item_type:
+      type: string
+      label: Order item type
+    route:
+      type: string
+      label: Checkout route name
+    checkout_step:
+      type: string
+      label: Checkout step machine name
+    payment_gateway:
+      type: string
+      label: Payment gateway machine name
+    payment_method:
+      type: string
+      label: Payment method machine name
+    order_total:
+      type: string
+      label: Order total field machine name
+    payment_status:
+      type: string
+      label: Payment status field machine name
+    order_id:
+      type: string
+      label: Order id field machine name
+    order_url:
+      type: string
+      label: Order URL field machine name
+    total_price:
+      type: string
+      label: Total price field machine name
+    billing_first_name:
+      type: string
+      label: Billing first name field machine name
+    billing_last_name:
+      type: string
+      label: Billing last name field machine name
+    contact_email:
+      type: string
+      label: Billing email field machine name
+    debug:
+      type: boolean
+      label: Debug mode settings. True is enabled.

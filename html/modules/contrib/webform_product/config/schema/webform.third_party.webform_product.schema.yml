@@ -1,0 +1,17 @@
+webform.admin_settings.third_party.webform_product:
+  type: sequence
+  sequence:
+    type: mapping
+    mapping:
+      top:
+        type: string
+        label: Price value
+
+webform.settings.third_party.webform_product:
+  type: sequence
+  sequence:
+    type: mapping
+    mapping:
+      top:
+        type: string
+        label: Price value

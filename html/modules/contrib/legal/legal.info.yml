@@ -1,0 +1,14 @@
+name: Legal
+description: 'Display Terms and Conditions statement on the registration page.'
+type: module
+package: Content
+dependencies:
+  - 'drupal:user'
+  - 'drupal:views'
+configure: legal.config_legal
+core_version_requirement: ^8.9 || ^9 || ^10
+
+# Information added by Drupal.org packaging script on 2023-04-12
+version: '3.0.1'
+project: 'legal'
+datestamp: 1681314001

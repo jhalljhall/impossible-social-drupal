@@ -1,0 +1,27 @@
+langcode: en
+status: true
+dependencies:
+  enforced:
+    module:
+      - commerce_funds
+  module:
+    - commerce_cart
+    - commerce_checkout
+third_party_settings:
+  commerce_cart:
+    cart_form_view: commerce_cart_form
+    cart_block_view: commerce_cart_block
+  commerce_checkout:
+    checkout_flow: deposit
+_core:
+  default_config_hash: KKaRICoPPpqh0KrISkOyBpvdWyRW4OydiDv4eweEZ8g
+label: Deposit
+id: deposit
+workflow: order_default
+numberPattern: null
+refresh_mode: customer
+refresh_frequency: 5
+sendReceipt: true
+receiptBcc: ''
+traits: {  }
+locked: true

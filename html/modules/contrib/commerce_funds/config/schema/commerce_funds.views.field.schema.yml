@@ -1,0 +1,15 @@
+views.field.commerce_funds_escrow_operations:
+  type: views.field.custom
+  label: 'Escrow operations'
+
+views.field.commerce_funds_balance:
+  type: views.field.numeric
+  label: 'Balance'
+
+views.field.commerce_funds_amount:
+  type: views.field.numeric
+  label: 'Amount'
+
+views.field.commerce_funds_withdrawal_operations:
+  type: views.field.custom
+  label: 'Withdrawal operations'

@@ -1,0 +1,10 @@
+name: 'Computed Field Kernel Test'
+type: module
+description: 'Provides plugins for testing output.'
+package: Testing
+core_version_requirement: '^9 || ^10'
+
+# Information added by Drupal.org packaging script on 2023-07-14
+version: '4.0.0-alpha6'
+project: 'computed_field'
+datestamp: 1689368345

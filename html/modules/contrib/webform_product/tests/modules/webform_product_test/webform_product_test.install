@@ -1,0 +1,40 @@
+<?php
+
+/**
+ * @file
+ *
+ * Adds test data.
+ */
+
+use Drupal\commerce_store\Entity\Store;
+
+/**
+ * Implements hook_install().
+ */
+function webform_product_test_install() {
+
+  $address = [
+    'country_code' => 'HU',
+    'address_line1' => 'Erkel Ferenc utca',
+    'locality' => 'Budapest',
+    'postal_code' => '1201',
+  ];
+
+  // The currency code.
+  $currency = 'EUR';
+
+  $store = Store::create([
+    'type' => 'custom_store_type',
+    'uid' => 1,
+    'name' => 'Test store',
+    'mail' => 'test@example.com',
+    'address' => $address,
+    'default_currency' => $currency,
+    'billing_countries' => ['EUR'],
+  ]);
+  $store->save();
+
+  // If needed, this sets the store as the default store.
+  $store_storage = \Drupal::service('entity_type.manager')->getStorage('commerce_store');
+  $store_storage->markAsDefault($store);
+}

@@ -1,0 +1,19 @@
+langcode: en
+status: true
+dependencies:
+  module:
+    - commerce_funds
+    - commerce_order
+id: commerce_order.field_transaction
+field_name: field_transaction
+entity_type: commerce_order
+type: entity_reference
+settings:
+  target_type: commerce_funds_transaction
+module: core
+locked: false
+cardinality: 1
+translatable: true
+indexes: {  }
+persist_with_no_fields: false
+custom_storage: false

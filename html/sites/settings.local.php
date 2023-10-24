@@ -153,3 +153,15 @@ $settings['skip_permissions_hardening'] = TRUE;
  * the language or field module.
  */
 # $settings['config_exclude_modules'] = ['devel', 'stage_file_proxy'];
+
+$databases['default']['default'] = array (
+    'database' => 'impossible4',
+    'username' => 'root',
+    'password' => 'root',
+    'prefix' => '',
+    'host' => 'localhost',
+    'port' => '3306',
+    'namespace' => 'Drupal\\mysql\\Driver\\Database\\mysql',
+    'driver' => 'mysql',
+    'autoload' => 'core/modules/mysql/src/Driver/Database/mysql/',
+  );

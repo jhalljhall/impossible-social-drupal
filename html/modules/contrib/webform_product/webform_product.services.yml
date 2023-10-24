@@ -1,0 +1,15 @@
+services:
+  plugin.manager.webform_product:
+    class: Drupal\webform_product\WebformProductPluginManager
+    parent: default_plugin_manager
+
+  webform_product.order_subscriber:
+    class: Drupal\webform_product\EventSubscriber\OrderEventSubscriber
+    arguments: ['@entity_type.manager']
+    tags:
+      - { name: event_subscriber }
+
+  http_middleware.redirect_after_webform_submit:
+    class: Drupal\webform_product\RedirectMiddleware
+    tags:
+      - { name: http_middleware, priority: 250}

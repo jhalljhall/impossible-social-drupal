@@ -1,0 +1,33 @@
+{
+    "name": "drupal/webform_product",
+    "description": "Setup a single webform as a product for Commerce.",
+    "type": "drupal-module",
+    "license": "GPL-2.0+",
+    "minimum-stability": "dev",
+    "authors": [
+        {
+            "name": "Bálint Nagy (nagy.balint)",
+            "homepage": "https://www.drupal.org/u/nagybalint",
+            "role": "Maintainer"
+        },
+        {
+          "name": "Tess Bakker",
+          "homepage": "https://www.drupal.org/u/tess-bakker",
+          "role": "Maintainer"
+      },
+      {
+          "name": "Tamás Pintér (mr.york)",
+          "homepage": "https://www.drupal.org/u/mryork",
+          "role": "Maintainer"
+      }
+    ],
+    "homepage": "https://www.drupal.org/project/webform_product",
+    "support": {
+        "issues": "https://www.drupal.org/project/issues/webform_product",
+        "source": "https://git.drupalcode.org/project/webform_product"
+    },
+    "require": {
+        "drupal/webform": "^6",
+        "drupal/commerce": "^2"
+    }
+}

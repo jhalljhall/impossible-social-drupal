@@ -1,0 +1,41 @@
+{#
+/**
+ * @file
+ * Default theme implementation for field funds transfer.
+ *
+ * Available variables:
+ * - issuer: The transaction issuer name.
+ * - recipient: The trransaction recipient name.
+ * - method: The transaction method.
+ * - brut_amount: The transaction brut amount.
+ * - net_amount: The transaction net amount.
+ * - fee: The transaction fee.
+ * - currency_symbol: The transaction currency sumbol.
+ * - currency_code: The transaction currency code.
+ * - status: The transaction status.
+ * - notes: The transaction attached notes.
+ *
+ * @see template_preprocess_block()
+ *
+ * @ingroup themeable
+ */
+#}
+
+<ul>
+  <li>Issuer: {{ issuer }}</li>
+  <li>Recipient: {{ recipient }}</li>
+  <li>method: {{ method }}</li>
+  {% if fee %}
+    <li>Brut amount: {{ brut_amount }}</li>
+    <li>Net amount: {{ net_amount }}</li>
+    <li>Fee: {{ fee|number_format(2) }}</li>
+  {% else %} 
+    <li>Amount: {{ net_amount }}</li>
+  {% endif %}
+  <li>Currency symbol: {{ currency_symbol }}</li>
+  <li>Currency code: {{ currency_code }}</li>
+  <li>Status: {{ status }}</li>
+  {% if notes %}
+    <li>Notes: {{ notes }}</li>
+  {% endif %}
+</ul>

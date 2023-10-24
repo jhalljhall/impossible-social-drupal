@@ -1,0 +1,13 @@
+name: GraphQL composable example
+type: module
+description: 'Examples for composable GraphQL schema.'
+package: GraphQL
+dependencies:
+  - graphql:graphql
+  - node:node
+core_version_requirement: ^9.3 || ^10
+
+# Information added by Drupal.org packaging script on 2022-09-23
+version: '8.x-4.4'
+project: 'graphql'
+datestamp: 1663926683

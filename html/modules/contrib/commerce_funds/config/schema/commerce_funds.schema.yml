@@ -1,0 +1,238 @@
+commerce_funds.commerce_funds_transaction_type.*:
+  type: config_entity
+  mapping:
+    id:
+      type: string
+      label: 'ID'
+    label:
+      type: label
+      label: 'Label'
+    description:
+      type: text
+      label: 'Description'
+
+commerce_funds.settings:
+  type: config_object
+  label: 'Commerce funds settings'
+  translatable: true
+  mapping:
+    global:
+      label: 'Global settings'
+      type: mapping
+      mapping:
+        disable_funds_forms:
+          label: 'Disable default forms'
+          type: sequence
+          sequence:
+            type: string
+        add_rt_fee_calculation:
+          label: 'Calculate fees'
+          type: boolean
+    exchange_rate_provider:
+      label: 'Echange rate provider'
+      type: string
+    fees:
+      label: 'Fees'
+      type: sequence
+      sequence:
+        type: string
+    withdrawal_methods:
+        label: 'Withdrawal methods'
+        type: sequence
+        sequence:
+          type: string
+    exchange_rates:
+      label: 'Exchange rates'
+      type: sequence
+      sequence:
+        type: string
+    encryption_profile:
+      label: 'Encryption profile'
+      type: sequence
+      sequence:
+        type: string
+    mail_transfer_issuer:
+      label: 'Transfer (issuer)'
+      type: mapping
+      mapping:
+        subject:
+          label: 'Subject'
+          type: text
+        body:
+          label: 'Body'
+          type: text_format
+        activated:
+          label: 'Email activated'
+          type: boolean
+    mail_transfer_recipient:
+      label: 'Transfer (recipient)'
+      type: mapping
+      mapping:
+        subject:
+          label: 'Subject'
+          type: text
+        body:
+          label: 'Body'
+          type: text_format
+        activated:
+          label: 'Email activated'
+          type: boolean
+    mail_escrow_created_issuer:
+      label: 'Escrow created (issuer)'
+      type: mapping
+      mapping:
+        subject:
+          label: 'Subject'
+          type: text
+        body:
+          label: 'Body'
+          type: text_format
+        activated:
+          label: 'Email activated'
+          type: boolean
+    mail_escrow_created_recipient:
+      label: 'Escrow created (recipient)'
+      type: mapping
+      mapping:
+        subject:
+          label: 'Subject'
+          type: text
+        body:
+          label: 'Body'
+          type: text_format
+        activated:
+          label: 'Email activated'
+          type: boolean
+    mail_escrow_canceled_by_issuer_issuer:
+      label: 'Escrow canceled by issuer (issuer)'
+      type: mapping
+      mapping:
+        subject:
+          label: 'Subject'
+          type: text
+        body:
+          label: 'Body'
+          type: text_format
+        activated:
+          label: 'Email activated'
+          type: boolean
+    mail_escrow_canceled_by_issuer_recipient:
+      label: 'Escrow canceled by issuer (recipient)'
+      type: mapping
+      mapping:
+        subject:
+          label: 'Subject'
+          type: text
+        body:
+          label: 'Body'
+          type: text_format
+        activated:
+          label: 'Email activated'
+          type: boolean
+    mail_escrow_canceled_by_recipient_issuer:
+      label: 'Escrow canceled by recipient (issuer)'
+      type: mapping
+      mapping:
+        subject:
+          label: 'Subject'
+          type: text
+        body:
+          label: 'Body'
+          type: text_format
+        activated:
+          label: 'Email activated'
+          type: boolean
+    mail_escrow_canceled_by_recipient_recipient:
+      label: 'Escrow canceled by recipient (recipient)'
+      type: mapping
+      mapping:
+        subject:
+          label: 'Subject'
+          type: text
+        body:
+          label: 'Body'
+          type: text_format
+        activated:
+          label: 'Email activated'
+          type: boolean
+    mail_escrow_released_issuer:
+      label: 'Escrow released (issuer)'
+      type: mapping
+      mapping:
+        subject:
+          label: 'Subject'
+          type: text
+        body:
+          label: 'Body'
+          type: text_format
+        activated:
+          label: 'Email activated'
+          type: boolean
+    mail_escrow_released_recipient:
+      label: 'Escrow released (recipient)'
+      type: mapping
+      mapping:
+        subject:
+          label: 'Subject'
+          type: text
+        body:
+          label: 'Body'
+          type: text_format
+        activated:
+          label: 'Email activated'
+          type: boolean
+    mail_withdrawal_declined:
+      label: 'Withdrawal request declined'
+      type: mapping
+      mapping:
+        subject:
+          label: 'Subject'
+          type: text
+        body:
+          label: 'Body'
+          type: text_format
+        activated:
+          label: 'Email activated'
+          type: boolean
+    mail_withdrawal_approved:
+      label: 'Withdrawal request approved'
+      type: mapping
+      mapping:
+        subject:
+          label: 'Subject'
+          type: text
+        body:
+          label: 'Body'
+          type: text_format
+        activated:
+          label: 'Email activated'
+          type: boolean
+
+field.field_settings.commerce_funds_transaction:
+  type: mapping
+  label: 'Funds transaction settings'
+  mapping:
+    enable_notes:
+      type: boolean
+      label: 'Display notes for the transaction'
+    available_currencies:
+      type: sequence
+      label: 'Available currencies'
+      orderby: value
+      sequence:
+        type: string
+    handler:
+      type: string
+      label: 'A string to identigy the handler instance in the admin UI.'
+    handler_settings:
+      type: sequence
+      label: 'An array of the handler definition.'
+
+field.storage_settings.commerce_funds_transaction:
+  type: mapping
+  label: 'Funds transaction storage'
+  mapping:
+    target_type:
+      type: string
+      label: 'The machine name of the targeted entity.'
+      value: 'commerce_funds_transaction'
