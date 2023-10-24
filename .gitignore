@@ -8,13 +8,13 @@ vendor/
 /html/sites/default/default.settings.php
 /html/sites/development.services.yml
 /html/sites/example.settings.local.php
+/html/sites/settings.local.php
 /html/sites/example.sites.php
 /html/.csslintrc
 /html/.editorconfig
 /html/.eslintignore
 /html/.eslintrc.json
 /html/.gitattributes
-/html/.ht.router.php
 /.editorconfig
 /.gitattributes
 
