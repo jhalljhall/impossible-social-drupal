@@ -1,0 +1,11 @@
+commerce_purchasable_entity.type_add:
+  title: Add purchasable entity type
+  route_name: entity.commerce_purchasable_entity_type.add_form
+  appears_on:
+    - entity.commerce_purchasable_entity_type.collection
+
+commerce_purchasable_entity.add_page:
+  title: Add purchasable entity
+  route_name: entity.commerce_purchasable_entity.add_page
+  appears_on:
+    - entity.commerce_purchasable_entity.collection

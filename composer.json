@@ -27,7 +27,11 @@
         "drupal/encrypt": "^3.1",
         "drupal/legal": "^3.0",
         "drupal/auto_entitylabel": "^3.0@beta",
-        "drupal/clientside_validation": "^4.0"
+        "drupal/clientside_validation": "^4.0",
+        "drupal/rules": "^3.0@alpha",
+        "drupal/features": "^3.14",
+        "drupal/commerce_webform_order": "^3.0@beta",
+        "drush/drush": "^11.6"
     },
     "repositories": [
         {

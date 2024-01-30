@@ -1,0 +1,144 @@
+<?php
+
+/**
+ * @file
+ * Code for the Commerce Webform Order module.
+ */
+
+use Drupal\commerce_webform_order\Plugin\WebformHandler\CommerceWebformOrderHandler;
+use Drupal\Core\Access\AccessResult;
+use Drupal\Core\Entity\EntityInterface;
+use Drupal\Core\Entity\EntityTypeInterface;
+use Drupal\Core\Field\BaseFieldDefinition;
+use Drupal\Core\Form\FormStateInterface;
+use Drupal\Core\Session\AccountInterface;
+use Drupal\Core\Utility\Error;
+
+/**
+ * Implements hook_theme().
+ */
+function commerce_webform_order_theme() {
+  return [
+    'webform_handler_commerce_webform_order_summary' => [
+      'variables' => ['settings' => NULL, 'handler' => []],
+    ],
+  ];
+}
+
+/**
+ * Implements hook_preprocess_HOOK() for case 'webform_handler_commerce_webform_order_summary'.
+ */
+function commerce_webform_order_preprocess_webform_handler_commerce_webform_order_summary(&$variables) {
+  $variables['settings']['order_states'] = array_map(function ($state) {
+    return $state == CommerceWebformOrderHandler::NEW_ORDER_OPTION ? t('new') : $state;
+  }, $variables['settings']['order_states']);
+}
+
+/**
+ * Implements hook_entity_base_field_info().
+ */
+function commerce_webform_order_entity_base_field_info(EntityTypeInterface $entity_type) {
+  // Add module base fields to add relation between webform submissions and
+  // order items.
+  if ($entity_type->id() == 'commerce_order_item') {
+    return ['commerce_webform_order_submission' => commerce_webform_order_get_commerce_order_item_base_field()];
+  }
+}
+
+/**
+ * Returns the base field to add the needed relations.
+ *
+ * @return \Drupal\Core\Field\BaseFieldDefinition
+ *   The module base field.
+ */
+function commerce_webform_order_get_commerce_order_item_base_field() {
+  return BaseFieldDefinition::create('entity_reference')
+    ->setLabel(t('Webform submission'))
+    ->setDescription(t('The webform submission which has created this order item.'))
+    ->setCardinality(1)
+    ->setRequired(FALSE)
+    ->setSetting('target_type', 'webform_submission')
+    ->setSetting('handler', 'default')
+    ->setTranslatable(FALSE)
+    ->setDisplayConfigurable('form', FALSE)
+    ->setDisplayOptions('form', [
+      'region' => 'hidden',
+      'weight' => 0,
+    ])
+    ->setDisplayConfigurable('view', TRUE)
+    ->setDisplayOptions('view', [
+      'region' => 'hidden',
+      'weight' => 0,
+    ]);
+}
+
+/**
+ * Implements hook_ENTITY_TYPE_access() for case 'webform'.
+ */
+function commerce_webform_order_webform_access(EntityInterface $entity, $operation, AccountInterface $account) {
+  // Check access on submission page using an update token.
+  /** @var \Drupal\webform\WebformInterface $entity */
+  if ($operation == 'submission_page' && ($token = \Drupal::request()->query->get('token')) != NULL) {
+    $webform_submission = \Drupal::entityTypeManager()->getStorage('webform_submission')->loadFromToken($token, $entity);
+    if ($webform_submission) {
+      return \Drupal::service('commerce_webform_order.access_checker')->updateAccess($webform_submission, $account);
+    }
+  }
+
+  // No opinion.
+  return AccessResult::neutral();
+}
+
+/**
+ * Implements hook_ENTITY_TYPE_access() for case 'webform_submission'.
+ */
+function commerce_webform_order_webform_submission_access(EntityInterface $entity, $operation, AccountInterface $account) {
+  /** @var \Drupal\webform\WebformSubmissionInterface $entity */
+  if ($operation == 'update' && $entity->getOwnerId() == $account->id()) {
+    return \Drupal::service('commerce_webform_order.access_checker')->updateAccess($entity, $account);
+  }
+
+  // No opinion.
+  return AccessResult::neutral();
+}
+
+/**
+ * Implements hook_ENTITY_TYPE_delete().
+ */
+function commerce_webform_order_commerce_order_item_delete(EntityInterface $entity) {
+  /** @var \Drupal\commerce_order\Entity\OrderItemInterface $entity */
+  $data = $entity->getData('commerce_webform_order', []);
+
+  /** @var \Drupal\webform\WebformSubmissionInterface $webform_submission */
+  if (!empty($data['sync']) && ($webform_submission = $entity->get('commerce_webform_order_submission')->entity) !== NULL) {
+    try {
+      $webform_submission->delete();
+    }
+    catch (\Exception $exception) {
+      $variables = Error::decodeException($exception);
+      \Drupal::logger('commerce_webform_order')
+        ->error('%type: @message in %function (line %line of %file).', $variables);
+    }
+  }
+}
+
+/**
+ * Implements hook_form_FORM_ID_alter() for case 'webform_settings_confirmation_form'.
+ */
+function commerce_webform_order_form_webform_settings_confirmation_form_alter(&$form, FormStateInterface $form_state, $form_id) {
+  /** @var \Drupal\webform\WebformInterface $webform */
+  $webform = $form_state->getFormObject()->getEntity();
+
+  foreach ($webform->getHandlers('commerce_webform_order') as $handler) {
+    $settings = $handler->getSettings();
+    if (!empty($settings['checkout']['redirect'])) {
+      $form['confirmation_type']['commerce_webform_order'] = [
+        '#type' => 'webform_message',
+        '#message_type' => 'warning',
+        '#message_message' => t('This setting is overridden in a commerce webform order handler.'),
+        '#weight' => -1,
+      ];
+      break;
+    }
+  }
+}

@@ -1,0 +1,275 @@
+langcode: en
+status: open
+dependencies:
+  module:
+    - commerce_webform_order
+  enforced:
+    module:
+      - commerce_webform_order_demo
+weight: 0
+open: null
+close: null
+uid: 1
+template: false
+archive: false
+id: cwo_demo_donation
+title: 'CWO Donation'
+description: 'A basic donation form, which only allows you to select an amount.'
+categories:
+  - 'CWO Demo'
+elements: |-
+  amount:
+    '#type': webform_radios_other
+    '#title': 'How much would you like to donate?'
+    '#options':
+      500: 'US $500'
+      200: 'US $200'
+      100: 'US $100'
+    '#other__type': number
+    '#other__field_prefix': 'US $'
+    '#other__min': '1'
+    '#other__step': '1'
+    '#required': true
+    '#default_value': '200'
+  personal_details:
+    '#type': fieldset
+    '#title': 'Please fill your personal details'
+    '#required': true
+    email:
+      '#type': email
+      '#title': Email
+      '#required': true
+      '#default_value': '[current-user:mail]'
+css: ''
+javascript: ''
+settings:
+  ajax: false
+  ajax_scroll_top: form
+  ajax_progress_type: ''
+  ajax_effect: ''
+  ajax_speed: null
+  page: true
+  page_submit_path: /cwo/donation
+  page_confirm_path: ''
+  page_theme_name: ''
+  form_title: both
+  form_submit_once: false
+  form_open_message: ''
+  form_close_message: ''
+  form_exception_message: ''
+  form_previous_submissions: false
+  form_confidential: false
+  form_confidential_message: ''
+  form_disable_remote_addr: false
+  form_convert_anonymous: false
+  form_prepopulate: false
+  form_prepopulate_source_entity: false
+  form_prepopulate_source_entity_required: false
+  form_prepopulate_source_entity_type: ''
+  form_unsaved: false
+  form_disable_back: false
+  form_submit_back: false
+  form_disable_autocomplete: false
+  form_novalidate: false
+  form_disable_inline_errors: false
+  form_required: false
+  form_autofocus: false
+  form_details_toggle: false
+  form_reset: false
+  form_access_denied: default
+  form_access_denied_title: ''
+  form_access_denied_message: ''
+  form_access_denied_attributes: {  }
+  form_file_limit: ''
+  form_attributes: {  }
+  form_method: ''
+  form_action: ''
+  share: false
+  share_node: false
+  share_theme_name: ''
+  share_title: true
+  share_page_body_attributes: {  }
+  submission_label: ''
+  submission_exception_message: ''
+  submission_locked_message: ''
+  submission_log: false
+  submission_excluded_elements: {  }
+  submission_exclude_empty: false
+  submission_exclude_empty_checkbox: false
+  submission_views: {  }
+  submission_views_replace: {  }
+  submission_user_columns: {  }
+  submission_user_duplicate: false
+  submission_access_denied: default
+  submission_access_denied_title: ''
+  submission_access_denied_message: ''
+  submission_access_denied_attributes: {  }
+  previous_submission_message: ''
+  previous_submissions_message: ''
+  autofill: false
+  autofill_message: ''
+  autofill_excluded_elements: {  }
+  wizard_progress_bar: true
+  wizard_progress_pages: false
+  wizard_progress_percentage: false
+  wizard_progress_link: false
+  wizard_progress_states: false
+  wizard_start_label: ''
+  wizard_preview_link: false
+  wizard_confirmation: true
+  wizard_confirmation_label: ''
+  wizard_auto_forward: true
+  wizard_auto_forward_hide_next_button: false
+  wizard_keyboard: true
+  wizard_track: ''
+  wizard_prev_button_label: ''
+  wizard_next_button_label: ''
+  wizard_toggle: false
+  wizard_toggle_show_label: ''
+  wizard_toggle_hide_label: ''
+  wizard_page_type: container
+  wizard_page_title_tag: h2
+  preview: 0
+  preview_label: ''
+  preview_title: ''
+  preview_message: ''
+  preview_attributes: {  }
+  preview_excluded_elements: {  }
+  preview_exclude_empty: true
+  preview_exclude_empty_checkbox: false
+  draft: none
+  draft_multiple: false
+  draft_auto_save: false
+  draft_saved_message: ''
+  draft_loaded_message: ''
+  draft_pending_single_message: ''
+  draft_pending_multiple_message: ''
+  confirmation_type: page
+  confirmation_url: ''
+  confirmation_title: ''
+  confirmation_message: ''
+  confirmation_attributes: {  }
+  confirmation_back: true
+  confirmation_back_label: ''
+  confirmation_back_attributes: {  }
+  confirmation_exclude_query: false
+  confirmation_exclude_token: false
+  confirmation_update: false
+  limit_total: null
+  limit_total_interval: null
+  limit_total_message: ''
+  limit_total_unique: false
+  limit_user: null
+  limit_user_interval: null
+  limit_user_message: ''
+  limit_user_unique: false
+  entity_limit_total: null
+  entity_limit_total_interval: null
+  entity_limit_user: null
+  entity_limit_user_interval: null
+  purge: none
+  purge_days: null
+  results_disabled: false
+  results_disabled_ignore: false
+  results_customize: false
+  token_view: false
+  token_update: false
+  token_delete: false
+  serial_disabled: false
+access:
+  create:
+    roles:
+      - anonymous
+      - authenticated
+    users: {  }
+    permissions: {  }
+  view_any:
+    roles: {  }
+    users: {  }
+    permissions: {  }
+  update_any:
+    roles: {  }
+    users: {  }
+    permissions: {  }
+  delete_any:
+    roles: {  }
+    users: {  }
+    permissions: {  }
+  purge_any:
+    roles: {  }
+    users: {  }
+    permissions: {  }
+  view_own:
+    roles: {  }
+    users: {  }
+    permissions: {  }
+  update_own:
+    roles: {  }
+    users: {  }
+    permissions: {  }
+  delete_own:
+    roles: {  }
+    users: {  }
+    permissions: {  }
+  administer:
+    roles: {  }
+    users: {  }
+    permissions: {  }
+  test:
+    roles: {  }
+    users: {  }
+    permissions: {  }
+  configuration:
+    roles: {  }
+    users: {  }
+    permissions: {  }
+handlers:
+  commerce_webform_order_handler:
+    id: commerce_webform_order
+    handler_id: commerce_webform_order_handler
+    label: 'Commerce Webform Order Handler'
+    notes: ''
+    status: true
+    conditions: {  }
+    weight: 0
+    settings:
+      store:
+        store_entity: b321f4b9-1b5c-41c3-b6ea-215de1101298
+        bypass_access: true
+      order_item:
+        order_item_id: ''
+        purchasable_entity_type: commerce_purchasable_entity
+        purchasable_entity: 268a1af6-3040-42eb-ba47-8b026fe86c62
+        title: ''
+        overwrite_price: true
+        amount: ':input[name="amount"]'
+        currency: ''
+        quantity: '1'
+        order_item_bundle: cwo_donation
+        fields:
+          cwo_subscription:
+            periodicity: ''
+      checkout:
+        new_cart: false
+        empty_cart: true
+        combine_cart: true
+        owner: ':input[name="email"]'
+        owner_id: ''
+        billing_profile_id: ''
+        billing_profile_bypass_access: false
+        payment_gateway_id: ''
+        payment_method_id: ''
+        cancel_url: '[webform_submission:token-update-url:relative:clear]'
+        hide_add_to_cart_message: true
+        redirect: true
+        order_state: ''
+        order_data: ''
+      sync: false
+      webform_states:
+        - completed
+      order_states:
+        - _new_order_
+        - 'order_default:draft'
+      prevent_update: false
+      debug: false
+variants: {  }

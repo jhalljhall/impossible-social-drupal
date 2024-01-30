@@ -1,0 +1,13 @@
+commerce_purchasable_entity.commerce_purchasable_entity_type.*:
+  type: config_entity
+  label: Purchasable Entity type config
+  mapping:
+    id:
+      type: string
+      label: ID
+    label:
+      type: label
+      label: Label
+    orderItemType:
+      type: string
+      label: Order item type

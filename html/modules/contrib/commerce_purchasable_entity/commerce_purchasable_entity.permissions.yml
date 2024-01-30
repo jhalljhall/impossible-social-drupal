@@ -1,0 +1,16 @@
+administer commerce_purchasable_entity_type:
+  title: Administer purchasable entity types
+  description: Maintain the types of purchasable entities available and the fields that are associated with those types.
+  restrict access: true
+
+create commerce_purchasable_entity:
+  title: Create purchasable entity
+
+delete commerce_purchasable_entity:
+  title: Delete purchasable entity
+
+edit commerce_purchasable_entity:
+  title: Edit purchasable entity
+
+view commerce_purchasable_entity:
+  title: View purchasable entity

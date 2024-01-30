@@ -155,7 +155,7 @@ $settings['skip_permissions_hardening'] = TRUE;
 # $settings['config_exclude_modules'] = ['devel', 'stage_file_proxy'];
 
 $databases['default']['default'] = array (
-    'database' => 'impossible4',
+    'database' => 'impossible2222',
     'username' => 'root',
     'password' => 'root',
     'prefix' => '',

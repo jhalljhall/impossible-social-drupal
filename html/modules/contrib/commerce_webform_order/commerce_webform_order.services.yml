@@ -1,0 +1,12 @@
+services:
+  commerce_webform_order.access_checker:
+    class: Drupal\commerce_webform_order\AccessChecker
+    arguments: ['@commerce_webform_order.order_item_repository']
+
+  commerce_webform_order.order_item_repository:
+    class: Drupal\commerce_webform_order\OrderItemRepository
+    arguments: ['@entity_type.manager']
+
+  commerce_webform_order.options_builder:
+    class: Drupal\commerce_webform_order\PaymentOptionsBuilder
+    arguments: ['@current_user', '@entity_type.manager', '@string_translation']

@@ -1,0 +1,7 @@
+commerce_purchasable_entity.configuration:
+  path: /admin/commerce/config/purchasable-entities
+  defaults:
+    _controller: \Drupal\system\Controller\SystemController::systemAdminMenuBlockPage
+    _title: Purchasable Entities
+  requirements:
+    _permission: access commerce administration pages

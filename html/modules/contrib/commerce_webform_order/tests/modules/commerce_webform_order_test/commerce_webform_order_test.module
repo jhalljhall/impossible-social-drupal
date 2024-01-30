@@ -1,0 +1,24 @@
+<?php
+
+/**
+ * @file
+ * Code for the Commerce Webform Order module test module.
+ */
+
+use Drupal\commerce_order\Entity\OrderInterface;
+use Drupal\commerce_order\Entity\OrderItemInterface;
+use Drupal\commerce_price\Price;
+use Drupal\webform\WebformSubmissionInterface;
+
+/**
+ * Implements hook_commerce_webform_order_handler_postsave_alter().
+ */
+function commerce_webform_order_test_commerce_webform_order_handler_postsave_alter(OrderInterface $order, OrderItemInterface $order_item, WebformSubmissionInterface $webform_submission) {
+  if ($webform_submission->getWebform()->id() != 'cwo_test_alter_hook') {
+    return;
+  }
+
+  $order->setEmail('altered@example.com');
+  $order_item->setUnitPrice(new Price('99.99', 'USD'), TRUE);
+  $webform_submission->setElementData('product', 'TWO');
+}

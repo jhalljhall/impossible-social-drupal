@@ -1,0 +1,31 @@
+{
+  "name": "drupal/commerce_webform_order",
+  "description": "This module integrates webform with commerce modules.",
+  "type": "drupal-module",
+  "license": "GPL-2.0-or-later",
+  "homepage": "http://drupal.org/project/commerce_webform_order",
+  "authors": [
+    {
+      "name": "Pedro Cambra",
+      "homepage": "https://www.drupal.org/u/pcambra"
+    },
+    {
+      "name": "Manuel Egío",
+      "homepage": "https://www.drupal.org/u/facine"
+    }
+  ],
+  "support": {
+    "issues": "https://www.drupal.org/project/issues/commerce_webform_order",
+    "source": "https://cgit.drupalcode.org/commerce_webform_order"
+  },
+  "require": {
+    "drupal/commerce": "^2.19",
+    "drupal/commerce_purchasable_entity": "^1.0",
+    "drupal/webform": "^6.1"
+  },
+  "suggest": {
+    "drupal/token": "Provides a user interface for the Token API and some missing core tokens.",
+    "drupal/token_or": "Provides an 'or-able' token."
+  },
+  "minimum-stability": "dev"
+}

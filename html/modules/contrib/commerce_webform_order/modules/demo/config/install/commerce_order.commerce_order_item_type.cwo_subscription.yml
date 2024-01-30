@@ -1,0 +1,13 @@
+langcode: en
+status: true
+dependencies:
+  enforced:
+    module:
+      - commerce_purchasable_entity
+      - commerce_webform_order_demo
+id: cwo_subscription
+label: 'CWO Subscription'
+traits: {  }
+locked: false
+purchasableEntityType: commerce_purchasable_entity
+orderType: cwo_subscription

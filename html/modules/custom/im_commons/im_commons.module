@@ -1,0 +1,66 @@
+<?php
+
+use Drupal\Core\Entity\ContentEntityBase;
+use Drupal\Core\Block\BlockPluginInterface;
+use Drupal\user\UserInterface;
+use Drupal\entity\EntityInterface;
+
+function im_commons_form_alter(&$form, &$form_state, $form_id){
+    //
+    //dd($form_id);
+    //var_dump ($form_id);
+}
+
+/**
+ * @file
+ * Adds "Subscriber" role to users upon checkout completion.
+ */
+
+ use Drupal\commerce_order\Entity\OrderInterface;
+ use Drupal\user\Entity\User;
+ 
+ /**
+  * Implements hook_commerce_checkout_complete().
+  */
+ function im_commons_commerce_checkout_complete(OrderInterface $order) {
+   // Get the user who made the purchase.
+   $uid = $order->getCustomerId();
+   $user = User::load($uid);
+ 
+   if ($user && !$user->hasRole('subscriber')) {
+     // Add the "Subscriber" role to the user.
+     $user->addRole('subscriber');
+     $user->save();
+   }
+ }
+
+ /**
+ * Implements hook_cron().
+ */
+function manage_subscriber_role_cron() {
+    $users = User::loadMultiple();
+  
+    foreach ($users as $user) {
+      // Check if the user has the "Subscriber" role
+      if ($user->hasRole('subscriber')) {
+        $hasActiveSubscription = FALSE;
+  
+        // Load subscriptions for the user
+        $subscriptions = Subscription::loadMultipleByUser($user->id());
+  
+        foreach ($subscriptions as $subscription) {
+          // Check if any subscription is active and has successful recent payment
+          if ($subscription->isActive() && checkRecentSuccessfulPayment($subscription)) {
+            $hasActiveSubscription = TRUE;
+            break;
+          }
+        }
+  
+        // Remove the role if no active subscription with successful payment
+        if (!$hasActiveSubscription) {
+          $user->removeRole('subscriber');
+          $user->save();
+        }
+      }
+    }
+  }

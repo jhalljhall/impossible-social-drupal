@@ -1,0 +1,159 @@
+<?php
+
+/**
+ * @file
+ * Install, update and uninstall functions for the CWO Demo module.
+ */
+
+use Drupal\commerce_store\Entity\Store;
+use Drupal\Component\Utility\Random;
+
+/**
+ * Implements hook_install().
+ */
+function commerce_webform_order_demo_install() {
+  // Create a demo store.
+  commerce_webform_order_demo_create_store();
+
+  // Create the two purchasable entities used in this demo.
+  commerce_webform_order_demo_create_purchasable_entities();
+}
+
+/**
+ * Implements hook_uninstall().
+ */
+function commerce_webform_order_demo_uninstall() {
+  // Delete the orders.
+  commerce_webform_order_demo_delete_orders();
+
+  // Delete the purchasable entities.
+  commerce_webform_order_demo_delete_purchasable_entities();
+
+  // Delete the demo store.
+  commerce_webform_order_demo_delete_store();
+}
+
+/**
+ * Deletes the created demo orders.
+ */
+function commerce_webform_order_demo_delete_orders(): void {
+  /** @var \Drupal\commerce_order\OrderStorageInterface $order_storage */
+  $order_storage = \Drupal::entityTypeManager()->getStorage('commerce_order');
+  foreach (['cwo_donation', 'cwo_subscription'] as $type) {
+    $entities = $order_storage->loadByProperties(['type' => $type]);
+    foreach ($entities as $entity) {
+      // Remove billing profiles.
+      if ($billing_profile = $entity->getBillingProfile()) {
+        $billing_profile->delete();
+      }
+      // Remove stored payment methods.
+      if (!empty($entity->get('payment_method')->entity)) {
+        $entity->get('payment_method')->entity->delete();
+      }
+
+      // Delete the order.
+      $entity->delete();
+    }
+  }
+}
+
+/**
+ * Creates a store for the demo.
+ */
+function commerce_webform_order_demo_create_store(): void {
+  $random = new Random();
+
+  $store = Store::create([
+    'type' => 'cwo_online',
+    'uid' => 1,
+    'uuid' => 'b321f4b9-1b5c-41c3-b6ea-215de1101298',
+    'name' => 'Commerce Webform Order Demo',
+    'mail' => 'example@example.com',
+    'default_currency' => 'USD',
+    'timezone' => 'America/New_York',
+    'address' => [
+      'country_code' => 'US',
+      'address_line1' => $random->string('8'),
+      'locality' => $random->string('5'),
+      'administrative_area' => 'NY',
+      'postal_code' => '10001',
+    ],
+    'is_default' => FALSE,
+  ]);
+  $store->save();
+}
+
+/**
+ * Deletes the stores.
+ */
+function commerce_webform_order_demo_delete_store(): void {
+  /** @var \Drupal\commerce_store\StoreStorageInterface $store_storage */
+  $store_storage = \Drupal::entityTypeManager()->getStorage('commerce_store');
+
+  /** @var \Drupal\commerce_store\Entity\StoreInterface $stores */
+  $store_ids = $store_storage->getQuery()
+    ->accessCheck(FALSE)
+    ->condition('type', 'cwo_online')
+    ->execute();
+
+  if (!empty($store_ids)) {
+    $stores = $store_storage->loadMultiple($store_ids);
+    $store_storage->delete($stores);
+  }
+}
+
+/**
+ * Creates the used purchasable entities.
+ */
+function commerce_webform_order_demo_create_purchasable_entities(): void {
+  /** @var \Drupal\commerce_store\Entity\StoreInterface $stores */
+  $stores = \Drupal::entityTypeManager()
+    ->getStorage('commerce_store')
+    ->loadByProperties(['name' => 'Commerce Webform Order Demo']);
+
+  /** @var \Drupal\commerce_purchasable_entity\Entity\PurchasableEntityInterface $entity */
+  $entity = \Drupal::entityTypeManager()
+    ->getStorage('commerce_purchasable_entity')
+    ->create([
+      'type' => 'cwo_donation',
+      'uid' => 1,
+      'uuid' => '268a1af6-3040-42eb-ba47-8b026fe86c62',
+      'sku' => 'CWO-ONE-OFF',
+      'title' => 'One-off',
+      'price' => [
+        'number' => 0.00,
+        'currency_code' => 'USD',
+      ],
+      ['stores' => $stores],
+    ]);
+  $entity->save();
+
+  /** @var \Drupal\commerce_purchasable_entity\Entity\PurchasableEntityInterface $entity */
+  $entity = \Drupal::entityTypeManager()
+    ->getStorage('commerce_purchasable_entity')
+    ->create([
+      'type' => 'cwo_subscription',
+      'uid' => 1,
+      'uuid' => '446b6821-b8cb-457f-8bed-b39fb6825e52',
+      'sku' => 'CWO-SUBSCRIPTION',
+      'title' => 'Subscription',
+      'price' => [
+        'number' => 0.00,
+        'currency_code' => 'USD',
+      ],
+      ['stores' => $stores],
+    ]);
+  $entity->save();
+}
+
+/**
+ * Deletes the purchasable entities.
+ */
+function commerce_webform_order_demo_delete_purchasable_entities(): void {
+  /** @var \Drupal\commerce_purchasable_entity\PurchasableEntityStorageInterface $purchasable_entity_storage */
+  $purchasable_entity_storage = \Drupal::entityTypeManager()->getStorage('commerce_purchasable_entity');
+  foreach (['cwo_donation', 'cwo_subscription'] as $type) {
+    $entities = $purchasable_entity_storage->loadByProperties(['type' => $type]);
+    $purchasable_entity_storage->delete($entities);
+  }
+}

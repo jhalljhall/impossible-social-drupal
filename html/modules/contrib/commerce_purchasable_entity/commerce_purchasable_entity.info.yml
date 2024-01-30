@@ -1,0 +1,16 @@
+name: Commerce Purchasable Entity
+description: This module provides a minimalist purchasable entity than the one offered natively by Commerce Core.
+package: Commerce (contrib)
+
+core_version_requirement: ^9 || ^10
+type: module
+
+dependencies:
+  - commerce:commerce (>= 2.19)
+  - commerce:commerce_price
+  - commerce:commerce_store
+
+# Information added by Drupal.org packaging script on 2023-08-30
+version: '1.0.0'
+project: 'commerce_purchasable_entity'
+datestamp: 1693384544

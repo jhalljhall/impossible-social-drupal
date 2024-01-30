@@ -1,0 +1,35 @@
+langcode: en
+status: true
+dependencies:
+  module:
+    - commerce_order
+    - options
+  enforced:
+    module:
+      - commerce_webform_order_demo
+id: commerce_order_item.periodicity
+field_name: periodicity
+entity_type: commerce_order_item
+type: list_integer
+settings:
+  allowed_values:
+    -
+      value: 12
+      label: Monthly
+    -
+      value: 4
+      label: Quarterly
+    -
+      value: 2
+      label: Semiannual
+    -
+      value: 1
+      label: Annual
+  allowed_values_function: ''
+module: options
+locked: false
+cardinality: 1
+translatable: true
+indexes: {  }
+persist_with_no_fields: false
+custom_storage: false

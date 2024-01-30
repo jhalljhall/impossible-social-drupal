@@ -1,0 +1,17 @@
+commerce_purchasable_entity.configuration:
+  title: Purchasable Entities
+  route_name: commerce_purchasable_entity.configuration
+  parent: commerce.configuration
+  weight: -15
+
+entity.commerce_purchasable_entity.collection:
+  title: Purchasable Entities
+  route_name: entity.commerce_purchasable_entity.collection
+  parent: commerce.admin_commerce
+  description: Manage your purchasable entities.
+
+entity.commerce_purchasable_entity_type.collection:
+  title: Purchasable entity types
+  description: Manage fields, form and display settings for your purchasable entities.
+  parent: commerce_purchasable_entity.configuration
+  route_name: entity.commerce_purchasable_entity_type.collection

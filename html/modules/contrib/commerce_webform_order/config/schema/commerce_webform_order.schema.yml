@@ -1,0 +1,121 @@
+webform.handler.commerce_webform_order:
+  type: mapping
+  label: Commerce Webform Order
+  mapping:
+    store:
+      type: mapping
+      label: Store
+      mapping:
+        store_entity:
+          type: string
+          label: Store
+        bypass_access:
+          type: boolean
+          label: Access checks
+    order_item:
+      type: mapping
+      label: Order item
+      mapping:
+        order_item_id:
+          type: string
+          label: Order item ID
+        purchasable_entity_type:
+          type: string
+          label: Purchasable entity type
+        purchasable_entity:
+          type: string
+          label: Purchasable entity
+        title:
+          type: string
+          label: Title
+        overwrite_price:
+          type: boolean
+          label: Override price
+        amount:
+          type: string
+          label: Amount
+        currency:
+          type: string
+          label: Currency
+        quantity:
+          type: string
+          label: Quantity
+        order_item_bundle:
+          type: string
+          label: Bundle
+        fields:
+          type: sequence
+          label: Fields
+          sequence:
+            type: sequence
+            label: Bundle
+            sequence:
+              type: string
+              label: Field value
+    checkout:
+      type: mapping
+      label: Checkout
+      mapping:
+        new_cart:
+          type: boolean
+          label: New cart
+        empty_cart:
+          type: boolean
+          label: Empty cart
+        combine_cart:
+          type: boolean
+          label: Combine cart
+        owner:
+          type: string
+          label: Owner's email
+        owner_id:
+          type: string
+          label: Owner ID
+        billing_profile_id:
+          type: string
+          label: Billing profile ID
+        billing_profile_bypass_access:
+          type: boolean
+          label: Access checks for billing profile
+        payment_gateway_id:
+          type: string
+          label: Payment gateway ID
+        payment_method_id:
+          type: string
+          label: Payment method ID
+        cancel_url:
+          type: string
+          label: Cancel URL
+        hide_add_to_cart_message:
+          type: boolean
+          label: Hide add to cart message
+        redirect:
+          type: boolean
+          label: Redirect to checkout
+        order_state:
+          type: string
+          label: Order state
+        order_data:
+          type: string
+          label: Order data
+    sync:
+      type: boolean
+      label: Synchronize
+    webform_states:
+      type: sequence
+      label: Webform states
+      sequence:
+        type: string
+        label: State
+    order_states:
+      type: sequence
+      label: Order states
+      sequence:
+        type: string
+        label: State
+    prevent_update:
+      type: boolean
+      label: Prevent update
+    debug:
+      type: boolean
+      label: Enable debugging

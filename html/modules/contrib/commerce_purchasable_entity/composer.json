@@ -1,0 +1,26 @@
+{
+  "name": "drupal/commerce_purchasable_entity",
+  "description": "This module provides a minimalist purchasable entity than the one offered natively by Commerce Core.",
+  "type": "drupal-module",
+  "license": "GPL-2.0-or-later",
+  "homepage": "http://drupal.org/project/commerce_purchasable_entity",
+  "authors": [
+    {
+      "name": "Pedro Cambra",
+      "homepage": "https://www.drupal.org/u/pcambra"
+    },
+    {
+      "name": "Manuel Egío",
+      "homepage": "https://www.drupal.org/u/facine"
+    }
+  ],
+  "support": {
+    "issues": "https://www.drupal.org/project/issues/commerce_purchasable_entity",
+    "source": "https://cgit.drupalcode.org/commerce_purchasable_entity"
+  },
+  "require": {
+    "drupal/core": "^9 || ^10",
+    "drupal/commerce": "^2.19"
+  },
+  "minimum-stability": "dev"
+}

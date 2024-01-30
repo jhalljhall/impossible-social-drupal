@@ -1,0 +1,84 @@
+<?php
+
+/**
+ * @file
+ * Install, update and uninstall functions for the CWO translation test module.
+ */
+
+use Drupal\Core\Serialization\Yaml;
+use Drupal\locale\SourceString;
+
+/**
+ * Implements hook_install().
+ */
+function commerce_webform_order_test_translation_install() {
+  // Ensure that needed strings are translated.
+  commerce_webform_order_test_translation_translate_strings();
+
+  // Skip simpletest runner which has no issue importing
+  // translated configuration.
+  if (isset($GLOBALS['conf']) && array_key_exists('simpletest.settings', $GLOBALS['conf'])) {
+    return;
+  }
+
+  commerce_webform_order_test_translation_install_config('config');
+  commerce_webform_order_test_translation_install_config('config_snapshot');
+}
+
+/**
+ * Translate the used strings in the tests.
+ */
+function commerce_webform_order_test_translation_translate_strings() {
+  $source_string = '@entity added to <a href=":url">your cart</a>.';
+  $storage = \Drupal::service('locale.storage');
+  $string = $storage->findString(['source' => $source_string]);
+
+  if (is_null($string)) {
+    $string = new SourceString();
+    $string->setString($source_string);
+    $string->setStorage($storage);
+    $string->save();
+  }
+
+  $storage->createTranslation([
+    'lid' => $string->lid,
+    'language' => 'es',
+    'translation' => '@entity añadido a <a href=":url">su carrito</a>.',
+  ])->save();
+}
+
+/**
+ * Fixes Issue #2845437: Process translation config files for custom modules.
+ *
+ * @param string $table_name
+ *   Config table name.
+ */
+function commerce_webform_order_test_translation_install_config($table_name) {
+  if (!\Drupal::database()->schema()->tableExists($table_name)) {
+    return;
+  }
+
+  $query = \Drupal::database()->select($table_name, 'c')
+    ->fields('c', ['name', 'collection', 'data'])
+    ->condition('collection', 'language.es');
+  $result = $query->execute();
+  while ($record = $result->fetchAssoc()) {
+    $data = unserialize($record['data'], ['allowed_classes' => FALSE]);
+
+    $filename = __DIR__ . '/config/install/language/es/' . $record['name'] . '.yml';
+    if (!file_exists($filename)) {
+      continue;
+    }
+
+    $translated_data = Yaml::decode(file_get_contents($filename));
+    foreach ($translated_data as $key => $value) {
+      $data[$key] = $value;
+    }
+
+    \Drupal::database()->update($table_name)
+      ->fields(['data' => serialize($data)])
+      ->condition('collection', $record['collection'])
+      ->condition('name', $record['name'])
+      ->execute();
+  }
+}

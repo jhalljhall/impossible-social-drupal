@@ -1,0 +1,16 @@
+<?php
+
+/**
+ * @file
+ * Install, update and uninstall functions for the CWO module.
+ */
+
+/**
+ * Implements hook_install().
+ */
+function commerce_webform_order_install() {
+  // Install module base fields to add relation between webform submissions and
+  // order items.
+  $definition_update_manager = \Drupal::entityDefinitionUpdateManager();
+  $definition_update_manager->installFieldStorageDefinition('commerce_webform_order_submission', 'commerce_order_item', 'commerce_webform_order', commerce_webform_order_get_commerce_order_item_base_field());
+}

@@ -1,0 +1,23 @@
+langcode: en
+status: true
+dependencies:
+  config:
+    - commerce_order.commerce_order_item_type.cwo_subscription
+    - field.storage.commerce_order_item.periodicity
+  module:
+    - options
+  enforced:
+    module:
+      - commerce_webform_order_demo
+id: commerce_order_item.cwo_subscription.periodicity
+field_name: periodicity
+entity_type: commerce_order_item
+bundle: cwo_subscription
+label: Periodicity
+description: ''
+required: true
+translatable: false
+default_value: {  }
+default_value_callback: ''
+settings: {  }
+field_type: list_integer

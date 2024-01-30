@@ -1,0 +1,21 @@
+langcode: en
+status: true
+dependencies:
+  module:
+    - commerce_payment_example
+  enforced:
+    module:
+      - commerce_webform_order_demo
+id: cwo_demo
+label: 'CWO Demo'
+weight: null
+plugin: example_onsite
+configuration:
+  display_label: 'CWO Demo'
+  mode: test
+  payment_method_types:
+    - credit_card
+  collect_billing_information: true
+  api_key: none
+conditions: {  }
+conditionOperator: AND

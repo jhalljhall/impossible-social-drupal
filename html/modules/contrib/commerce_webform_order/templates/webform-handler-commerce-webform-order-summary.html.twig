@@ -1,0 +1,21 @@
+{#
+/**
+ * @file
+ * Default theme implementation for a summary of a commerce webform handler.
+ *
+ * Available variables:
+ * - settings: The current configuration for this handler.
+ * - handler: This handler.
+ *
+ * @ingroup themeable
+ */
+#}
+{% if settings.debug %}<b class="color-error">{{ 'Debugging is enabled'|t }}</b><br />{% endif %}
+{% if settings.webform_states %}<b>{{ 'The cart will be created/updated when the submission is:'|t }} </b> {{ settings.webform_states|join(', ') }}.<br />{% endif %}
+{% if settings.order_states %}<b>{{ 'And order is:'|t }} </b> {{ settings.order_states|join(', ') }}.<br />{% endif %}
+{% if settings.checkout.empty_cart %}{{ 'The cart will be emptied.'|t }}<br />{% endif %}
+{% if settings.checkout.combine_cart %}{{ 'The order item will be combined.'|t }}<br />{% endif %}
+{% if settings.checkout.hide_add_to_cart_message %}{{ 'The add to cart message will be removed.'|t }}<br />{% endif %}
+{% if settings.checkout.redirect %}{{ 'User will be redirected to the checkout.'|t }}<br />{% endif %}
+{% if settings.sync %}{{ 'Order item synchronization is enabled.'|t }}{% endif %}
+{% if settings.prevent_update %}{{ 'Users will not be able to update their submissions if the associated order is not a draft.'|t }}{% endif %}

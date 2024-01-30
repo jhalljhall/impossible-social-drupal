@@ -1,0 +1,9 @@
+langcode: en
+status: true
+dependencies:
+  enforced:
+    module:
+      - commerce_purchasable_entity
+id: default
+label: Default
+orderItemType: purchasable_entity

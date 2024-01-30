@@ -1,0 +1,43 @@
+name: Commerce Webform Order Demo
+description: This module provides a few sample forms.
+package: Demo
+
+core_version_requirement: ^9.4 || ^10
+type: module
+
+dependencies:
+  - commerce:commerce_payment_example
+  - commerce_purchasable_entity:commerce_purchasable_entity
+  - commerce_webform_order:commerce_webform_order
+
+config_devel:
+  - commerce_checkout.commerce_checkout_flow.cwo_donation
+  - commerce_checkout.commerce_checkout_flow.cwo_subscription
+  - commerce_order.commerce_order_item_type.cwo_donation
+  - commerce_order.commerce_order_item_type.cwo_subscription
+  - commerce_order.commerce_order_type.cwo_donation
+  - commerce_order.commerce_order_type.cwo_subscription
+  - commerce_payment.commerce_payment_gateway.cwo_demo
+  - commerce_store.commerce_store_type.cwo_online
+  - core.entity_form_display.commerce_order.cwo_donation.default
+  - core.entity_form_display.commerce_order.cwo_subscription.default
+  - core.entity_form_display.commerce_order_item.cwo_donation.default
+  - core.entity_form_display.commerce_order_item.cwo_subscription.default
+  - core.entity_form_display.commerce_store.cwo_online.default
+  - core.entity_view_display.commerce_order.cwo_donation.default
+  - core.entity_view_display.commerce_order.cwo_donation.user
+  - core.entity_view_display.commerce_order.cwo_subscription.default
+  - core.entity_view_display.commerce_order.cwo_subscription.user
+  - core.entity_view_display.commerce_order_item.cwo_donation.default
+  - core.entity_view_display.commerce_order_item.cwo_subscription.default
+  - core.entity_view_display.commerce_store.cwo_online.default
+  - field.field.commerce_order_item.cwo_subscription.periodicity
+  - field.storage.commerce_order_item.periodicity
+  - webform.webform.cwo_demo_donation
+  - webform.webform.cwo_demo_donation_subscription
+  - webform.webform.cwo_demo_subscription
+
+# Information added by Drupal.org packaging script on 2023-12-05
+version: '3.0.0-beta10'
+project: 'commerce_webform_order'
+datestamp: 1701773645

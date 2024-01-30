@@ -1,0 +1,5 @@
+title: 'Test: Handler: Commerce Webform Order (ocultar mensaje de añadido al carrito desactivado)'
+description: '<p>Test Commerce Webform Order handler.</p>'
+elements: |
+  product:
+    '#title': Productos

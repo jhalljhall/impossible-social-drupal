@@ -1,0 +1,16 @@
+name: Commerce Webform Order module test
+description: Support module for Commerce Webform Order module testing.
+package: Testing
+
+core_version_requirement: ^9.4 || ^10
+type: module
+
+dependencies:
+  - commerce:commerce_product
+  - commerce_webform_order:commerce_webform_order
+  - commerce_purchasable_entity:commerce_purchasable_entity
+
+# Information added by Drupal.org packaging script on 2023-12-05
+version: '3.0.0-beta10'
+project: 'commerce_webform_order'
+datestamp: 1701773645

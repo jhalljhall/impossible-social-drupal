@@ -1,0 +1,12 @@
+langcode: en
+status: true
+dependencies:
+  enforced:
+    module:
+      - commerce_purchasable_entity
+label: 'Default'
+id: purchasable_entity
+purchasableEntityType: commerce_purchasable_entity
+orderType: default
+traits: {  }
+locked: false

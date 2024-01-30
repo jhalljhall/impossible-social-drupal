@@ -1,0 +1,8 @@
+commerce_webform_order.handler.commerce_webform_order:
+  version: 1.0.0
+  js:
+    js/commerce-webform-order.handler.commerce-webform-order.js: {  }
+  dependencies:
+    - core/drupal
+    - core/jquery
+    - core/once
