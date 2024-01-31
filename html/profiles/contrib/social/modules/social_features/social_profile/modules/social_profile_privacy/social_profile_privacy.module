@@ -326,7 +326,7 @@ function _social_profile_privacy_fields_submit($form, FormStateInterface $form_s
   /** @var \Drupal\profile\ProfileStorageInterface $profile_storage */
   $profile_storage = \Drupal::entityTypeManager()->getStorage('profile');
   $profile = $profile_storage->load($profile);
-  if ($profile instanceof ProfileInterface) {
+  if ($profile instanceof ProfileInterface && $profile->bundle() == 'profile') {
     SocialProfilePrivacyBatchHelper::updateProfileName($profile);
   }
 }

@@ -341,6 +341,10 @@ function social_profile_preprocess_field__field_profile_image(array &$variables)
     /** @var \Drupal\profile\Entity\ProfileInterface $profile */
     $profile = $variables['element']['#object'];
 
+    if ($profile->bundle() != 'profile') {
+      return;
+    }
+
     $name = $profile->getOwner()->getDisplayName();
 
     if ($url instanceof Url) {
@@ -442,7 +446,7 @@ function social_profile_preprocess_profile(array &$variables) {
   $variables['profile_tagging_active'] = $tag_service->isActive();
   $variables['profile_tagging_allow_split'] = $tag_service->allowSplit();
 
-  if (!$profile->get('field_profile_profile_tag')->isEmpty()) {
+  if ($profile->hasField('field_profile_profile_tag') && !$profile->get('field_profile_profile_tag')->isEmpty()) {
     $tags = $profile->get('field_profile_profile_tag')->getValue();
     $variables['profile_tagging_hierarchy'] = $tag_service->buildHierarchy($tags);
   }
@@ -1022,7 +1026,7 @@ function social_profile_entity_base_field_info(EntityTypeInterface $entity_type)
  * Set the correct profile name.
  */
 function social_profile_profile_presave(EntityInterface $profile) {
-  if ($profile instanceof ProfileInterface) {
+  if ($profile instanceof ProfileInterface && $profile->bundle() == 'profile') {
     /** @var \Drupal\social_profile\SocialProfileNameService $profile_name_service */
     $profile_name_service = \Drupal::service('social_profile.name_service');
 
