@@ -143,7 +143,7 @@ abstract class DemoUser extends DemoContent {
       ]);
       $profile = array_pop($profiles);
 
-      if ($profile instanceof ProfileInterface && $profile->bundle() == 'profile') {
+      if ($profile instanceof ProfileInterface) {
         $this->fillProfile($profile, $item);
         $profile->save();
       }

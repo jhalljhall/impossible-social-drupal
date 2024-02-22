@@ -1,0 +1,10 @@
+name: 'Commerce License Set Expiry Test'
+type: module
+description: 'Test module for Commerce License'
+package: Testing
+core_version_requirement: ^9.3 || ^10
+
+# Information added by Drupal.org packaging script on 2023-06-19
+version: '3.0.0'
+project: 'commerce_license'
+datestamp: 1687180710

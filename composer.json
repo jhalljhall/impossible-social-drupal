@@ -31,7 +31,8 @@
         "drupal/rules": "^3.0@alpha",
         "drupal/features": "^3.14",
         "drupal/commerce_webform_order": "^3.0@beta",
-        "drush/drush": "^11.6"
+        "drush/drush": "^11.6",
+        "drupal/commerce_license": "^3.0"
     },
     "repositories": [
         {
