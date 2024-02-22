@@ -4,7 +4,12 @@ use Drupal\Core\Entity\ContentEntityBase;
 use Drupal\Core\Block\BlockPluginInterface;
 use Drupal\user\UserInterface;
 use Drupal\entity\EntityInterface;
-use Drupal\commerce_product\Entity\ProductVariation;
+
+function im_commons_form_alter(&$form, &$form_state, $form_id){
+    //
+    //dd($form_id);
+    //var_dump ($form_id);
+}
 
 /**
  * @file
@@ -18,74 +23,44 @@ use Drupal\commerce_product\Entity\ProductVariation;
   * Implements hook_commerce_checkout_complete().
   */
  function im_commons_commerce_checkout_complete(OrderInterface $order) {
-  // Get the user who made the purchase.
-  $uid = $order->getCustomerId();
-  $user = User::load($uid);
-
-  // The ID of the specific subscription fee product variation you're looking for.
-  $specific_product_id_1 = 1;
-  $specific_product_id_2 = 2;
-  // The ID of the specific product you're looking for.
-  $specific_product_id = 1;
-
-  // Flag to indicate if the specific product variation or product is found in the order.
-  $found = FALSE;
-
-  // Iterate over each order item in the order.
-  foreach ($order->getItems() as $order_item) {
-    // Load the purchasable entity associated with the order item.
-    $purchased_entity = $order_item->getPurchasedEntity();
-
-    if ($purchased_entity instanceof ProductVariation) {
-      // Check if the order item matches the specific product variation ID.
-      if ($purchased_entity->id() == $specific_variation_id) {
-        $found = TRUE;
-        break; // Exit the loop once the specific product variation is found.
-      }
-
-      // Additionally, check if the parent product of the variation matches the specific product ID.
-      $product_id = $purchased_entity->getProductId();
-      if ($product_id == $specific_product_id_1 || $product_id == $specific_product_id_2 ) {
-        $found = TRUE;
-        break; // Exit the loop once the specific product is found.
-      }
-    }
-  }
-
-  // If the specific product variation or product was found and the user doesn't already have the role, add the "Subscriber" role.
-  if ($found && $user && !$user->hasRole('subscriber')) {
-    $user->addRole('subscriber');
-    $user->save();
-  }
+   // Get the user who made the purchase.
+   $uid = $order->getCustomerId();
+   $user = User::load($uid);
+ 
+   if ($user && !$user->hasRole('subscriber')) {
+     // Add the "Subscriber" role to the user.
+     $user->addRole('subscriber');
+     $user->save();
+   }
  }
 
  /**
  * Implements hook_cron().
  */
-// function manage_subscriber_role_cron() {
-//     $users = User::loadMultiple();
+function manage_subscriber_role_cron() {
+    $users = User::loadMultiple();
   
-//     foreach ($users as $user) {
-//       // Check if the user has the "Subscriber" role
-//       if ($user->hasRole('subscriber')) {
-//         $hasActiveSubscription = FALSE;
+    foreach ($users as $user) {
+      // Check if the user has the "Subscriber" role
+      if ($user->hasRole('subscriber')) {
+        $hasActiveSubscription = FALSE;
   
-//         // Load subscriptions for the user
-//         $subscriptions = Subscription::loadMultipleByUser($user->id());
+        // Load subscriptions for the user
+        $subscriptions = Subscription::loadMultipleByUser($user->id());
   
-//         foreach ($subscriptions as $subscription) {
-//           // Check if any subscription is active and has successful recent payment
-//           if ($subscription->isActive() && checkRecentSuccessfulPayment($subscription)) {
-//             $hasActiveSubscription = TRUE;
-//             break;
-//           }
-//         }
+        foreach ($subscriptions as $subscription) {
+          // Check if any subscription is active and has successful recent payment
+          if ($subscription->isActive() && checkRecentSuccessfulPayment($subscription)) {
+            $hasActiveSubscription = TRUE;
+            break;
+          }
+        }
   
-//         // Remove the role if no active subscription with successful payment
-//         if (!$hasActiveSubscription) {
-//           $user->removeRole('subscriber');
-//           $user->save();
-//         }
-//       }
-//     }
-//   }
+        // Remove the role if no active subscription with successful payment
+        if (!$hasActiveSubscription) {
+          $user->removeRole('subscriber');
+          $user->save();
+        }
+      }
+    }
+  }
