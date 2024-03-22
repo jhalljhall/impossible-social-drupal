@@ -1,0 +1,42 @@
+{
+  "name": "drupal/search_api_algolia",
+  "description": "Provides integration with the Algolia search engine.",
+  "type": "drupal-module",
+  "homepage": "https://www.drupal.org/project/search_api_algolia",
+  "authors": [
+    {
+      "name": "Jens Beltofte",
+      "homepage": "https://www.drupal.org/u/beltofte"
+    },
+    {
+      "name": "Jonas Krat",
+      "homepage": "https://www.drupal.org/u/jonasdk"
+    },
+    {
+      "name": "Christopher Calip",
+      "homepage": "https://www.drupal.org/u/chriscalip"
+    },
+    {
+      "name": "Nikunj Kotecha",
+      "homepage": "https://www.drupal.org/u/nikunjkotecha"
+    }
+  ],
+  "support": {
+    "issues": "https://www.drupal.org/project/issues/search_api_algolia",
+    "source": "https://git.drupal.org/project/search_api_algolia.git"
+  },
+  "license": "GPL-2.0+",
+  "require": {
+    "algolia/algoliasearch-client-php": "^3.0"
+  },
+  "suggest": {
+    "drupal/search_api_autocomplete": "^1.0"
+  },
+  "extra": {
+    "drush": {
+      "services": {
+        "drush.services.yml": "^9 || ^10"
+      }
+    }
+  }
+}

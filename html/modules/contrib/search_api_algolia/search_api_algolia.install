@@ -1,0 +1,79 @@
+<?php
+
+/**
+ * @file
+ * Install file.
+ */
+
+/**
+ * Implements hook_update_N().
+ *
+ * Create Table for Product Deletion in Batches.
+ */
+function search_api_algolia_update_8002() {
+  $schema = search_api_algolia_schema();
+  \Drupal::database()->schema()->createTable(
+    'search_api_algolia_deleted_items',
+    $schema['search_api_algolia_deleted_items']
+  );
+}
+
+/**
+ * Implements hook_update_N().
+ *
+ * Add configuration to allow setting debug mode.
+ */
+function search_api_algolia_update_8001() {
+  $config = \Drupal::configFactory()->getEditable('search_api_algolia.settings');
+  // By default debug mode is disabled.
+  $config->set('debug', FALSE);
+  $config->save();
+}
+
+/**
+ * Implements hook_requirements().
+ */
+function search_api_algolia_requirements($phase) {
+  $requirements = [];
+  if ($phase == 'install') {
+    if (!class_exists('\Algolia\AlgoliaSearch\Algolia')) {
+      $requirements['search_api_algolia_library'] = [
+        'description' => t('Algolia Search requires the algolia/algoliasearch-client-php library.'),
+        'severity' => REQUIREMENT_ERROR,
+      ];
+    }
+  }
+
+  return $requirements;
+}
+
+/**
+ * Implements hook_schema().
+ */
+function search_api_algolia_schema() {
+  $schema['search_api_algolia_deleted_items'] = [
+    'description' => 'The base table for search_api_algolia_deleted_items entities.',
+    'fields' => [
+      'id' => [
+        'type' => 'serial',
+        'length' => 10,
+        'not null' => TRUE,
+        'unsigned' => TRUE,
+      ],
+      'index_id' => [
+        'type' => 'varchar',
+        'length' => 255,
+        'not null' => TRUE,
+      ],
+      'object_id' => [
+        'type' => 'varchar',
+        'length' => 255,
+        'not null' => TRUE,
+      ],
+    ],
+    'primary key' => ['id'],
+    'indexes' => ['indexing' => ['id']],
+  ];
+
+  return $schema;
+}
