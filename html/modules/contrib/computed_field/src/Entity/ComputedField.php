@@ -32,13 +32,7 @@ use Drupal\field\FieldConfigInterface;
  *     "route_provider" = {
  *       "html" = "Drupal\Core\Entity\Routing\AdminHtmlRouteProvider",
  *     },
- *     "form" = {
- *       "default" = "Drupal\computed_field\Form\ComputedFieldForm",
- *       "edit" = "Drupal\computed_field\Form\ComputedFieldForm",
- *       "delete" = "Drupal\computed_field\Form\ComputedFieldDeleteForm",
- *     },
  *     "storage" = "Drupal\computed_field\Entity\Handler\ComputedFieldStorage",
- *     "list_builder" = "Drupal\computed_field\Entity\Handler\ComputedFieldListBuilder",
  *   },
  *   admin_permission = "administer computed_field entities",
  *   entity_keys = {
@@ -54,9 +48,6 @@ use Drupal\field\FieldConfigInterface;
  *     "plugin_id",
  *     "plugin_config",
  *   },
- *   links = {
- *     "collection" = "/admin/reports/fields/computed",
- *   }
  * )
  */
 class ComputedField extends FieldConfigBase implements

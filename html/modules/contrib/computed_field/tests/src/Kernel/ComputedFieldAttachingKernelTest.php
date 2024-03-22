@@ -20,7 +20,6 @@ class ComputedFieldAttachingKernelTest extends KernelTestBase {
     'system',
     'user',
     'field',
-    'field_ui',
     'entity_test',
     'computed_field',
     'test_computed_field_plugins',

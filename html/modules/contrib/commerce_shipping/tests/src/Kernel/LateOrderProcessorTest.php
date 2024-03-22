@@ -3,10 +3,10 @@
 namespace Drupal\Tests\commerce_shipping\Kernel;
 
 use Drupal\commerce_order\Adjustment;
-use Drupal\commerce_product\Entity\ProductVariation;
 use Drupal\commerce_order\Entity\Order;
 use Drupal\commerce_order\Entity\OrderItem;
 use Drupal\commerce_price\Price;
+use Drupal\commerce_product\Entity\ProductVariation;
 use Drupal\physical\Weight;
 use Drupal\profile\Entity\Profile;
 

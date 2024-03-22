@@ -35,7 +35,7 @@ trait ComputedFieldSettingsTrait {
    */
   public function getSetting($setting_name) {
     $settings = $this->getSettings();
-    return $settings[$setting_name];
+    return $settings[$setting_name] ?? NULL;
   }
 
 }

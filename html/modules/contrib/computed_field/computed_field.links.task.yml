@@ -1,5 +1,0 @@
-computed_field.reports.list:
-  route_name: entity.computed_field.collection
-  title: 'Computed fields'
-  base_route: entity.field_storage_config.collection
-

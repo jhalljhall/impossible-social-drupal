@@ -297,6 +297,7 @@ function minBy (array, func) {
 }
 
 // return an array of results representing all items that are found in each one of the arrays
+//
 
 function findCommonMembers (arrays, uniqByFunc) {
   const shortestArray = minBy(arrays, _ => _.length);
@@ -671,11 +672,19 @@ function customEmojiIndex (customEmojis) {
   }
 }
 
+const isFirefoxContentScript = typeof wrappedJSObject !== 'undefined';
+
 // remove some internal implementation details, i.e. the "tokens" array on the emoji object
 // essentially, convert the emoji from the version stored in IDB to the version used in-memory
 function cleanEmoji (emoji) {
   if (!emoji) {
     return emoji
+  }
+  // if inside a Firefox content script, need to clone the emoji object to prevent Firefox from complaining about
+  // cross-origin object. See: https://github.com/nolanlawson/emoji-picker-element/issues/356
+  /* istanbul ignore if */
+  if (isFirefoxContentScript) {
+    emoji = structuredClone(emoji);
   }
   delete emoji.tokens;
   if (emoji.skinTones) {
@@ -745,6 +754,8 @@ async function getETagAndData (dataSource) {
 }
 
 // TODO: including these in blob-util.ts causes typedoc to generate docs for them,
+// even with --excludePrivate ¯\_(ツ)_/¯
+/** @private */
 /**
  * Convert an `ArrayBuffer` to a binary string.
  *

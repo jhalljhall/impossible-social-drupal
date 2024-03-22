@@ -3,17 +3,16 @@
 namespace Drupal\socialbase\Plugin\Preprocess;
 
 use Drupal\bootstrap\Plugin\Preprocess\PreprocessBase;
+use Drupal\Core\Entity\EntityInterface;
+use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Extension\ModuleHandlerInterface;
 use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
 use Drupal\Core\Routing\RouteMatchInterface;
 use Drupal\Core\Session\AccountProxyInterface;
 use Drupal\Core\Template\Attribute;
-use Drupal\node\Entity\Node;
 use Drupal\Core\Url;
-use Drupal\Core\Entity\EntityInterface;
-use Drupal\social_core\Service\LayoutService;
+use Drupal\node\Entity\Node;
 use Symfony\Component\DependencyInjection\ContainerInterface;
-use Drupal\Core\Entity\EntityTypeManagerInterface;
 
 /**
  * Pre-processes variables for the "page" theme hook.
@@ -46,13 +45,6 @@ class Page extends PreprocessBase implements ContainerFactoryPluginInterface {
   protected AccountProxyInterface $currentUser;
 
   /**
-   * The layout service.
-   *
-   * @var \Drupal\social_core\Service\LayoutService
-   */
-  protected $layoutService = NULL;
-
-  /**
    * The storage handler class for nodes.
    *
    * @var \Drupal\node\NodeStorage
@@ -70,14 +62,12 @@ class Page extends PreprocessBase implements ContainerFactoryPluginInterface {
     ModuleHandlerInterface $module_handler,
     AccountProxyInterface $account_proxy,
     EntityTypeManagerInterface $entity,
-    $layout_service = NULL
   ) {
     parent::__construct($configuration, $plugin_id, $plugin_definition);
     $this->routeMatch = $route_match;
     $this->moduleHander = $module_handler;
     $this->currentUser = $account_proxy;
     $this->nodeStorage = $entity->getStorage('node');
-    $this->layoutService = $layout_service;
   }
 
   /**
@@ -92,7 +82,6 @@ class Page extends PreprocessBase implements ContainerFactoryPluginInterface {
       $container->get('module_handler'),
       $container->get('current_user'),
       $container->get('entity_type.manager'),
-      $container->has('social_core.layout') ? $container->get('social_core.layout') : NULL
     );
   }
 
@@ -174,7 +163,9 @@ class Page extends PreprocessBase implements ContainerFactoryPluginInterface {
     }
     // Check if sidebars are empty.
     if (empty($variables['page']['sidebar_first']) && empty($variables['page']['sidebar_second'])) {
-      $attributes->addClass('layout--with-complementary');
+      if (!$attributes->hasClass('layout--with-complementary')) {
+        $attributes->addClass('layout--with-complementary');
+      }
     }
     // Sidebars logic.
     if (empty($variables['page']['complementary_top']) && empty($variables['page']['complementary_bottom'])) {
@@ -220,8 +211,13 @@ class Page extends PreprocessBase implements ContainerFactoryPluginInterface {
     foreach ($this->routeMatch->getParameters() as $param) {
       // If it is an Entity, lets see if layout_builder is enabled
       // and remove or add necessary classes.
-      if ($param instanceof EntityInterface && $this->layoutService instanceof LayoutService) {
-        if ($this->layoutService->isTrueLayoutCompatibleEntity($param)) {
+      if ($param instanceof EntityInterface &&
+        $this->moduleHander->moduleExists('layout_builder') &&
+        $this->moduleHander->moduleExists('social_core')
+      ) {
+        if (\Drupal::hasService('social_core.layout') && 
+          \Drupal::service('social_core.layout')->isTrueLayoutCompatibleEntity($param)
+        ) {
           $attributes->removeClass('row', 'layout--with-complementary');
           $attributes->addClass('layout--full');
         }
@@ -229,7 +225,6 @@ class Page extends PreprocessBase implements ContainerFactoryPluginInterface {
     }
 
     $variables['content_attributes'] = $attributes;
-
   }
 
 }

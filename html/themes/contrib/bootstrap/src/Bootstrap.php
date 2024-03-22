@@ -1359,6 +1359,7 @@ class Bootstrap {
       static::$messenger->addMessage($message, $type, $repeat);
     }
     else {
+      // @noRector
       drupal_set_message($message, $type, $repeat);
     }
   }

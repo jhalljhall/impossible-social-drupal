@@ -14,6 +14,7 @@ function commerce_shipping_post_update_1(&$sandbox = NULL) {
   $shipping_method_storage = \Drupal::entityTypeManager()->getStorage('commerce_shipping_method');
   if (!isset($sandbox['current_count'])) {
     $query = $shipping_method_storage->getQuery();
+    $query->accessCheck(FALSE);
     $sandbox['total_count'] = $query->count()->execute();
     $sandbox['current_count'] = 0;
 
@@ -24,6 +25,7 @@ function commerce_shipping_post_update_1(&$sandbox = NULL) {
   }
 
   $query = $shipping_method_storage->getQuery();
+  $query->accessCheck(FALSE);
   $query->range($sandbox['current_count'], 25);
   $result = $query->execute();
   if (empty($result)) {
@@ -54,6 +56,7 @@ function commerce_shipping_post_update_2(&$sandbox = NULL) {
   $shipping_method_storage = \Drupal::entityTypeManager()->getStorage('commerce_shipping_method');
   if (!isset($sandbox['current_count'])) {
     $query = $shipping_method_storage->getQuery();
+    $query->accessCheck(FALSE);
     $sandbox['total_count'] = $query->count()->execute();
     $sandbox['current_count'] = 0;
 
@@ -64,6 +67,7 @@ function commerce_shipping_post_update_2(&$sandbox = NULL) {
   }
 
   $query = $shipping_method_storage->getQuery();
+  $query->accessCheck(FALSE);
   $query->range($sandbox['current_count'], 25);
   $result = $query->execute();
   if (empty($result)) {

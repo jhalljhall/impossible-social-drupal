@@ -1,4 +1,4 @@
-(function ($) {
+(function (Drupal, $, once) {
 
   Drupal.behaviors.navbarCollapse = {
     attach: function (context, settings) {
@@ -6,9 +6,9 @@
       // Delegate the event to body to prevent screenreaders from thinking
       // teasers are clickable.
 
-      var $body = $('body');
+      var $body = $(once('navbarCollapse', 'body'));
 
-      $body.once('navbarCollapse').on('click', '.dropdown-toggle, #content', function() {
+      $body.on('click', '.dropdown-toggle, #content', function() {
         $('.navbar-collapse').collapse('hide');
 
         var headerDropDown = $('.navbar-default .dropdown');
@@ -26,4 +26,4 @@
 
   };
 
-})(jQuery);
+})(Drupal, jQuery, once);

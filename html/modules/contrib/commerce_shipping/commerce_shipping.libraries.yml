@@ -6,3 +6,10 @@ shipping_checkout:
     - core/drupalSettings
     - core/drupal
     - core/once
+
+resources:
+  version: VERSION
+  css:
+    theme:
+      css/commerce_shipping.resources.css: {}
+

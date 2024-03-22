@@ -1,7 +1,8 @@
 {% extends "node--full.html.twig" %}
 
-{% if display_submitted %}
-  {% block metainfo %}
+
+{% block metainfo %}
+  {% if display_submitted %}
     <header class="metainfo">
 
       <div class="metainfo__avatar">
@@ -27,8 +28,8 @@
       {{ content.links.moderation }}
 
     </header>
-  {% endblock %}
-{% endif %}
+  {% endif %}
+{% endblock %}
 
 {# add specific fields to body for events only #}
 {% block nodefull_specialfields %}

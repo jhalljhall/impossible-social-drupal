@@ -24,6 +24,7 @@ class SerializationTest extends ShippingKernelTestBase {
   protected static $modules = [
     'serialization',
     'jsonapi',
+    'file',
   ];
 
   /**

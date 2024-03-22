@@ -47,6 +47,8 @@
 }
 
 .socialblue--sky .navbar-secondary .navbar-nav li a.is-active,
-.socialblue--sky .navbar-secondary .navbar-nav li button.is-active {
+.socialblue--sky .navbar-secondary .navbar-nav li button.is-active,
+.socialblue--sky .navbar-secondary .navbar-nav li.active a,
+.socialblue--sky .navbar-secondary .navbar-nav li.active button {
   color: #29abe2;
 }

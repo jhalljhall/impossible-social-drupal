@@ -7,12 +7,12 @@ use Drupal\commerce_order\Entity\OrderItem;
 use Drupal\commerce_price\Price;
 use Drupal\commerce_product\Entity\Product;
 use Drupal\commerce_product\Entity\ProductVariation;
-use Drupal\profile\Entity\Profile;
 use Drupal\commerce_shipping\Entity\Shipment;
 use Drupal\commerce_shipping\Entity\ShippingMethod;
 use Drupal\commerce_shipping\ShipmentItem;
-use Drupal\physical\Weight;
 use Drupal\Core\Entity\Entity\EntityViewDisplay;
+use Drupal\physical\Weight;
+use Drupal\profile\Entity\Profile;
 
 /**
  * Tests the order shipment summary.

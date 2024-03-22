@@ -3,7 +3,7 @@
  * Add SVG as sanitized option to popover.
  */
 
-(function ($, Drupal) {
+(function ($, Drupal, once) {
 
   'use strict';
 
@@ -15,7 +15,7 @@
 
       if (!$.fn.popover) throw new Error('Popover requires tooltip.js')
 
-      $('body').once('social_popover').each(function () {
+      $(once('social_popover', 'body')).each(function () {
         var myDefaultWhiteList = [];
         // Allow table elements
         myDefaultWhiteList.table = [];
@@ -32,4 +32,4 @@
     }
   };
 
-})(jQuery, Drupal);
+})(jQuery, Drupal, once);

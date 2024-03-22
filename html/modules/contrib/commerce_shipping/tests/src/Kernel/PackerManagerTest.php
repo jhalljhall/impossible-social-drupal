@@ -2,11 +2,11 @@
 
 namespace Drupal\Tests\commerce_shipping\Kernel;
 
-use Drupal\commerce_product\Entity\ProductVariation;
 use Drupal\commerce_order\Entity\Order;
 use Drupal\commerce_order\Entity\OrderInterface;
 use Drupal\commerce_order\Entity\OrderItem;
 use Drupal\commerce_price\Price;
+use Drupal\commerce_product\Entity\ProductVariation;
 use Drupal\commerce_shipping\Packer\PackerInterface;
 use Drupal\commerce_shipping\PackerManager;
 use Drupal\commerce_shipping\ProposedShipment;

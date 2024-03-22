@@ -9,6 +9,8 @@ use Drupal\KernelTests\KernelTestBase;
 
 /**
  * Test that the config_modify module correctly updates config.
+ *
+ * @group config_modify
  */
 class ModifyTest extends KernelTestBase {
 
@@ -25,7 +27,6 @@ class ModifyTest extends KernelTestBase {
     'config_update',
     'update_helper',
     'config_modify',
-    'test_config_modify',
   ];
 
   /**
@@ -36,13 +37,14 @@ class ModifyTest extends KernelTestBase {
 
     $this->moduleInstaller = \Drupal::service("module_installer");
 
-    $this->installConfig(["config_modify", "test_config_modify"]);
+    $this->installConfig(["config_modify"]);
   }
 
   /**
    * Installation of a module should cause modifications to be run.
    */
   public function testModuleInstallRunsModification() : void {
+    $this->moduleInstaller->install(["test_config_modify"]);
     $this->assertEquals([], $this->config("config_modify.applied")->get("files"), "Config Modify files were already applied at the start of the test.");
 
     $this->moduleInstaller->install(["test_config_modify_enable"]);

@@ -90,7 +90,7 @@
           colorPreviewCover.addClass('cover-img cover-img-gradient');
       }
 
-      $colorPreview.find('.color-preview-hero .switch').once()
+      $colorPreview.find('.color-preview-hero .switch')
         .on('click', function() {
           colorPreviewLever.toggleClass('lever-on');
           colorPreviewCover.toggleClass('cover-img cover-img-gradient');

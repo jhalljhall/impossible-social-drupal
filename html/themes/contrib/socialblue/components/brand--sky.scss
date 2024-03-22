@@ -78,7 +78,9 @@
     .navbar-nav {
       li {
         a.is-active,
-        button.is-active {
+        button.is-active,
+        &.active a,
+        &.active button {
           color: $brand-primary;
         }
       }

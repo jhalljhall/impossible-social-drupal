@@ -3,6 +3,7 @@
 namespace Drupal\commerce_shipping\Plugin\Commerce\EntityTrait;
 
 use Drupal\commerce\Plugin\Commerce\EntityTrait\EntityTraitBase;
+use Drupal\Core\StringTranslation\TranslatableMarkup;
 use Drupal\entity\BundleFieldDefinition;
 
 /**
@@ -22,7 +23,7 @@ class PurchasableEntityDimensions extends EntityTraitBase {
   public function buildFieldDefinitions() {
     $fields = [];
     $fields['dimensions'] = BundleFieldDefinition::create('physical_dimensions')
-      ->setLabel('Dimensions')
+      ->setLabel(new TranslatableMarkup('Dimensions'))
       ->setRequired(TRUE)
       ->setDisplayOptions('form', [
         'type' => 'physical_dimensions_default',

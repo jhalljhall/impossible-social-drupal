@@ -1,7 +1,8 @@
+(function ($, once) {
 $(document).ready(function () {
 
   // Attach select2 to each multiselect.
-  $('select[multiple]').once('select2').each(function (i, e) {
+  $(once('select2', 'select[multiple]')).each(function (i, e) {
     var options = {
       theme: 'social',
       placeholder: 'Select an option'
@@ -33,3 +34,5 @@ $(document).ready(function () {
   });
 
 });
+
+})(jQuery, once);

@@ -11,7 +11,7 @@ A lightweight emoji picker, distributed as a web component.
 
 **Features:**
 
-- Supports [Emoji v14.0](https://emojipedia.org/emoji-14.0/) (depending on OS) and custom emoji
+- Supports [Emoji v15.1](https://emojipedia.org/emoji-15.1/) (depending on OS) and custom emoji
 - Uses IndexedDB, so it consumes [far less memory](https://nolanlawson.com/2020/06/28/introducing-emoji-picker-element-a-memory-efficient-emoji-picker-for-the-web/) than other emoji pickers
 - [Small bundle size](https://bundlephobia.com/result?p=emoji-picker-element) (<15kB min+gz)
 - Renders native emoji by default, with support for custom fonts
@@ -62,6 +62,7 @@ A lightweight emoji picker, distributed as a web component.
         * [setPreferredSkinTone](#setpreferredskintone)
     + [Custom emoji](#custom-emoji)
     + [Tree-shaking](#tree-shaking)
+    + [Within a meta-framework (Next.js, SvelteKit, etc.)](#within-a-meta-framework-nextjs-sveltekit-etc)
     + [Within a Svelte project](#within-a-svelte-project)
   * [Data and offline](#data-and-offline)
     + [Data source and JSON format](#data-source-and-json-format)
@@ -158,14 +159,14 @@ Then, specify the maximum emoji version supported by the font (see [Emojipedia](
 In HTML:
 
 ```html
-<emoji-picker emoji-version="14.0"></emoji-picker>
+<emoji-picker emoji-version="15.0"></emoji-picker>
 ```
 
 Or JavaScript:
 
 ```js
 const picker = new Picker({
-  emojiVersion: 14.0
+  emojiVersion: 15.0
 });
 ```
 
@@ -825,19 +826,32 @@ import Database from 'emoji-picker-element/database';
 
 The reason for this is that `Picker` automatically registers itself as a custom element, following [web component best practices](https://justinfagnani.com/2019/11/01/how-to-publish-web-components-to-npm/). But this adds side effects, so bundlers like Webpack and Rollup do not tree-shake as well, unless the modules are imported from completely separate files.
 
+### Within a meta-framework (Next.js, SvelteKit, etc.)
+
+Some meta-frameworks will attempt to server-side render (SSR) any dependencies you `import`. However, `emoji-picker-element` only supports client-side rendering – it does not work on the server side. If you attempt to import it on the server side, you will see an error like `requestAnimationFrame is not defined`.
+
+To load `emoji-picker-element` only on the client side, use your meta-framework's technique for client-side-only imports. For example, you can use [dynamic `import()`s](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/import) with [`next/dynamic` in Next.js](https://stackoverflow.com/a/61881528/680742) or [`onMount()` in SvelteKit](https://www.banjocode.com/post/svelte/client-side-library).
+
+`emoji-picker-element` is not designed for SSR. In most apps, an emoji picker should be lazy-loaded upon user interaction (for example, when the user clicks a button).
+
 ### Within a Svelte project
 
-`emoji-picker-element` is explicitly designed as a custom element, and won't work
-as a direct Svelte component. However, if you're already using Svelte 3, then you
-can avoid importing Svelte twice by using:
+> [!WARNING]  
+> `emoji-picker-element` is no longer based on Svelte, so importing from `emoji-picker-element/svelte` is now deprecated.
+
+Previously, `emoji-picker-element` was based on Svelte v3/v4, and you could do:
 
 ```js
 import Picker from 'emoji-picker-element/svelte';
 ```
 
-`svelte.js` is the same as `picker.js`, except it `import`s Svelte rather than bundling it.
+The goal was to slightly reduce the bundle size by sharing common `svelte` imports.
 
-While this option can reduce your bundle size, note that it only works if your Svelte version is compatible with `emoji-picker-element`'s Svelte version (v3 currently).
+This is still supported for backwards compatibility, but it is deprecated and just re-exports the Picker. Instead, do:
+
+```js
+import Picker from 'emoji-picker-element/picker';
+```
 
 ## Data and offline
 

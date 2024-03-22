@@ -5,8 +5,8 @@ namespace Drupal\commerce_shipping\Plugin\Commerce\Condition;
 use Drupal\commerce\Plugin\Commerce\Condition\ConditionBase;
 use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Form\FormStateInterface;
-use Drupal\physical\Weight;
 use Drupal\physical\MeasurementType;
+use Drupal\physical\Weight;
 
 /**
  * Provides the weight condition for shipments.

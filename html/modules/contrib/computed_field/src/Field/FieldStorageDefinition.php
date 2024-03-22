@@ -66,6 +66,13 @@ class FieldStorageDefinition extends DataDefinition implements FieldStorageDefin
   protected $fieldTypeManager;
 
   /**
+   * The field schema.
+   *
+   * @var array[]
+   */
+  protected $schema;
+
+  /**
    * Creates a new field storage definition.
    *
    * @param string $type

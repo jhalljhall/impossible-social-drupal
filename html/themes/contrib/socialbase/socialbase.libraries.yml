@@ -9,7 +9,7 @@ base:
   dependencies:
     - core/drupal
     - core/jquery
-    - core/jquery.once
+    - core/once
 
 print:
   css:
@@ -50,6 +50,9 @@ form-controls:
     assets/js/autosize.init.min.js: { minified: true }
   dependencies:
     - core/drupal.form
+    - core/drupal
+    - core/jquery
+    - core/once
 
 fitframe:
   css:
@@ -180,6 +183,10 @@ navbar:
     assets/js/navbar-resize.min.js: { minified: true }
     assets/js/navbar-search.min.js: { minified: true }
     assets/js/navbar-main-menu.min.js: { minified: true }
+  dependencies:
+    - core/drupal
+    - core/jquery
+    - core/once
 
 pagination:
   css:
@@ -199,6 +206,10 @@ popover:
     /libraries/bootstrap/js/tooltip.js: { weight: -2 }
     /libraries/bootstrap/js/popover.js: { weight: -1 }
     assets/js/popover_svg.min.js: { }
+  dependencies:
+    - core/drupal
+    - core/jquery
+    - core/once
 
 select2:
   css:
@@ -246,6 +257,11 @@ form-post-create:
   css:
     component:
       assets/css/form-post-create.css: {}
+
+form--filter-membership:
+  css:
+    component:
+      assets/css/form--filter-membership.css: {}
 
 forum:
   css:

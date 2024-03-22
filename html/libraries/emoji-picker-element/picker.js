@@ -1,417 +1,5 @@
 import Database from './database.js';
 
-function noop() { }
-function run(fn) {
-    return fn();
-}
-function blank_object() {
-    return Object.create(null);
-}
-function run_all(fns) {
-    fns.forEach(run);
-}
-function is_function(thing) {
-    return typeof thing === 'function';
-}
-function safe_not_equal(a, b) {
-    return a != a ? b == b : a !== b || ((a && typeof a === 'object') || typeof a === 'function');
-}
-let src_url_equal_anchor;
-function src_url_equal(element_src, url) {
-    if (!src_url_equal_anchor) {
-        src_url_equal_anchor = document.createElement('a');
-    }
-    src_url_equal_anchor.href = url;
-    return element_src === src_url_equal_anchor.href;
-}
-function is_empty(obj) {
-    return Object.keys(obj).length === 0;
-}
-function action_destroyer(action_result) {
-    return action_result && is_function(action_result.destroy) ? action_result.destroy : noop;
-}
-function append(target, node) {
-    target.appendChild(node);
-}
-function insert(target, node, anchor) {
-    target.insertBefore(node, anchor || null);
-}
-function detach(node) {
-    if (node.parentNode) {
-        node.parentNode.removeChild(node);
-    }
-}
-function element(name) {
-    return document.createElement(name);
-}
-function text(data) {
-    return document.createTextNode(data);
-}
-function listen(node, event, handler, options) {
-    node.addEventListener(event, handler, options);
-    return () => node.removeEventListener(event, handler, options);
-}
-function attr(node, attribute, value) {
-    if (value == null)
-        node.removeAttribute(attribute);
-    else if (node.getAttribute(attribute) !== value)
-        node.setAttribute(attribute, value);
-}
-function set_data(text, data) {
-    data = '' + data;
-    if (text.wholeText !== data)
-        text.data = data;
-}
-function set_input_value(input, value) {
-    input.value = value == null ? '' : value;
-}
-function set_style(node, key, value, important) {
-    if (value === null) {
-        node.style.removeProperty(key);
-    }
-    else {
-        node.style.setProperty(key, value, important ? 'important' : '');
-    }
-}
-
-let current_component;
-function set_current_component(component) {
-    current_component = component;
-}
-function get_current_component() {
-    if (!current_component)
-        throw new Error('Function called outside component initialization');
-    return current_component;
-}
-/**
- * The `onMount` function schedules a callback to run as soon as the component has been mounted to the DOM.
- * It must be called during the component's initialisation (but doesn't need to live *inside* the component;
- * it can be called from an external module).
- *
- * `onMount` does not run inside a [server-side component](/docs#run-time-server-side-component-api).
- *
- * https://svelte.dev/docs#run-time-svelte-onmount
- */
-function onMount(fn) {
-    get_current_component().$$.on_mount.push(fn);
-}
-
-const dirty_components = [];
-const binding_callbacks = [];
-const render_callbacks = [];
-const flush_callbacks = [];
-const resolved_promise = Promise.resolve();
-let update_scheduled = false;
-function schedule_update() {
-    if (!update_scheduled) {
-        update_scheduled = true;
-        resolved_promise.then(flush);
-    }
-}
-function tick() {
-    schedule_update();
-    return resolved_promise;
-}
-function add_render_callback(fn) {
-    render_callbacks.push(fn);
-}
-// flush() calls callbacks in this order:
-// 1. All beforeUpdate callbacks, in order: parents before children
-// 2. All bind:this callbacks, in reverse order: children before parents.
-// 3. All afterUpdate callbacks, in order: parents before children. EXCEPT
-//    for afterUpdates called during the initial onMount, which are called in
-//    reverse order: children before parents.
-// Since callbacks might update component values, which could trigger another
-// call to flush(), the following steps guard against this:
-// 1. During beforeUpdate, any updated components will be added to the
-//    dirty_components array and will cause a reentrant call to flush(). Because
-//    the flush index is kept outside the function, the reentrant call will pick
-//    up where the earlier call left off and go through all dirty components. The
-//    current_component value is saved and restored so that the reentrant call will
-//    not interfere with the "parent" flush() call.
-// 2. bind:this callbacks cannot trigger new flush() calls.
-// 3. During afterUpdate, any updated components will NOT have their afterUpdate
-//    callback called a second time; the seen_callbacks set, outside the flush()
-//    function, guarantees this behavior.
-const seen_callbacks = new Set();
-let flushidx = 0; // Do *not* move this inside the flush() function
-function flush() {
-    // Do not reenter flush while dirty components are updated, as this can
-    // result in an infinite loop. Instead, let the inner flush handle it.
-    // Reentrancy is ok afterwards for bindings etc.
-    if (flushidx !== 0) {
-        return;
-    }
-    const saved_component = current_component;
-    do {
-        // first, call beforeUpdate functions
-        // and update components
-        try {
-            while (flushidx < dirty_components.length) {
-                const component = dirty_components[flushidx];
-                flushidx++;
-                set_current_component(component);
-                update(component.$$);
-            }
-        }
-        catch (e) {
-            // reset dirty state to not end up in a deadlocked state and then rethrow
-            dirty_components.length = 0;
-            flushidx = 0;
-            throw e;
-        }
-        set_current_component(null);
-        dirty_components.length = 0;
-        flushidx = 0;
-        while (binding_callbacks.length)
-            binding_callbacks.pop()();
-        // then, once components are updated, call
-        // afterUpdate functions. This may cause
-        // subsequent updates...
-        for (let i = 0; i < render_callbacks.length; i += 1) {
-            const callback = render_callbacks[i];
-            if (!seen_callbacks.has(callback)) {
-                // ...so guard against infinite loops
-                seen_callbacks.add(callback);
-                callback();
-            }
-        }
-        render_callbacks.length = 0;
-    } while (dirty_components.length);
-    while (flush_callbacks.length) {
-        flush_callbacks.pop()();
-    }
-    update_scheduled = false;
-    seen_callbacks.clear();
-    set_current_component(saved_component);
-}
-function update($$) {
-    if ($$.fragment !== null) {
-        $$.update();
-        run_all($$.before_update);
-        const dirty = $$.dirty;
-        $$.dirty = [-1];
-        $$.fragment && $$.fragment.p($$.ctx, dirty);
-        $$.after_update.forEach(add_render_callback);
-    }
-}
-const outroing = new Set();
-function transition_in(block, local) {
-    if (block && block.i) {
-        outroing.delete(block);
-        block.i(local);
-    }
-}
-
-const globals = (typeof window !== 'undefined'
-    ? window
-    : typeof globalThis !== 'undefined'
-        ? globalThis
-        : global);
-
-function destroy_block(block, lookup) {
-    block.d(1);
-    lookup.delete(block.key);
-}
-function update_keyed_each(old_blocks, dirty, get_key, dynamic, ctx, list, lookup, node, destroy, create_each_block, next, get_context) {
-    let o = old_blocks.length;
-    let n = list.length;
-    let i = o;
-    const old_indexes = {};
-    while (i--)
-        old_indexes[old_blocks[i].key] = i;
-    const new_blocks = [];
-    const new_lookup = new Map();
-    const deltas = new Map();
-    i = n;
-    while (i--) {
-        const child_ctx = get_context(ctx, list, i);
-        const key = get_key(child_ctx);
-        let block = lookup.get(key);
-        if (!block) {
-            block = create_each_block(key, child_ctx);
-            block.c();
-        }
-        else if (dynamic) {
-            block.p(child_ctx, dirty);
-        }
-        new_lookup.set(key, new_blocks[i] = block);
-        if (key in old_indexes)
-            deltas.set(key, Math.abs(i - old_indexes[key]));
-    }
-    const will_move = new Set();
-    const did_move = new Set();
-    function insert(block) {
-        transition_in(block, 1);
-        block.m(node, next);
-        lookup.set(block.key, block);
-        next = block.first;
-        n--;
-    }
-    while (o && n) {
-        const new_block = new_blocks[n - 1];
-        const old_block = old_blocks[o - 1];
-        const new_key = new_block.key;
-        const old_key = old_block.key;
-        if (new_block === old_block) {
-            // do nothing
-            next = new_block.first;
-            o--;
-            n--;
-        }
-        else if (!new_lookup.has(old_key)) {
-            // remove old block
-            destroy(old_block, lookup);
-            o--;
-        }
-        else if (!lookup.has(new_key) || will_move.has(new_key)) {
-            insert(new_block);
-        }
-        else if (did_move.has(old_key)) {
-            o--;
-        }
-        else if (deltas.get(new_key) > deltas.get(old_key)) {
-            did_move.add(new_key);
-            insert(new_block);
-        }
-        else {
-            will_move.add(old_key);
-            o--;
-        }
-    }
-    while (o--) {
-        const old_block = old_blocks[o];
-        if (!new_lookup.has(old_block.key))
-            destroy(old_block, lookup);
-    }
-    while (n)
-        insert(new_blocks[n - 1]);
-    return new_blocks;
-}
-function mount_component(component, target, anchor, customElement) {
-    const { fragment, after_update } = component.$$;
-    fragment && fragment.m(target, anchor);
-    if (!customElement) {
-        // onMount happens before the initial afterUpdate
-        add_render_callback(() => {
-            const new_on_destroy = component.$$.on_mount.map(run).filter(is_function);
-            // if the component was destroyed immediately
-            // it will update the `$$.on_destroy` reference to `null`.
-            // the destructured on_destroy may still reference to the old array
-            if (component.$$.on_destroy) {
-                component.$$.on_destroy.push(...new_on_destroy);
-            }
-            else {
-                // Edge case - component was destroyed immediately,
-                // most likely as a result of a binding initialising
-                run_all(new_on_destroy);
-            }
-            component.$$.on_mount = [];
-        });
-    }
-    after_update.forEach(add_render_callback);
-}
-function destroy_component(component, detaching) {
-    const $$ = component.$$;
-    if ($$.fragment !== null) {
-        run_all($$.on_destroy);
-        $$.fragment && $$.fragment.d(detaching);
-        // TODO null out other refs, including component.$$ (but need to
-        // preserve final state?)
-        $$.on_destroy = $$.fragment = null;
-        $$.ctx = [];
-    }
-}
-function make_dirty(component, i) {
-    if (component.$$.dirty[0] === -1) {
-        dirty_components.push(component);
-        schedule_update();
-        component.$$.dirty.fill(0);
-    }
-    component.$$.dirty[(i / 31) | 0] |= (1 << (i % 31));
-}
-function init(component, options, instance, create_fragment, not_equal, props, append_styles, dirty = [-1]) {
-    const parent_component = current_component;
-    set_current_component(component);
-    const $$ = component.$$ = {
-        fragment: null,
-        ctx: [],
-        // state
-        props,
-        update: noop,
-        not_equal,
-        bound: blank_object(),
-        // lifecycle
-        on_mount: [],
-        on_destroy: [],
-        on_disconnect: [],
-        before_update: [],
-        after_update: [],
-        context: new Map((parent_component ? parent_component.$$.context : [])),
-        // everything else
-        callbacks: blank_object(),
-        dirty,
-        skip_bound: false,
-        root: options.target || parent_component.$$.root
-    };
-    append_styles && append_styles($$.root);
-    let ready = false;
-    $$.ctx = instance
-        ? instance(component, options.props || {}, (i, ret, ...rest) => {
-            const value = rest.length ? rest[0] : ret;
-            if ($$.ctx && not_equal($$.ctx[i], $$.ctx[i] = value)) {
-                if (!$$.skip_bound && $$.bound[i])
-                    $$.bound[i](value);
-                if (ready)
-                    make_dirty(component, i);
-            }
-            return ret;
-        })
-        : [];
-    $$.update();
-    ready = true;
-    run_all($$.before_update);
-    // `false` as a special case of no DOM component
-    $$.fragment = create_fragment ? create_fragment($$.ctx) : false;
-    if (options.target) {
-        {
-            // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-            $$.fragment && $$.fragment.c();
-        }
-        mount_component(component, options.target, undefined, undefined);
-        flush();
-    }
-    set_current_component(parent_component);
-}
-/**
- * Base class for Svelte components. Used when dev=false.
- */
-class SvelteComponent {
-    $destroy() {
-        destroy_component(this, 1);
-        this.$destroy = noop;
-    }
-    $on(type, callback) {
-        if (!is_function(callback)) {
-            return noop;
-        }
-        const callbacks = (this.$$.callbacks[type] || (this.$$.callbacks[type] = []));
-        callbacks.push(callback);
-        return () => {
-            const index = callbacks.indexOf(callback);
-            if (index !== -1)
-                callbacks.splice(index, 1);
-        };
-    }
-    $set($$props) {
-        if (this.$$set && !is_empty($$props)) {
-            this.$$.skip_bound = true;
-            this.$$set($$props);
-            this.$$.skip_bound = false;
-        }
-    }
-}
-
 // via https://unpkg.com/browse/emojibase-data@6.0.0/meta/groups.json
 const allGroups = [
   [-1, '✨', 'custom'],
@@ -427,7 +15,6 @@ const allGroups = [
 ].map(([id, emoji, name]) => ({ id, emoji, name }));
 
 const groups = allGroups.slice(1);
-const customGroup = allGroups[0];
 
 const MIN_SEARCH_TEXT_LENGTH = 2;
 const NUM_SKIN_TONES = 6;
@@ -450,6 +37,7 @@ function hasZwj (emoji) {
 // "face without mouth" plus "fog".) These emoji can only be filtered using the width test,
 // which happens in checkZwjSupport.js.
 const versionsAndTestEmoji = {
+  '🫨': 15.1, // shaking head, technically from v15 but see note above
   '🫠': 14,
   '🥲': 13.1, // smiling face with tear, technically from v13 but see note above
   '🥻': 12.1, // sari, technically from v12 but see note above
@@ -474,7 +62,7 @@ const DEFAULT_NUM_COLUMNS = 8;
 const MOST_COMMONLY_USED_EMOJI = [
   '😊',
   '😒',
-  '♥️',
+  '❤️',
   '👍️',
   '😍',
   '😂',
@@ -500,6 +88,10 @@ const FONT_FAMILY = '"Twemoji Mozilla","Apple Color Emoji","Segoe UI Emoji","Seg
 const DEFAULT_CATEGORY_SORTING = (a, b) => a < b ? -1 : a > b ? 1 : 0;
 
 // Test if an emoji is supported by rendering it to canvas and checking that the color is not black
+// See https://about.gitlab.com/blog/2018/05/30/journey-in-native-unicode-emoji/
+// and https://www.npmjs.com/package/if-emoji for inspiration
+// This implementation is largely borrowed from if-emoji, adding the font-family
+
 
 const getTextFeature = (text, color) => {
   const canvas = document.createElement('canvas');
@@ -533,6 +125,7 @@ function testColorEmojiSupported (text) {
 }
 
 // rather than check every emoji ever, which would be expensive, just check some representatives from the
+// different emoji releases to determine what the font supports
 
 function determineEmojiSupportLevel () {
   const entries = Object.entries(versionsAndTestEmoji);
@@ -643,15 +236,15 @@ function summarizeEmojisForUI (emojis, emojiSupportLevel) {
     return res
   };
 
-  return emojis.map(({ unicode, skins, shortcodes, url, name, category }) => ({
+  return emojis.map(({ unicode, skins, shortcodes, url, name, category, annotation }) => ({
     unicode,
     name,
     shortcodes,
     url,
     category,
+    annotation,
     id: unicode || name,
-    skins: skins && toSimpleSkinsMap(skins),
-    title: (shortcodes || []).join(', ')
+    skins: skins && toSimpleSkinsMap(skins)
   }))
 }
 
@@ -659,10 +252,13 @@ function summarizeEmojisForUI (emojis, emojiSupportLevel) {
 const rAF = requestAnimationFrame;
 
 // Svelte action to calculate the width of an element and auto-update
+// using ResizeObserver. If ResizeObserver is unsupported, we just use rAF once
+// and don't bother to update.
+
 
 let resizeObserverSupported = typeof ResizeObserver === 'function';
 
-function calculateWidth (node, onUpdate) {
+function calculateWidth (node, abortSignal, onUpdate) {
   let resizeObserver;
   if (resizeObserverSupported) {
     resizeObserver = new ResizeObserver(entries => (
@@ -676,13 +272,11 @@ function calculateWidth (node, onUpdate) {
   }
 
   // cleanup function (called on destroy)
-  return {
-    destroy () {
-      if (resizeObserver) {
-        resizeObserver.disconnect();
-      }
+  abortSignal.addEventListener('abort', () => {
+    if (resizeObserver) {
+      resizeObserver.disconnect();
     }
-  }
+  });
 }
 
 // get the width of the text inside of a DOM node, via https://stackoverflow.com/a/59525891/680742
@@ -713,14 +307,6 @@ function checkZwjSupport (zwjEmojisToCheck, baselineEmoji, emojiToDomNode) {
   }
 }
 
-// Measure after style/layout are complete
-
-const requestPostAnimationFrame = callback => {
-  rAF(() => {
-    setTimeout(callback);
-  });
-};
-
 // like lodash's uniq
 
 function uniq (arr) {
@@ -733,1795 +319,1190 @@ function uniq (arr) {
 // https://github.com/sveltejs/svelte/issues/6521
 // Also note tabpanelElement can be null if the element is disconnected immediately after connected
 function resetScrollTopIfPossible (element) {
-  if (element) {
+  /* istanbul ignore else */
+  if (element) { // Makes me nervous not to have this `if` guard
     element.scrollTop = 0;
   }
 }
 
-/* src/picker/components/Picker/Picker.svelte generated by Svelte v3.55.1 */
-
-const { Map: Map_1 } = globals;
-
-function get_each_context(ctx, list, i) {
-	const child_ctx = ctx.slice();
-	child_ctx[64] = list[i];
-	child_ctx[66] = i;
-	return child_ctx;
+function getFromMap (cache, key, func) {
+  let cached = cache.get(key);
+  if (!cached) {
+    cached = func();
+    cache.set(key, cached);
+  }
+  return cached
 }
 
-function get_each_context_1(ctx, list, i) {
-	const child_ctx = ctx.slice();
-	child_ctx[67] = list[i];
-	child_ctx[66] = i;
-	return child_ctx;
+function toString (value) {
+  return '' + value
 }
 
-function get_each_context_2(ctx, list, i) {
-	const child_ctx = ctx.slice();
-	child_ctx[64] = list[i];
-	child_ctx[66] = i;
-	return child_ctx;
+function parseTemplate (htmlString) {
+  const template = document.createElement('template');
+  template.innerHTML = htmlString;
+  return template
 }
 
-function get_each_context_3(ctx, list, i) {
-	const child_ctx = ctx.slice();
-	child_ctx[70] = list[i];
-	return child_ctx;
+const parseCache = new WeakMap();
+const domInstancesCache = new WeakMap();
+const unkeyedSymbol = Symbol('un-keyed');
+
+// Not supported in Safari <=13
+const hasReplaceChildren = 'replaceChildren' in Element.prototype;
+function replaceChildren (parentNode, newChildren) {
+  /* istanbul ignore else */
+  if (hasReplaceChildren) {
+    parentNode.replaceChildren(...newChildren);
+  } else { // minimal polyfill for Element.prototype.replaceChildren
+    parentNode.innerHTML = '';
+    parentNode.append(...newChildren);
+  }
 }
 
-function get_each_context_4(ctx, list, i) {
-	const child_ctx = ctx.slice();
-	child_ctx[73] = list[i];
-	child_ctx[66] = i;
-	return child_ctx;
+function doChildrenNeedRerender (parentNode, newChildren) {
+  let oldChild = parentNode.firstChild;
+  let oldChildrenCount = 0;
+  // iterate using firstChild/nextSibling because browsers use a linked list under the hood
+  while (oldChild) {
+    const newChild = newChildren[oldChildrenCount];
+    // check if the old child and new child are the same
+    if (newChild !== oldChild) {
+      return true
+    }
+    oldChild = oldChild.nextSibling;
+    oldChildrenCount++;
+  }
+  // if new children length is different from old, we must re-render
+  return oldChildrenCount !== newChildren.length
 }
 
-// (43:38) {#each skinTones as skinTone, i (skinTone)}
-function create_each_block_4(key_1, ctx) {
-	let div;
-	let t_value = /*skinTone*/ ctx[73] + "";
-	let t;
-	let div_id_value;
-	let div_class_value;
-	let div_aria_selected_value;
-	let div_title_value;
-	let div_aria_label_value;
+function patchChildren (newChildren, instanceBinding) {
+  const { targetNode } = instanceBinding;
+  let { targetParentNode } = instanceBinding;
 
-	return {
-		key: key_1,
-		first: null,
-		c() {
-			div = element("div");
-			t = text(t_value);
-			attr(div, "id", div_id_value = "skintone-" + /*i*/ ctx[66]);
+  let needsRerender = false;
 
-			attr(div, "class", div_class_value = "emoji hide-focus " + (/*i*/ ctx[66] === /*activeSkinTone*/ ctx[20]
-			? 'active'
-			: ''));
-
-			attr(div, "aria-selected", div_aria_selected_value = /*i*/ ctx[66] === /*activeSkinTone*/ ctx[20]);
-			attr(div, "role", "option");
-			attr(div, "title", div_title_value = /*i18n*/ ctx[0].skinTones[/*i*/ ctx[66]]);
-			attr(div, "tabindex", "-1");
-			attr(div, "aria-label", div_aria_label_value = /*i18n*/ ctx[0].skinTones[/*i*/ ctx[66]]);
-			this.first = div;
-		},
-		m(target, anchor) {
-			insert(target, div, anchor);
-			append(div, t);
-		},
-		p(new_ctx, dirty) {
-			ctx = new_ctx;
-			if (dirty[0] & /*skinTones*/ 512 && t_value !== (t_value = /*skinTone*/ ctx[73] + "")) set_data(t, t_value);
-
-			if (dirty[0] & /*skinTones*/ 512 && div_id_value !== (div_id_value = "skintone-" + /*i*/ ctx[66])) {
-				attr(div, "id", div_id_value);
-			}
-
-			if (dirty[0] & /*skinTones, activeSkinTone*/ 1049088 && div_class_value !== (div_class_value = "emoji hide-focus " + (/*i*/ ctx[66] === /*activeSkinTone*/ ctx[20]
-			? 'active'
-			: ''))) {
-				attr(div, "class", div_class_value);
-			}
-
-			if (dirty[0] & /*skinTones, activeSkinTone*/ 1049088 && div_aria_selected_value !== (div_aria_selected_value = /*i*/ ctx[66] === /*activeSkinTone*/ ctx[20])) {
-				attr(div, "aria-selected", div_aria_selected_value);
-			}
-
-			if (dirty[0] & /*i18n, skinTones*/ 513 && div_title_value !== (div_title_value = /*i18n*/ ctx[0].skinTones[/*i*/ ctx[66]])) {
-				attr(div, "title", div_title_value);
-			}
-
-			if (dirty[0] & /*i18n, skinTones*/ 513 && div_aria_label_value !== (div_aria_label_value = /*i18n*/ ctx[0].skinTones[/*i*/ ctx[66]])) {
-				attr(div, "aria-label", div_aria_label_value);
-			}
-		},
-		d(detaching) {
-			if (detaching) detach(div);
-		}
-	};
+  if (targetParentNode) { // already rendered once
+    needsRerender = doChildrenNeedRerender(targetParentNode, newChildren);
+  } else { // first render of list
+    needsRerender = true;
+    instanceBinding.targetNode = undefined; // placeholder comment not needed anymore, free memory
+    instanceBinding.targetParentNode = targetParentNode = targetNode.parentNode;
+  }
+  // avoid re-rendering list if the dom nodes are exactly the same before and after
+  if (needsRerender) {
+    replaceChildren(targetParentNode, newChildren);
+  }
 }
 
-// (53:33) {#each groups as group (group.id)}
-function create_each_block_3(key_1, ctx) {
-	let button;
-	let div;
-	let t_value = /*group*/ ctx[70].emoji + "";
-	let t;
-	let button_aria_controls_value;
-	let button_aria_label_value;
-	let button_aria_selected_value;
-	let button_title_value;
-	let mounted;
-	let dispose;
+function patch (expressions, instanceBindings) {
+  for (const instanceBinding of instanceBindings) {
+    const {
+      targetNode,
+      currentExpression,
+      binding: {
+        expressionIndex,
+        attributeName,
+        attributeValuePre,
+        attributeValuePost
+      }
+    } = instanceBinding;
 
-	function click_handler() {
-		return /*click_handler*/ ctx[50](/*group*/ ctx[70]);
-	}
+    const expression = expressions[expressionIndex];
 
-	return {
-		key: key_1,
-		first: null,
-		c() {
-			button = element("button");
-			div = element("div");
-			t = text(t_value);
-			attr(div, "class", "nav-emoji emoji");
-			attr(button, "role", "tab");
-			attr(button, "class", "nav-button");
-			attr(button, "aria-controls", button_aria_controls_value = "tab-" + /*group*/ ctx[70].id);
-			attr(button, "aria-label", button_aria_label_value = /*i18n*/ ctx[0].categories[/*group*/ ctx[70].name]);
-			attr(button, "aria-selected", button_aria_selected_value = !/*searchMode*/ ctx[4] && /*currentGroup*/ ctx[13].id === /*group*/ ctx[70].id);
-			attr(button, "title", button_title_value = /*i18n*/ ctx[0].categories[/*group*/ ctx[70].name]);
-			this.first = button;
-		},
-		m(target, anchor) {
-			insert(target, button, anchor);
-			append(button, div);
-			append(div, t);
+    if (currentExpression === expression) {
+      // no need to update, same as before
+      continue
+    }
 
-			if (!mounted) {
-				dispose = listen(button, "click", click_handler);
-				mounted = true;
-			}
-		},
-		p(new_ctx, dirty) {
-			ctx = new_ctx;
-			if (dirty[0] & /*groups*/ 4096 && t_value !== (t_value = /*group*/ ctx[70].emoji + "")) set_data(t, t_value);
+    instanceBinding.currentExpression = expression;
 
-			if (dirty[0] & /*groups*/ 4096 && button_aria_controls_value !== (button_aria_controls_value = "tab-" + /*group*/ ctx[70].id)) {
-				attr(button, "aria-controls", button_aria_controls_value);
-			}
-
-			if (dirty[0] & /*i18n, groups*/ 4097 && button_aria_label_value !== (button_aria_label_value = /*i18n*/ ctx[0].categories[/*group*/ ctx[70].name])) {
-				attr(button, "aria-label", button_aria_label_value);
-			}
-
-			if (dirty[0] & /*searchMode, currentGroup, groups*/ 12304 && button_aria_selected_value !== (button_aria_selected_value = !/*searchMode*/ ctx[4] && /*currentGroup*/ ctx[13].id === /*group*/ ctx[70].id)) {
-				attr(button, "aria-selected", button_aria_selected_value);
-			}
-
-			if (dirty[0] & /*i18n, groups*/ 4097 && button_title_value !== (button_title_value = /*i18n*/ ctx[0].categories[/*group*/ ctx[70].name])) {
-				attr(button, "title", button_title_value);
-			}
-		},
-		d(detaching) {
-			if (detaching) detach(button);
-			mounted = false;
-			dispose();
-		}
-	};
+    if (attributeName) { // attribute replacement
+      targetNode.setAttribute(attributeName, attributeValuePre + toString(expression) + attributeValuePost);
+    } else { // text node / child element / children replacement
+      let newNode;
+      if (Array.isArray(expression)) { // array of DOM elements produced by tag template literals
+        patchChildren(expression, instanceBinding);
+      } else if (expression instanceof Element) { // html tag template returning a DOM element
+        newNode = expression;
+        targetNode.replaceWith(newNode);
+      } else { // primitive - string, number, etc
+        if (targetNode.nodeType === Node.TEXT_NODE) { // already transformed into a text node
+          // nodeValue is faster than textContent supposedly https://www.youtube.com/watch?v=LY6y3HbDVmg
+          targetNode.nodeValue = toString(expression);
+        } else { // replace comment or whatever was there before with a text node
+          newNode = document.createTextNode(toString(expression));
+          targetNode.replaceWith(newNode);
+        }
+      }
+      if (newNode) {
+        instanceBinding.targetNode = newNode;
+      }
+    }
+  }
 }
 
-// (94:100) {:else}
-function create_else_block_1(ctx) {
-	let img;
-	let img_src_value;
+function parse (tokens) {
+  let htmlString = '';
 
-	return {
-		c() {
-			img = element("img");
-			attr(img, "class", "custom-emoji");
-			if (!src_url_equal(img.src, img_src_value = /*emoji*/ ctx[64].url)) attr(img, "src", img_src_value);
-			attr(img, "alt", "");
-			attr(img, "loading", "lazy");
-		},
-		m(target, anchor) {
-			insert(target, img, anchor);
-		},
-		p(ctx, dirty) {
-			if (dirty[0] & /*currentEmojisWithCategories*/ 32768 && !src_url_equal(img.src, img_src_value = /*emoji*/ ctx[64].url)) {
-				attr(img, "src", img_src_value);
-			}
-		},
-		d(detaching) {
-			if (detaching) detach(img);
-		}
-	};
+  let withinTag = false;
+  let withinAttribute = false;
+  let elementIndexCounter = -1; // depth-first traversal order
+
+  const elementsToBindings = new Map();
+  const elementIndexes = [];
+
+  for (let i = 0, len = tokens.length; i < len; i++) {
+    const token = tokens[i];
+    htmlString += token;
+
+    if (i === len - 1) {
+      break // no need to process characters - no more expressions to be found
+    }
+
+    for (let j = 0; j < token.length; j++) {
+      const char = token.charAt(j);
+      switch (char) {
+        case '<': {
+          const nextChar = token.charAt(j + 1);
+          if (nextChar === '/') { // closing tag
+            // leaving an element
+            elementIndexes.pop();
+          } else { // not a closing tag
+            withinTag = true;
+            elementIndexes.push(++elementIndexCounter);
+          }
+          break
+        }
+        case '>': {
+          withinTag = false;
+          withinAttribute = false;
+          break
+        }
+        case '=': {
+          withinAttribute = true;
+          break
+        }
+      }
+    }
+
+    const elementIndex = elementIndexes[elementIndexes.length - 1];
+    const bindings = getFromMap(elementsToBindings, elementIndex, () => []);
+
+    let attributeName;
+    let attributeValuePre;
+    let attributeValuePost;
+    if (withinAttribute) {
+      // I never use single-quotes for attribute values in HTML, so just support double-quotes or no-quotes
+      const match = /(\S+)="?([^"=]*)$/.exec(token);
+      attributeName = match[1];
+      attributeValuePre = match[2];
+      attributeValuePost = /^[^">]*/.exec(tokens[i + 1])[0];
+    }
+
+    const binding = {
+      attributeName,
+      attributeValuePre,
+      attributeValuePost,
+      expressionIndex: i
+    };
+
+    bindings.push(binding);
+
+    // add a placeholder comment that we can find later
+    htmlString += (!withinTag && !withinAttribute) ? `<!--${bindings.length - 1}-->` : '';
+  }
+
+  const template = parseTemplate(htmlString);
+
+  return {
+    template,
+    elementsToBindings
+  }
 }
 
-// (94:40) {#if emoji.unicode}
-function create_if_block_1(ctx) {
-	let t_value = /*unicodeWithSkin*/ ctx[27](/*emoji*/ ctx[64], /*currentSkinTone*/ ctx[8]) + "";
-	let t;
-
-	return {
-		c() {
-			t = text(t_value);
-		},
-		m(target, anchor) {
-			insert(target, t, anchor);
-		},
-		p(ctx, dirty) {
-			if (dirty[0] & /*currentEmojisWithCategories, currentSkinTone*/ 33024 && t_value !== (t_value = /*unicodeWithSkin*/ ctx[27](/*emoji*/ ctx[64], /*currentSkinTone*/ ctx[8]) + "")) set_data(t, t_value);
-		},
-		d(detaching) {
-			if (detaching) detach(t);
-		}
-	};
+function findPlaceholderComment (element, bindingId) {
+  // If we had a lot of placeholder comments to find, it would make more sense to build up a map once
+  // rather than search the DOM every time. But it turns out that we always only have one child,
+  // and it's the comment node, so searching every time is actually faster.
+  let childNode = element.firstChild;
+  while (childNode) {
+    // Note that minify-html-literals has already removed all non-framework comments
+    // So we just need to look for comments that have exactly the bindingId as its text content
+    if (childNode.nodeType === Node.COMMENT_NODE && childNode.nodeValue === toString(bindingId)) {
+      return childNode
+    }
+    childNode = childNode.nextSibling;
+  }
 }
 
-// (89:53) {#each emojiWithCategory.emojis as emoji, i (emoji.id)}
-function create_each_block_2(key_1, ctx) {
-	let button;
-	let button_role_value;
-	let button_aria_selected_value;
-	let button_aria_label_value;
-	let button_title_value;
-	let button_class_value;
-	let button_id_value;
+function traverseAndSetupBindings (dom, elementsToBindings) {
+  const instanceBindings = [];
+  // traverse dom
+  const treeWalker = document.createTreeWalker(dom, NodeFilter.SHOW_ELEMENT);
 
-	function select_block_type(ctx, dirty) {
-		if (/*emoji*/ ctx[64].unicode) return create_if_block_1;
-		return create_else_block_1;
-	}
+  let element = dom;
+  let elementIndex = -1;
+  do {
+    const bindings = elementsToBindings.get(++elementIndex);
+    if (bindings) {
+      for (let i = 0; i < bindings.length; i++) {
+        const binding = bindings[i];
 
-	let current_block_type = select_block_type(ctx);
-	let if_block = current_block_type(ctx);
+        const targetNode = binding.attributeName
+          ? element // attribute binding, just use the element itself
+          : findPlaceholderComment(element, i); // not an attribute binding, so has a placeholder comment
 
-	return {
-		key: key_1,
-		first: null,
-		c() {
-			button = element("button");
-			if_block.c();
-			attr(button, "role", button_role_value = /*searchMode*/ ctx[4] ? 'option' : 'menuitem');
+        const instanceBinding = {
+          binding,
+          targetNode,
+          targetParentNode: undefined,
+          currentExpression: undefined
+        };
 
-			attr(button, "aria-selected", button_aria_selected_value = /*searchMode*/ ctx[4]
-			? /*i*/ ctx[66] == /*activeSearchItem*/ ctx[5]
-			: '');
+        instanceBindings.push(instanceBinding);
+      }
+    }
+  } while ((element = treeWalker.nextNode()))
 
-			attr(button, "aria-label", button_aria_label_value = /*labelWithSkin*/ ctx[28](/*emoji*/ ctx[64], /*currentSkinTone*/ ctx[8]));
-			attr(button, "title", button_title_value = /*emoji*/ ctx[64].title);
-
-			attr(button, "class", button_class_value = "emoji " + (/*searchMode*/ ctx[4] && /*i*/ ctx[66] === /*activeSearchItem*/ ctx[5]
-			? 'active'
-			: ''));
-
-			attr(button, "id", button_id_value = "emo-" + /*emoji*/ ctx[64].id);
-			this.first = button;
-		},
-		m(target, anchor) {
-			insert(target, button, anchor);
-			if_block.m(button, null);
-		},
-		p(new_ctx, dirty) {
-			ctx = new_ctx;
-
-			if (current_block_type === (current_block_type = select_block_type(ctx)) && if_block) {
-				if_block.p(ctx, dirty);
-			} else {
-				if_block.d(1);
-				if_block = current_block_type(ctx);
-
-				if (if_block) {
-					if_block.c();
-					if_block.m(button, null);
-				}
-			}
-
-			if (dirty[0] & /*searchMode*/ 16 && button_role_value !== (button_role_value = /*searchMode*/ ctx[4] ? 'option' : 'menuitem')) {
-				attr(button, "role", button_role_value);
-			}
-
-			if (dirty[0] & /*searchMode, currentEmojisWithCategories, activeSearchItem*/ 32816 && button_aria_selected_value !== (button_aria_selected_value = /*searchMode*/ ctx[4]
-			? /*i*/ ctx[66] == /*activeSearchItem*/ ctx[5]
-			: '')) {
-				attr(button, "aria-selected", button_aria_selected_value);
-			}
-
-			if (dirty[0] & /*currentEmojisWithCategories, currentSkinTone*/ 33024 && button_aria_label_value !== (button_aria_label_value = /*labelWithSkin*/ ctx[28](/*emoji*/ ctx[64], /*currentSkinTone*/ ctx[8]))) {
-				attr(button, "aria-label", button_aria_label_value);
-			}
-
-			if (dirty[0] & /*currentEmojisWithCategories*/ 32768 && button_title_value !== (button_title_value = /*emoji*/ ctx[64].title)) {
-				attr(button, "title", button_title_value);
-			}
-
-			if (dirty[0] & /*searchMode, currentEmojisWithCategories, activeSearchItem*/ 32816 && button_class_value !== (button_class_value = "emoji " + (/*searchMode*/ ctx[4] && /*i*/ ctx[66] === /*activeSearchItem*/ ctx[5]
-			? 'active'
-			: ''))) {
-				attr(button, "class", button_class_value);
-			}
-
-			if (dirty[0] & /*currentEmojisWithCategories*/ 32768 && button_id_value !== (button_id_value = "emo-" + /*emoji*/ ctx[64].id)) {
-				attr(button, "id", button_id_value);
-			}
-		},
-		d(detaching) {
-			if (detaching) detach(button);
-			if_block.d();
-		}
-	};
+  return instanceBindings
 }
 
-// (70:36) {#each currentEmojisWithCategories as emojiWithCategory, i (emojiWithCategory.category)}
-function create_each_block_1(key_1, ctx) {
-	let div0;
+function parseHtml (tokens) {
+  // All templates and bound expressions are unique per tokens array
+  const { template, elementsToBindings } = getFromMap(parseCache, tokens, () => parse(tokens));
 
-	let t_value = (/*searchMode*/ ctx[4]
-	? /*i18n*/ ctx[0].searchResultsLabel
-	: /*emojiWithCategory*/ ctx[67].category
-		? /*emojiWithCategory*/ ctx[67].category
-		: /*currentEmojisWithCategories*/ ctx[15].length > 1
-			? /*i18n*/ ctx[0].categories.custom
-			: /*i18n*/ ctx[0].categories[/*currentGroup*/ ctx[13].name]) + "";
+  // When we parseHtml, we always return a fresh DOM instance ready to be updated
+  const dom = template.cloneNode(true).content.firstElementChild;
+  const instanceBindings = traverseAndSetupBindings(dom, elementsToBindings);
 
-	let t;
-	let div0_id_value;
-	let div0_class_value;
-	let div1;
-	let each_blocks = [];
-	let each_1_lookup = new Map_1();
-	let div1_role_value;
-	let div1_aria_labelledby_value;
-	let div1_id_value;
-	let each_value_2 = /*emojiWithCategory*/ ctx[67].emojis;
-	const get_key = ctx => /*emoji*/ ctx[64].id;
-
-	for (let i = 0; i < each_value_2.length; i += 1) {
-		let child_ctx = get_each_context_2(ctx, each_value_2, i);
-		let key = get_key(child_ctx);
-		each_1_lookup.set(key, each_blocks[i] = create_each_block_2(key, child_ctx));
-	}
-
-	return {
-		key: key_1,
-		first: null,
-		c() {
-			div0 = element("div");
-			t = text(t_value);
-			div1 = element("div");
-
-			for (let i = 0; i < each_blocks.length; i += 1) {
-				each_blocks[i].c();
-			}
-
-			attr(div0, "id", div0_id_value = "menu-label-" + /*i*/ ctx[66]);
-
-			attr(div0, "class", div0_class_value = "category " + (/*currentEmojisWithCategories*/ ctx[15].length === 1 && /*currentEmojisWithCategories*/ ctx[15][0].category === ''
-			? 'gone'
-			: ''));
-
-			attr(div0, "aria-hidden", "true");
-			attr(div1, "class", "emoji-menu");
-			attr(div1, "role", div1_role_value = /*searchMode*/ ctx[4] ? 'listbox' : 'menu');
-			attr(div1, "aria-labelledby", div1_aria_labelledby_value = "menu-label-" + /*i*/ ctx[66]);
-			attr(div1, "id", div1_id_value = /*searchMode*/ ctx[4] ? 'search-results' : '');
-			this.first = div0;
-		},
-		m(target, anchor) {
-			insert(target, div0, anchor);
-			append(div0, t);
-			insert(target, div1, anchor);
-
-			for (let i = 0; i < each_blocks.length; i += 1) {
-				each_blocks[i].m(div1, null);
-			}
-		},
-		p(new_ctx, dirty) {
-			ctx = new_ctx;
-
-			if (dirty[0] & /*searchMode, i18n, currentEmojisWithCategories, currentGroup*/ 40977 && t_value !== (t_value = (/*searchMode*/ ctx[4]
-			? /*i18n*/ ctx[0].searchResultsLabel
-			: /*emojiWithCategory*/ ctx[67].category
-				? /*emojiWithCategory*/ ctx[67].category
-				: /*currentEmojisWithCategories*/ ctx[15].length > 1
-					? /*i18n*/ ctx[0].categories.custom
-					: /*i18n*/ ctx[0].categories[/*currentGroup*/ ctx[13].name]) + "")) set_data(t, t_value);
-
-			if (dirty[0] & /*currentEmojisWithCategories*/ 32768 && div0_id_value !== (div0_id_value = "menu-label-" + /*i*/ ctx[66])) {
-				attr(div0, "id", div0_id_value);
-			}
-
-			if (dirty[0] & /*currentEmojisWithCategories*/ 32768 && div0_class_value !== (div0_class_value = "category " + (/*currentEmojisWithCategories*/ ctx[15].length === 1 && /*currentEmojisWithCategories*/ ctx[15][0].category === ''
-			? 'gone'
-			: ''))) {
-				attr(div0, "class", div0_class_value);
-			}
-
-			if (dirty[0] & /*searchMode, currentEmojisWithCategories, activeSearchItem, labelWithSkin, currentSkinTone, unicodeWithSkin*/ 402686256) {
-				each_value_2 = /*emojiWithCategory*/ ctx[67].emojis;
-				each_blocks = update_keyed_each(each_blocks, dirty, get_key, 1, ctx, each_value_2, each_1_lookup, div1, destroy_block, create_each_block_2, null, get_each_context_2);
-			}
-
-			if (dirty[0] & /*searchMode*/ 16 && div1_role_value !== (div1_role_value = /*searchMode*/ ctx[4] ? 'listbox' : 'menu')) {
-				attr(div1, "role", div1_role_value);
-			}
-
-			if (dirty[0] & /*currentEmojisWithCategories*/ 32768 && div1_aria_labelledby_value !== (div1_aria_labelledby_value = "menu-label-" + /*i*/ ctx[66])) {
-				attr(div1, "aria-labelledby", div1_aria_labelledby_value);
-			}
-
-			if (dirty[0] & /*searchMode*/ 16 && div1_id_value !== (div1_id_value = /*searchMode*/ ctx[4] ? 'search-results' : '')) {
-				attr(div1, "id", div1_id_value);
-			}
-		},
-		d(detaching) {
-			if (detaching) detach(div0);
-			if (detaching) detach(div1);
-
-			for (let i = 0; i < each_blocks.length; i += 1) {
-				each_blocks[i].d();
-			}
-		}
-	};
+  return function updateDomInstance (expressions) {
+    patch(expressions, instanceBindings);
+    return dom
+  }
 }
 
-// (103:94) {:else}
-function create_else_block(ctx) {
-	let img;
-	let img_src_value;
+function createFramework (state) {
+  const domInstances = getFromMap(domInstancesCache, state, () => new Map());
+  let domInstanceCacheKey = unkeyedSymbol;
 
-	return {
-		c() {
-			img = element("img");
-			attr(img, "class", "custom-emoji");
-			if (!src_url_equal(img.src, img_src_value = /*emoji*/ ctx[64].url)) attr(img, "src", img_src_value);
-			attr(img, "alt", "");
-			attr(img, "loading", "lazy");
-		},
-		m(target, anchor) {
-			insert(target, img, anchor);
-		},
-		p(ctx, dirty) {
-			if (dirty[0] & /*currentFavorites*/ 1024 && !src_url_equal(img.src, img_src_value = /*emoji*/ ctx[64].url)) {
-				attr(img, "src", img_src_value);
-			}
-		},
-		d(detaching) {
-			if (detaching) detach(img);
-		}
-	};
+  function html (tokens, ...expressions) {
+    // Each unique lexical usage of map() is considered unique due to the html`` tagged template call it makes,
+    // which has lexically unique tokens. The unkeyed symbol is just used for html`` usage outside of a map().
+    const domInstancesForTokens = getFromMap(domInstances, tokens, () => new Map());
+    const updateDomInstance = getFromMap(domInstancesForTokens, domInstanceCacheKey, () => parseHtml(tokens));
+
+    return updateDomInstance(expressions) // update with expressions
+  }
+
+  function map (array, callback, keyFunction) {
+    return array.map((item, index) => {
+      const originalCacheKey = domInstanceCacheKey;
+      domInstanceCacheKey = keyFunction(item);
+      try {
+        return callback(item, index)
+      } finally {
+        domInstanceCacheKey = originalCacheKey;
+      }
+    })
+  }
+
+  return { map, html }
 }
 
-// (103:34) {#if emoji.unicode}
-function create_if_block(ctx) {
-	let t_value = /*unicodeWithSkin*/ ctx[27](/*emoji*/ ctx[64], /*currentSkinTone*/ ctx[8]) + "";
-	let t;
+function render (container, state, helpers, events, actions, refs, abortSignal, firstRender) {
+  const { labelWithSkin, titleForEmoji, unicodeWithSkin } = helpers;
+  const { html, map } = createFramework(state);
 
-	return {
-		c() {
-			t = text(t_value);
-		},
-		m(target, anchor) {
-			insert(target, t, anchor);
-		},
-		p(ctx, dirty) {
-			if (dirty[0] & /*currentFavorites, currentSkinTone*/ 1280 && t_value !== (t_value = /*unicodeWithSkin*/ ctx[27](/*emoji*/ ctx[64], /*currentSkinTone*/ ctx[8]) + "")) set_data(t, t_value);
-		},
-		d(detaching) {
-			if (detaching) detach(t);
-		}
-	};
+  function emojiList (emojis, searchMode, prefix) {
+    return map(emojis, (emoji, i) => {
+      return html`<button role="${searchMode ? 'option' : 'menuitem'}" aria-selected="${state.searchMode ? i === state.activeSearchItem : ''}" aria-label="${labelWithSkin(emoji, state.currentSkinTone)}" title="${titleForEmoji(emoji)}" class="emoji ${searchMode && i === state.activeSearchItem ? 'active' : ''}" id="${`${prefix}-${emoji.id}`}">${
+        emoji.unicode
+          ? unicodeWithSkin(emoji, state.currentSkinTone)
+          : html`<img class="custom-emoji" src="${emoji.url}" alt="" loading="lazy">`
+      }</button>`
+      // It's important for the cache key to be unique based on the prefix, because the framework caches based on the
+      // unique tokens + cache key, and the same emoji may be used in the tab as well as in the fav bar
+    }, emoji => `${prefix}-${emoji.id}`)
+  }
+
+  const section = () => {
+    return html`<section data-ref="rootElement" class="picker" aria-label="${state.i18n.regionLabel}" style="${state.pickerStyle}"><div class="pad-top"></div><div class="search-row"><div class="search-wrapper"><input id="search" class="search" type="search" role="combobox" enterkeyhint="search" placeholder="${state.i18n.searchLabel}" autocapitalize="none" autocomplete="off" spellcheck="true" aria-expanded="${!!(state.searchMode && state.currentEmojis.length)}" aria-controls="search-results" aria-describedby="search-description" aria-autocomplete="list" aria-activedescendant="${state.activeSearchItemId ? `emo-${state.activeSearchItemId}` : ''}" data-ref="searchElement" data-on-input="onSearchInput" data-on-keydown="onSearchKeydown"><label class="sr-only" for="search">${state.i18n.searchLabel}</label> <span id="search-description" class="sr-only">${state.i18n.searchDescription}</span></div><div class="skintone-button-wrapper ${state.skinTonePickerExpandedAfterAnimation ? 'expanded' : ''}"><button id="skintone-button" class="emoji ${state.skinTonePickerExpanded ? 'hide-focus' : ''}" aria-label="${state.skinToneButtonLabel}" title="${state.skinToneButtonLabel}" aria-describedby="skintone-description" aria-haspopup="listbox" aria-expanded="${state.skinTonePickerExpanded}" aria-controls="skintone-list" data-on-click="onClickSkinToneButton">${state.skinToneButtonText}</button></div><span id="skintone-description" class="sr-only">${state.i18n.skinToneDescription}</span><div data-ref="skinToneDropdown" id="skintone-list" class="skintone-list hide-focus ${state.skinTonePickerExpanded ? '' : 'hidden no-animate'}" style="transform:translateY(${state.skinTonePickerExpanded ? 0 : 'calc(-1 * var(--num-skintones) * var(--total-emoji-size))'})" role="listbox" aria-label="${state.i18n.skinTonesLabel}" aria-activedescendant="skintone-${state.activeSkinTone}" aria-hidden="${!state.skinTonePickerExpanded}" tabIndex="-1" data-on-focusout="onSkinToneOptionsFocusOut" data-on-click="onSkinToneOptionsClick" data-on-keydown="onSkinToneOptionsKeydown" data-on-keyup="onSkinToneOptionsKeyup">${
+    map(state.skinTones, (skinTone, i) => {
+    return html`<div id="skintone-${i}" class="emoji ${i === state.activeSkinTone ? 'active' : ''}" aria-selected="${i === state.activeSkinTone}" role="option" title="${state.i18n.skinTones[i]}" aria-label="${state.i18n.skinTones[i]}">${skinTone}</div>`
+    }, skinTone => skinTone)
+        }</div></div><div class="nav" role="tablist" style="grid-template-columns:repeat(${state.groups.length},1fr)" aria-label="${state.i18n.categoriesLabel}" data-on-keydown="onNavKeydown" data-on-click="onNavClick">${
+            map(state.groups, (group) => {
+              return html`<button role="tab" class="nav-button" aria-controls="tab-${group.id}" aria-label="${state.i18n.categories[group.name]}" aria-selected="${!state.searchMode && state.currentGroup.id === group.id}" title="${state.i18n.categories[group.name]}" data-group-id="${group.id}"><div class="nav-emoji emoji">${group.emoji}</div></button>`
+            }, group => group.id)
+          }</div><div class="indicator-wrapper"><div class="indicator" style="transform:translateX(${(/* istanbul ignore next */ (state.isRtl ? -1 : 1)) * state.currentGroupIndex * 100}%)"></div></div><div class="message ${state.message ? '' : 'gone'}" role="alert" aria-live="polite">${state.message}</div><div data-ref="tabpanelElement" class="tabpanel ${(!state.databaseLoaded || state.message) ? 'gone' : ''}" role="${state.searchMode ? 'region' : 'tabpanel'}" aria-label="${state.searchMode ? state.i18n.searchResultsLabel : state.i18n.categories[state.currentGroup.name]}" id="${state.searchMode ? '' : `tab-${state.currentGroup.id}`}" tabIndex="0" data-on-click="onEmojiClick"><div data-action="calculateEmojiGridStyle">${
+              map(state.currentEmojisWithCategories, (emojiWithCategory, i) => {
+                return html`<div><div id="menu-label-${i}" class="category ${state.currentEmojisWithCategories.length === 1 && state.currentEmojisWithCategories[0].category === '' ? 'gone' : ''}" aria-hidden="true">${
+                  state.searchMode
+                    ? state.i18n.searchResultsLabel
+                    : (
+                      emojiWithCategory.category
+                        ? emojiWithCategory.category
+                        : (
+                          state.currentEmojisWithCategories.length > 1
+                            ? state.i18n.categories.custom
+                            : state.i18n.categories[state.currentGroup.name]
+                        )
+                    )
+                }</div><div class="emoji-menu" role="${state.searchMode ? 'listbox' : 'menu'}" aria-labelledby="menu-label-${i}" id="${state.searchMode ? 'search-results' : ''}">${
+              emojiList(emojiWithCategory.emojis, state.searchMode, /* prefix */ 'emo')
+            }</div></div>`
+              }, emojiWithCategory => emojiWithCategory.category)
+            }</div></div><div class="favorites emoji-menu ${state.message ? 'gone' : ''}" role="menu" aria-label="${state.i18n.favoritesLabel}" style="padding-inline-end:${`${state.scrollbarWidth}px`}" data-on-click="onEmojiClick">${
+            emojiList(state.currentFavorites, /* searchMode */ false, /* prefix */ 'fav')
+          }</div><button data-ref="baselineEmoji" aria-hidden="true" tabindex="-1" class="abs-pos hidden emoji baseline-emoji">😀</button></section>`
+  };
+
+  const rootDom = section();
+
+  if (firstRender) { // not a re-render
+    container.appendChild(rootDom);
+
+    // we only bind events/refs/actions once - there is no need to find them again given this component structure
+
+    // helper for traversing the dom, finding elements by an attribute, and getting the attribute value
+    const forElementWithAttribute = (attributeName, callback) => {
+      for (const element of container.querySelectorAll(`[${attributeName}]`)) {
+        callback(element, element.getAttribute(attributeName));
+      }
+    };
+
+    // bind events
+    for (const eventName of ['click', 'focusout', 'input', 'keydown', 'keyup']) {
+      forElementWithAttribute(`data-on-${eventName}`, (element, listenerName) => {
+        element.addEventListener(eventName, events[listenerName]);
+      });
+    }
+
+    // find refs
+    forElementWithAttribute('data-ref', (element, ref) => {
+      refs[ref] = element;
+    });
+
+    // set up actions
+    forElementWithAttribute('data-action', (element, action) => {
+      actions[action](element);
+    });
+
+    // destroy/abort logic
+    abortSignal.addEventListener('abort', () => {
+      container.removeChild(rootDom);
+    });
+  }
 }
 
-// (99:102) {#each currentFavorites as emoji, i (emoji.id)}
-function create_each_block(key_1, ctx) {
-	let button;
-	let button_aria_label_value;
-	let button_title_value;
-	let button_id_value;
+/* istanbul ignore next */
+const qM = typeof queueMicrotask === 'function' ? queueMicrotask : callback => Promise.resolve().then(callback);
 
-	function select_block_type_1(ctx, dirty) {
-		if (/*emoji*/ ctx[64].unicode) return create_if_block;
-		return create_else_block;
-	}
+function createState (abortSignal) {
+  let destroyed = false;
+  let currentObserver;
 
-	let current_block_type = select_block_type_1(ctx);
-	let if_block = current_block_type(ctx);
+  const propsToObservers = new Map();
+  const dirtyObservers = new Set();
 
-	return {
-		key: key_1,
-		first: null,
-		c() {
-			button = element("button");
-			if_block.c();
-			attr(button, "role", "menuitem");
-			attr(button, "aria-label", button_aria_label_value = /*labelWithSkin*/ ctx[28](/*emoji*/ ctx[64], /*currentSkinTone*/ ctx[8]));
-			attr(button, "title", button_title_value = /*emoji*/ ctx[64].title);
-			attr(button, "class", "emoji");
-			attr(button, "id", button_id_value = "fav-" + /*emoji*/ ctx[64].id);
-			this.first = button;
-		},
-		m(target, anchor) {
-			insert(target, button, anchor);
-			if_block.m(button, null);
-		},
-		p(new_ctx, dirty) {
-			ctx = new_ctx;
+  let queued;
 
-			if (current_block_type === (current_block_type = select_block_type_1(ctx)) && if_block) {
-				if_block.p(ctx, dirty);
-			} else {
-				if_block.d(1);
-				if_block = current_block_type(ctx);
+  const flush = () => {
+    if (destroyed) {
+      return
+    }
+    const observersToRun = [...dirtyObservers];
+    dirtyObservers.clear(); // clear before running to force any new updates to run in another tick of the loop
+    try {
+      for (const observer of observersToRun) {
+        observer();
+      }
+    } finally {
+      queued = false;
+      if (dirtyObservers.size) { // new updates, queue another one
+        queued = true;
+        qM(flush);
+      }
+    }
+  };
 
-				if (if_block) {
-					if_block.c();
-					if_block.m(button, null);
-				}
-			}
+  const state = new Proxy({}, {
+    get (target, prop) {
+      // console.log('reactivity: get', prop)
+      if (currentObserver) {
+        let observers = propsToObservers.get(prop);
+        if (!observers) {
+          observers = new Set();
+          propsToObservers.set(prop, observers);
+        }
+        observers.add(currentObserver);
+      }
+      return target[prop]
+    },
+    set (target, prop, newValue) {
+      // console.log('reactivity: set', prop, newValue)
+      target[prop] = newValue;
+      const observers = propsToObservers.get(prop);
+      if (observers) {
+        for (const observer of observers) {
+          dirtyObservers.add(observer);
+        }
+        if (!queued) {
+          queued = true;
+          qM(flush);
+        }
+      }
+      return true
+    }
+  });
 
-			if (dirty[0] & /*currentFavorites, currentSkinTone*/ 1280 && button_aria_label_value !== (button_aria_label_value = /*labelWithSkin*/ ctx[28](/*emoji*/ ctx[64], /*currentSkinTone*/ ctx[8]))) {
-				attr(button, "aria-label", button_aria_label_value);
-			}
+  const createEffect = (callback) => {
+    const runnable = () => {
+      const oldObserver = currentObserver;
+      currentObserver = runnable;
+      try {
+        return callback()
+      } finally {
+        currentObserver = oldObserver;
+      }
+    };
+    return runnable()
+  };
 
-			if (dirty[0] & /*currentFavorites*/ 1024 && button_title_value !== (button_title_value = /*emoji*/ ctx[64].title)) {
-				attr(button, "title", button_title_value);
-			}
+  // destroy logic
+  abortSignal.addEventListener('abort', () => {
+    destroyed = true;
+  });
 
-			if (dirty[0] & /*currentFavorites*/ 1024 && button_id_value !== (button_id_value = "fav-" + /*emoji*/ ctx[64].id)) {
-				attr(button, "id", button_id_value);
-			}
-		},
-		d(detaching) {
-			if (detaching) detach(button);
-			if_block.d();
-		}
-	};
+  return {
+    state,
+    createEffect
+  }
 }
 
-function create_fragment(ctx) {
-	let section;
-	let div0;
-	let div4;
-	let div1;
-	let input;
-	let input_placeholder_value;
-	let input_aria_expanded_value;
-	let input_aria_activedescendant_value;
-	let label;
-	let t0_value = /*i18n*/ ctx[0].searchLabel + "";
-	let t0;
-	let span0;
-	let t1_value = /*i18n*/ ctx[0].searchDescription + "";
-	let t1;
-	let div2;
-	let button0;
-	let t2;
-	let button0_class_value;
-	let div2_class_value;
-	let span1;
-	let t3_value = /*i18n*/ ctx[0].skinToneDescription + "";
-	let t3;
-	let div3;
-	let each_blocks_3 = [];
-	let each0_lookup = new Map_1();
-	let div3_class_value;
-	let div3_aria_label_value;
-	let div3_aria_activedescendant_value;
-	let div3_aria_hidden_value;
-	let div5;
-	let each_blocks_2 = [];
-	let each1_lookup = new Map_1();
-	let div5_aria_label_value;
-	let div7;
-	let div6;
-	let div8;
-	let t4;
-	let div8_class_value;
-	let div10;
-	let div9;
-	let each_blocks_1 = [];
-	let each2_lookup = new Map_1();
-	let div10_class_value;
-	let div10_role_value;
-	let div10_aria_label_value;
-	let div10_id_value;
-	let div11;
-	let each_blocks = [];
-	let each3_lookup = new Map_1();
-	let div11_class_value;
-	let div11_aria_label_value;
-	let button1;
-	let section_aria_label_value;
-	let mounted;
-	let dispose;
-	let each_value_4 = /*skinTones*/ ctx[9];
-	const get_key = ctx => /*skinTone*/ ctx[73];
-
-	for (let i = 0; i < each_value_4.length; i += 1) {
-		let child_ctx = get_each_context_4(ctx, each_value_4, i);
-		let key = get_key(child_ctx);
-		each0_lookup.set(key, each_blocks_3[i] = create_each_block_4(key, child_ctx));
-	}
-
-	let each_value_3 = /*groups*/ ctx[12];
-	const get_key_1 = ctx => /*group*/ ctx[70].id;
-
-	for (let i = 0; i < each_value_3.length; i += 1) {
-		let child_ctx = get_each_context_3(ctx, each_value_3, i);
-		let key = get_key_1(child_ctx);
-		each1_lookup.set(key, each_blocks_2[i] = create_each_block_3(key, child_ctx));
-	}
-
-	let each_value_1 = /*currentEmojisWithCategories*/ ctx[15];
-	const get_key_2 = ctx => /*emojiWithCategory*/ ctx[67].category;
-
-	for (let i = 0; i < each_value_1.length; i += 1) {
-		let child_ctx = get_each_context_1(ctx, each_value_1, i);
-		let key = get_key_2(child_ctx);
-		each2_lookup.set(key, each_blocks_1[i] = create_each_block_1(key, child_ctx));
-	}
-
-	let each_value = /*currentFavorites*/ ctx[10];
-	const get_key_3 = ctx => /*emoji*/ ctx[64].id;
-
-	for (let i = 0; i < each_value.length; i += 1) {
-		let child_ctx = get_each_context(ctx, each_value, i);
-		let key = get_key_3(child_ctx);
-		each3_lookup.set(key, each_blocks[i] = create_each_block(key, child_ctx));
-	}
-
-	return {
-		c() {
-			section = element("section");
-			div0 = element("div");
-			div4 = element("div");
-			div1 = element("div");
-			input = element("input");
-			label = element("label");
-			t0 = text(t0_value);
-			span0 = element("span");
-			t1 = text(t1_value);
-			div2 = element("div");
-			button0 = element("button");
-			t2 = text(/*skinToneButtonText*/ ctx[21]);
-			span1 = element("span");
-			t3 = text(t3_value);
-			div3 = element("div");
-
-			for (let i = 0; i < each_blocks_3.length; i += 1) {
-				each_blocks_3[i].c();
-			}
-
-			div5 = element("div");
-
-			for (let i = 0; i < each_blocks_2.length; i += 1) {
-				each_blocks_2[i].c();
-			}
-
-			div7 = element("div");
-			div6 = element("div");
-			div8 = element("div");
-			t4 = text(/*message*/ ctx[18]);
-			div10 = element("div");
-			div9 = element("div");
-
-			for (let i = 0; i < each_blocks_1.length; i += 1) {
-				each_blocks_1[i].c();
-			}
-
-			div11 = element("div");
-
-			for (let i = 0; i < each_blocks.length; i += 1) {
-				each_blocks[i].c();
-			}
-
-			button1 = element("button");
-			button1.textContent = "😀";
-			attr(div0, "class", "pad-top");
-			attr(input, "id", "search");
-			attr(input, "class", "search");
-			attr(input, "type", "search");
-			attr(input, "role", "combobox");
-			attr(input, "enterkeyhint", "search");
-			attr(input, "placeholder", input_placeholder_value = /*i18n*/ ctx[0].searchLabel);
-			attr(input, "autocapitalize", "none");
-			attr(input, "autocomplete", "off");
-			attr(input, "spellcheck", "true");
-			attr(input, "aria-expanded", input_aria_expanded_value = !!(/*searchMode*/ ctx[4] && /*currentEmojis*/ ctx[1].length));
-			attr(input, "aria-controls", "search-results");
-			attr(input, "aria-describedby", "search-description");
-			attr(input, "aria-autocomplete", "list");
-
-			attr(input, "aria-activedescendant", input_aria_activedescendant_value = /*activeSearchItemId*/ ctx[26]
-			? `emo-${/*activeSearchItemId*/ ctx[26]}`
-			: '');
-
-			attr(label, "class", "sr-only");
-			attr(label, "for", "search");
-			attr(span0, "id", "search-description");
-			attr(span0, "class", "sr-only");
-			attr(div1, "class", "search-wrapper");
-			attr(button0, "id", "skintone-button");
-			attr(button0, "class", button0_class_value = "emoji " + (/*skinTonePickerExpanded*/ ctx[6] ? 'hide-focus' : ''));
-			attr(button0, "aria-label", /*skinToneButtonLabel*/ ctx[23]);
-			attr(button0, "title", /*skinToneButtonLabel*/ ctx[23]);
-			attr(button0, "aria-describedby", "skintone-description");
-			attr(button0, "aria-haspopup", "listbox");
-			attr(button0, "aria-expanded", /*skinTonePickerExpanded*/ ctx[6]);
-			attr(button0, "aria-controls", "skintone-list");
-
-			attr(div2, "class", div2_class_value = "skintone-button-wrapper " + (/*skinTonePickerExpandedAfterAnimation*/ ctx[19]
-			? 'expanded'
-			: ''));
-
-			attr(span1, "id", "skintone-description");
-			attr(span1, "class", "sr-only");
-			attr(div3, "id", "skintone-list");
-
-			attr(div3, "class", div3_class_value = "skintone-list " + (/*skinTonePickerExpanded*/ ctx[6]
-			? ''
-			: 'hidden no-animate'));
-
-			set_style(div3, "transform", "translateY(" + (/*skinTonePickerExpanded*/ ctx[6]
-			? 0
-			: 'calc(-1 * var(--num-skintones) * var(--total-emoji-size))') + ")");
-
-			attr(div3, "role", "listbox");
-			attr(div3, "aria-label", div3_aria_label_value = /*i18n*/ ctx[0].skinTonesLabel);
-			attr(div3, "aria-activedescendant", div3_aria_activedescendant_value = "skintone-" + /*activeSkinTone*/ ctx[20]);
-			attr(div3, "aria-hidden", div3_aria_hidden_value = !/*skinTonePickerExpanded*/ ctx[6]);
-			attr(div4, "class", "search-row");
-			attr(div5, "class", "nav");
-			attr(div5, "role", "tablist");
-			set_style(div5, "grid-template-columns", "repeat(" + /*groups*/ ctx[12].length + ", 1fr)");
-			attr(div5, "aria-label", div5_aria_label_value = /*i18n*/ ctx[0].categoriesLabel);
-			attr(div6, "class", "indicator");
-			set_style(div6, "transform", "translateX(" + (/*isRtl*/ ctx[24] ? -1 : 1) * /*currentGroupIndex*/ ctx[11] * 100 + "%)");
-			attr(div7, "class", "indicator-wrapper");
-			attr(div8, "class", div8_class_value = "message " + (/*message*/ ctx[18] ? '' : 'gone'));
-			attr(div8, "role", "alert");
-			attr(div8, "aria-live", "polite");
-
-			attr(div10, "class", div10_class_value = "tabpanel " + (!/*databaseLoaded*/ ctx[14] || /*message*/ ctx[18]
-			? 'gone'
-			: ''));
-
-			attr(div10, "role", div10_role_value = /*searchMode*/ ctx[4] ? 'region' : 'tabpanel');
-
-			attr(div10, "aria-label", div10_aria_label_value = /*searchMode*/ ctx[4]
-			? /*i18n*/ ctx[0].searchResultsLabel
-			: /*i18n*/ ctx[0].categories[/*currentGroup*/ ctx[13].name]);
-
-			attr(div10, "id", div10_id_value = /*searchMode*/ ctx[4]
-			? ''
-			: `tab-${/*currentGroup*/ ctx[13].id}`);
-
-			attr(div10, "tabindex", "0");
-			attr(div11, "class", div11_class_value = "favorites emoji-menu " + (/*message*/ ctx[18] ? 'gone' : ''));
-			attr(div11, "role", "menu");
-			attr(div11, "aria-label", div11_aria_label_value = /*i18n*/ ctx[0].favoritesLabel);
-			set_style(div11, "padding-inline-end", /*scrollbarWidth*/ ctx[25] + "px");
-			attr(button1, "aria-hidden", "true");
-			attr(button1, "tabindex", "-1");
-			attr(button1, "class", "abs-pos hidden emoji");
-			attr(section, "class", "picker");
-			attr(section, "aria-label", section_aria_label_value = /*i18n*/ ctx[0].regionLabel);
-			attr(section, "style", /*pickerStyle*/ ctx[22]);
-		},
-		m(target, anchor) {
-			insert(target, section, anchor);
-			append(section, div0);
-			append(section, div4);
-			append(div4, div1);
-			append(div1, input);
-			set_input_value(input, /*rawSearchText*/ ctx[2]);
-			append(div1, label);
-			append(label, t0);
-			append(div1, span0);
-			append(span0, t1);
-			append(div4, div2);
-			append(div2, button0);
-			append(button0, t2);
-			append(div4, span1);
-			append(span1, t3);
-			append(div4, div3);
-
-			for (let i = 0; i < each_blocks_3.length; i += 1) {
-				each_blocks_3[i].m(div3, null);
-			}
-
-			/*div3_binding*/ ctx[49](div3);
-			append(section, div5);
-
-			for (let i = 0; i < each_blocks_2.length; i += 1) {
-				each_blocks_2[i].m(div5, null);
-			}
-
-			append(section, div7);
-			append(div7, div6);
-			append(section, div8);
-			append(div8, t4);
-			append(section, div10);
-			append(div10, div9);
-
-			for (let i = 0; i < each_blocks_1.length; i += 1) {
-				each_blocks_1[i].m(div9, null);
-			}
-
-			/*div10_binding*/ ctx[51](div10);
-			append(section, div11);
-
-			for (let i = 0; i < each_blocks.length; i += 1) {
-				each_blocks[i].m(div11, null);
-			}
-
-			append(section, button1);
-			/*button1_binding*/ ctx[52](button1);
-			/*section_binding*/ ctx[53](section);
-
-			if (!mounted) {
-				dispose = [
-					listen(input, "input", /*input_input_handler*/ ctx[48]),
-					listen(input, "keydown", /*onSearchKeydown*/ ctx[30]),
-					listen(button0, "click", /*onClickSkinToneButton*/ ctx[35]),
-					listen(div3, "focusout", /*onSkinToneOptionsFocusOut*/ ctx[38]),
-					listen(div3, "click", /*onSkinToneOptionsClick*/ ctx[34]),
-					listen(div3, "keydown", /*onSkinToneOptionsKeydown*/ ctx[36]),
-					listen(div3, "keyup", /*onSkinToneOptionsKeyup*/ ctx[37]),
-					listen(div5, "keydown", /*onNavKeydown*/ ctx[32]),
-					action_destroyer(/*calculateEmojiGridStyle*/ ctx[29].call(null, div9)),
-					listen(div10, "click", /*onEmojiClick*/ ctx[33]),
-					listen(div11, "click", /*onEmojiClick*/ ctx[33])
-				];
-
-				mounted = true;
-			}
-		},
-		p(ctx, dirty) {
-			if (dirty[0] & /*i18n*/ 1 && input_placeholder_value !== (input_placeholder_value = /*i18n*/ ctx[0].searchLabel)) {
-				attr(input, "placeholder", input_placeholder_value);
-			}
-
-			if (dirty[0] & /*searchMode, currentEmojis*/ 18 && input_aria_expanded_value !== (input_aria_expanded_value = !!(/*searchMode*/ ctx[4] && /*currentEmojis*/ ctx[1].length))) {
-				attr(input, "aria-expanded", input_aria_expanded_value);
-			}
-
-			if (dirty[0] & /*activeSearchItemId*/ 67108864 && input_aria_activedescendant_value !== (input_aria_activedescendant_value = /*activeSearchItemId*/ ctx[26]
-			? `emo-${/*activeSearchItemId*/ ctx[26]}`
-			: '')) {
-				attr(input, "aria-activedescendant", input_aria_activedescendant_value);
-			}
-
-			if (dirty[0] & /*rawSearchText*/ 4) {
-				set_input_value(input, /*rawSearchText*/ ctx[2]);
-			}
-
-			if (dirty[0] & /*i18n*/ 1 && t0_value !== (t0_value = /*i18n*/ ctx[0].searchLabel + "")) set_data(t0, t0_value);
-			if (dirty[0] & /*i18n*/ 1 && t1_value !== (t1_value = /*i18n*/ ctx[0].searchDescription + "")) set_data(t1, t1_value);
-			if (dirty[0] & /*skinToneButtonText*/ 2097152) set_data(t2, /*skinToneButtonText*/ ctx[21]);
-
-			if (dirty[0] & /*skinTonePickerExpanded*/ 64 && button0_class_value !== (button0_class_value = "emoji " + (/*skinTonePickerExpanded*/ ctx[6] ? 'hide-focus' : ''))) {
-				attr(button0, "class", button0_class_value);
-			}
-
-			if (dirty[0] & /*skinToneButtonLabel*/ 8388608) {
-				attr(button0, "aria-label", /*skinToneButtonLabel*/ ctx[23]);
-			}
-
-			if (dirty[0] & /*skinToneButtonLabel*/ 8388608) {
-				attr(button0, "title", /*skinToneButtonLabel*/ ctx[23]);
-			}
-
-			if (dirty[0] & /*skinTonePickerExpanded*/ 64) {
-				attr(button0, "aria-expanded", /*skinTonePickerExpanded*/ ctx[6]);
-			}
-
-			if (dirty[0] & /*skinTonePickerExpandedAfterAnimation*/ 524288 && div2_class_value !== (div2_class_value = "skintone-button-wrapper " + (/*skinTonePickerExpandedAfterAnimation*/ ctx[19]
-			? 'expanded'
-			: ''))) {
-				attr(div2, "class", div2_class_value);
-			}
-
-			if (dirty[0] & /*i18n*/ 1 && t3_value !== (t3_value = /*i18n*/ ctx[0].skinToneDescription + "")) set_data(t3, t3_value);
-
-			if (dirty[0] & /*skinTones, activeSkinTone, i18n*/ 1049089) {
-				each_value_4 = /*skinTones*/ ctx[9];
-				each_blocks_3 = update_keyed_each(each_blocks_3, dirty, get_key, 1, ctx, each_value_4, each0_lookup, div3, destroy_block, create_each_block_4, null, get_each_context_4);
-			}
-
-			if (dirty[0] & /*skinTonePickerExpanded*/ 64 && div3_class_value !== (div3_class_value = "skintone-list " + (/*skinTonePickerExpanded*/ ctx[6]
-			? ''
-			: 'hidden no-animate'))) {
-				attr(div3, "class", div3_class_value);
-			}
-
-			if (dirty[0] & /*skinTonePickerExpanded*/ 64) {
-				set_style(div3, "transform", "translateY(" + (/*skinTonePickerExpanded*/ ctx[6]
-				? 0
-				: 'calc(-1 * var(--num-skintones) * var(--total-emoji-size))') + ")");
-			}
-
-			if (dirty[0] & /*i18n*/ 1 && div3_aria_label_value !== (div3_aria_label_value = /*i18n*/ ctx[0].skinTonesLabel)) {
-				attr(div3, "aria-label", div3_aria_label_value);
-			}
-
-			if (dirty[0] & /*activeSkinTone*/ 1048576 && div3_aria_activedescendant_value !== (div3_aria_activedescendant_value = "skintone-" + /*activeSkinTone*/ ctx[20])) {
-				attr(div3, "aria-activedescendant", div3_aria_activedescendant_value);
-			}
-
-			if (dirty[0] & /*skinTonePickerExpanded*/ 64 && div3_aria_hidden_value !== (div3_aria_hidden_value = !/*skinTonePickerExpanded*/ ctx[6])) {
-				attr(div3, "aria-hidden", div3_aria_hidden_value);
-			}
-
-			if (dirty[0] & /*groups, i18n, searchMode, currentGroup*/ 12305 | dirty[1] & /*onNavClick*/ 1) {
-				each_value_3 = /*groups*/ ctx[12];
-				each_blocks_2 = update_keyed_each(each_blocks_2, dirty, get_key_1, 1, ctx, each_value_3, each1_lookup, div5, destroy_block, create_each_block_3, null, get_each_context_3);
-			}
-
-			if (dirty[0] & /*groups*/ 4096) {
-				set_style(div5, "grid-template-columns", "repeat(" + /*groups*/ ctx[12].length + ", 1fr)");
-			}
-
-			if (dirty[0] & /*i18n*/ 1 && div5_aria_label_value !== (div5_aria_label_value = /*i18n*/ ctx[0].categoriesLabel)) {
-				attr(div5, "aria-label", div5_aria_label_value);
-			}
-
-			if (dirty[0] & /*isRtl, currentGroupIndex*/ 16779264) {
-				set_style(div6, "transform", "translateX(" + (/*isRtl*/ ctx[24] ? -1 : 1) * /*currentGroupIndex*/ ctx[11] * 100 + "%)");
-			}
-
-			if (dirty[0] & /*message*/ 262144) set_data(t4, /*message*/ ctx[18]);
-
-			if (dirty[0] & /*message*/ 262144 && div8_class_value !== (div8_class_value = "message " + (/*message*/ ctx[18] ? '' : 'gone'))) {
-				attr(div8, "class", div8_class_value);
-			}
-
-			if (dirty[0] & /*searchMode, currentEmojisWithCategories, activeSearchItem, labelWithSkin, currentSkinTone, unicodeWithSkin, i18n, currentGroup*/ 402694449) {
-				each_value_1 = /*currentEmojisWithCategories*/ ctx[15];
-				each_blocks_1 = update_keyed_each(each_blocks_1, dirty, get_key_2, 1, ctx, each_value_1, each2_lookup, div9, destroy_block, create_each_block_1, null, get_each_context_1);
-			}
-
-			if (dirty[0] & /*databaseLoaded, message*/ 278528 && div10_class_value !== (div10_class_value = "tabpanel " + (!/*databaseLoaded*/ ctx[14] || /*message*/ ctx[18]
-			? 'gone'
-			: ''))) {
-				attr(div10, "class", div10_class_value);
-			}
-
-			if (dirty[0] & /*searchMode*/ 16 && div10_role_value !== (div10_role_value = /*searchMode*/ ctx[4] ? 'region' : 'tabpanel')) {
-				attr(div10, "role", div10_role_value);
-			}
-
-			if (dirty[0] & /*searchMode, i18n, currentGroup*/ 8209 && div10_aria_label_value !== (div10_aria_label_value = /*searchMode*/ ctx[4]
-			? /*i18n*/ ctx[0].searchResultsLabel
-			: /*i18n*/ ctx[0].categories[/*currentGroup*/ ctx[13].name])) {
-				attr(div10, "aria-label", div10_aria_label_value);
-			}
-
-			if (dirty[0] & /*searchMode, currentGroup*/ 8208 && div10_id_value !== (div10_id_value = /*searchMode*/ ctx[4]
-			? ''
-			: `tab-${/*currentGroup*/ ctx[13].id}`)) {
-				attr(div10, "id", div10_id_value);
-			}
-
-			if (dirty[0] & /*labelWithSkin, currentFavorites, currentSkinTone, unicodeWithSkin*/ 402654464) {
-				each_value = /*currentFavorites*/ ctx[10];
-				each_blocks = update_keyed_each(each_blocks, dirty, get_key_3, 1, ctx, each_value, each3_lookup, div11, destroy_block, create_each_block, null, get_each_context);
-			}
-
-			if (dirty[0] & /*message*/ 262144 && div11_class_value !== (div11_class_value = "favorites emoji-menu " + (/*message*/ ctx[18] ? 'gone' : ''))) {
-				attr(div11, "class", div11_class_value);
-			}
-
-			if (dirty[0] & /*i18n*/ 1 && div11_aria_label_value !== (div11_aria_label_value = /*i18n*/ ctx[0].favoritesLabel)) {
-				attr(div11, "aria-label", div11_aria_label_value);
-			}
-
-			if (dirty[0] & /*scrollbarWidth*/ 33554432) {
-				set_style(div11, "padding-inline-end", /*scrollbarWidth*/ ctx[25] + "px");
-			}
-
-			if (dirty[0] & /*i18n*/ 1 && section_aria_label_value !== (section_aria_label_value = /*i18n*/ ctx[0].regionLabel)) {
-				attr(section, "aria-label", section_aria_label_value);
-			}
-
-			if (dirty[0] & /*pickerStyle*/ 4194304) {
-				attr(section, "style", /*pickerStyle*/ ctx[22]);
-			}
-		},
-		i: noop,
-		o: noop,
-		d(detaching) {
-			if (detaching) detach(section);
-
-			for (let i = 0; i < each_blocks_3.length; i += 1) {
-				each_blocks_3[i].d();
-			}
-
-			/*div3_binding*/ ctx[49](null);
-
-			for (let i = 0; i < each_blocks_2.length; i += 1) {
-				each_blocks_2[i].d();
-			}
-
-			for (let i = 0; i < each_blocks_1.length; i += 1) {
-				each_blocks_1[i].d();
-			}
-
-			/*div10_binding*/ ctx[51](null);
-
-			for (let i = 0; i < each_blocks.length; i += 1) {
-				each_blocks[i].d();
-			}
-
-			/*button1_binding*/ ctx[52](null);
-			/*section_binding*/ ctx[53](null);
-			mounted = false;
-			run_all(dispose);
-		}
-	};
+// Compare two arrays, with a function called on each item in the two arrays that returns true if the items are equal
+function arraysAreEqualByFunction (left, right, areEqualFunc) {
+  if (left.length !== right.length) {
+    return false
+  }
+  for (let i = 0; i < left.length; i++) {
+    if (!areEqualFunc(left[i], right[i])) {
+      return false
+    }
+  }
+  return true
 }
 
-function instance($$self, $$props, $$invalidate) {
-	let { skinToneEmoji } = $$props;
-	let { i18n } = $$props;
-	let { database } = $$props;
-	let { customEmoji } = $$props;
-	let { customCategorySorting } = $$props;
-	let { emojiVersion } = $$props;
-
-	// private
-	let initialLoad = true;
-
-	let currentEmojis = [];
-	let currentEmojisWithCategories = []; // eslint-disable-line no-unused-vars
-	let rawSearchText = '';
-	let searchText = '';
-	let rootElement;
-	let baselineEmoji;
-	let tabpanelElement;
-	let searchMode = false; // eslint-disable-line no-unused-vars
-	let activeSearchItem = -1;
-	let message; // eslint-disable-line no-unused-vars
-	let skinTonePickerExpanded = false;
-	let skinTonePickerExpandedAfterAnimation = false; // eslint-disable-line no-unused-vars
-	let skinToneDropdown;
-	let currentSkinTone = 0;
-	let activeSkinTone = 0;
-	let skinToneButtonText; // eslint-disable-line no-unused-vars
-	let pickerStyle; // eslint-disable-line no-unused-vars
-	let skinToneButtonLabel = ''; // eslint-disable-line no-unused-vars
-	let skinTones = [];
-	let currentFavorites = []; // eslint-disable-line no-unused-vars
-	let defaultFavoriteEmojis;
-	let numColumns = DEFAULT_NUM_COLUMNS;
-	let isRtl = false; // eslint-disable-line no-unused-vars
-	let scrollbarWidth = 0; // eslint-disable-line no-unused-vars
-	let currentGroupIndex = 0;
-	let groups$1 = groups;
-	let currentGroup;
-	let databaseLoaded = false; // eslint-disable-line no-unused-vars
-	let activeSearchItemId; // eslint-disable-line no-unused-vars
-
-	//
-	// Utils/helpers
-	//
-	const focus = id => {
-		rootElement.getRootNode().getElementById(id).focus();
-	};
-
-	// fire a custom event that crosses the shadow boundary
-	const fireEvent = (name, detail) => {
-		rootElement.dispatchEvent(new CustomEvent(name, { detail, bubbles: true, composed: true }));
-	};
-
-	// eslint-disable-next-line no-unused-vars
-	const unicodeWithSkin = (emoji, currentSkinTone) => currentSkinTone && emoji.skins && emoji.skins[currentSkinTone] || emoji.unicode;
-
-	// eslint-disable-next-line no-unused-vars
-	const labelWithSkin = (emoji, currentSkinTone) => uniq([
-		emoji.name || unicodeWithSkin(emoji, currentSkinTone),
-		...emoji.shortcodes || []
-	]).join(', ');
-
-	// Detect a skintone option button
-	const isSkinToneOption = element => (/^skintone-/).test(element.id);
-
-	//
-	// Determine the emoji support level (in requestIdleCallback)
-	//
-	onMount(() => {
-		if (!emojiVersion) {
-			detectEmojiSupportLevel().then(level => {
-				// Can't actually test emoji support in Jest/JSDom, emoji never render in color in Cairo
-				/* istanbul ignore next */
-				if (!level) {
-					$$invalidate(18, message = i18n.emojiUnsupportedMessage);
-				}
-			});
-		}
-	});
-
-	//
-	// Calculate the width of the emoji grid. This serves two purposes:
-	// 1) Re-calculate the --num-columns var because it may have changed
-	// 2) Re-calculate the scrollbar width because it may have changed
-	//   (i.e. because the number of items changed)
-	// 3) Re-calculate whether we're in RTL mode or not.
-	//
-	// The benefit of doing this in one place is to align with rAF/ResizeObserver
-	// and do all the calculations in one go. RTL vs LTR is not strictly width-related,
-	// but since we're already reading the style here, and since it's already aligned with
-	// the rAF loop, this is the most appropriate place to do it perf-wise.
-	//
-	// eslint-disable-next-line no-unused-vars
-	function calculateEmojiGridStyle(node) {
-		return calculateWidth(node, width => {
-			/* istanbul ignore next */
-			if ("production" !== 'test') {
-				// jsdom throws errors for this kind of fancy stuff
-				// read all the style/layout calculations we need to make
-				const style = getComputedStyle(rootElement);
-
-				const newNumColumns = parseInt(style.getPropertyValue('--num-columns'), 10);
-				const newIsRtl = style.getPropertyValue('direction') === 'rtl';
-				const parentWidth = node.parentElement.getBoundingClientRect().width;
-				const newScrollbarWidth = parentWidth - width;
-
-				// write to Svelte variables
-				$$invalidate(47, numColumns = newNumColumns);
-
-				$$invalidate(25, scrollbarWidth = newScrollbarWidth); // eslint-disable-line no-unused-vars
-				$$invalidate(24, isRtl = newIsRtl); // eslint-disable-line no-unused-vars
-			}
-		});
-	}
-
-	function checkZwjSupportAndUpdate(zwjEmojisToCheck) {
-		const rootNode = rootElement.getRootNode();
-		const emojiToDomNode = emoji => rootNode.getElementById(`emo-${emoji.id}`);
-		checkZwjSupport(zwjEmojisToCheck, baselineEmoji, emojiToDomNode);
-
-		// force update
-		$$invalidate(1, currentEmojis = currentEmojis); // eslint-disable-line no-self-assign
-	}
-
-	function isZwjSupported(emoji) {
-		return !emoji.unicode || !hasZwj(emoji) || supportedZwjEmojis.get(emoji.unicode);
-	}
-
-	async function filterEmojisByVersion(emojis) {
-		const emojiSupportLevel = emojiVersion || await detectEmojiSupportLevel();
-
-		// !version corresponds to custom emoji
-		return emojis.filter(({ version }) => !version || version <= emojiSupportLevel);
-	}
-
-	async function summarizeEmojis(emojis) {
-		return summarizeEmojisForUI(emojis, emojiVersion || await detectEmojiSupportLevel());
-	}
-
-	async function getEmojisByGroup(group) {
-
-		// -1 is custom emoji
-		const emoji = group === -1
-		? customEmoji
-		: await database.getEmojiByGroup(group);
-
-		return summarizeEmojis(await filterEmojisByVersion(emoji));
-	}
-
-	async function getEmojisBySearchQuery(query) {
-		return summarizeEmojis(await filterEmojisByVersion(await database.getEmojiBySearchQuery(query)));
-	}
-
-	// eslint-disable-next-line no-unused-vars
-	function onSearchKeydown(event) {
-		if (!searchMode || !currentEmojis.length) {
-			return;
-		}
-
-		const goToNextOrPrevious = previous => {
-			halt(event);
-			$$invalidate(5, activeSearchItem = incrementOrDecrement(previous, activeSearchItem, currentEmojis));
-		};
-
-		switch (event.key) {
-			case 'ArrowDown':
-				return goToNextOrPrevious(false);
-			case 'ArrowUp':
-				return goToNextOrPrevious(true);
-			case 'Enter':
-				if (activeSearchItem !== -1) {
-					halt(event);
-					return clickEmoji(currentEmojis[activeSearchItem].id);
-				} else if (currentEmojis.length) {
-					$$invalidate(5, activeSearchItem = 0);
-				}
-		}
-	}
-
-	//
-	// Handle user input on nav
-	//
-	// eslint-disable-next-line no-unused-vars
-	function onNavClick(group) {
-		$$invalidate(2, rawSearchText = '');
-		$$invalidate(45, searchText = '');
-		$$invalidate(5, activeSearchItem = -1);
-		$$invalidate(11, currentGroupIndex = groups$1.findIndex(_ => _.id === group.id));
-	}
-
-	// eslint-disable-next-line no-unused-vars
-	function onNavKeydown(event) {
-		const { target, key } = event;
-
-		const doFocus = el => {
-			if (el) {
-				halt(event);
-				el.focus();
-			}
-		};
-
-		switch (key) {
-			case 'ArrowLeft':
-				return doFocus(target.previousSibling);
-			case 'ArrowRight':
-				return doFocus(target.nextSibling);
-			case 'Home':
-				return doFocus(target.parentElement.firstChild);
-			case 'End':
-				return doFocus(target.parentElement.lastChild);
-		}
-	}
-
-	//
-	// Handle user input on an emoji
-	//
-	async function clickEmoji(unicodeOrName) {
-		const emoji = await database.getEmojiByUnicodeOrName(unicodeOrName);
-		const emojiSummary = [...currentEmojis, ...currentFavorites].find(_ => _.id === unicodeOrName);
-		const skinTonedUnicode = emojiSummary.unicode && unicodeWithSkin(emojiSummary, currentSkinTone);
-		await database.incrementFavoriteEmojiCount(unicodeOrName);
-
-		fireEvent('emoji-click', {
-			emoji,
-			skinTone: currentSkinTone,
-			...skinTonedUnicode && { unicode: skinTonedUnicode },
-			...emojiSummary.name && { name: emojiSummary.name }
-		});
-	}
-
-	// eslint-disable-next-line no-unused-vars
-	async function onEmojiClick(event) {
-		const { target } = event;
-
-		if (!target.classList.contains('emoji')) {
-			return;
-		}
-
-		halt(event);
-		const id = target.id.substring(4); // replace 'emo-' or 'fav-' prefix
-
-		/* no await */
-		clickEmoji(id);
-	}
-
-	//
-	// Handle user input on the skintone picker
-	//
-	// eslint-disable-next-line no-unused-vars
-	async function onSkinToneOptionsClick(event) {
-		const { target } = event;
-
-		if (!isSkinToneOption(target)) {
-			return;
-		}
-
-		halt(event);
-		const skinTone = parseInt(target.id.slice(9), 10); // remove 'skintone-' prefix
-		$$invalidate(8, currentSkinTone = skinTone);
-		$$invalidate(6, skinTonePickerExpanded = false);
-		focus('skintone-button');
-		fireEvent('skin-tone-change', { skinTone });
-
-		/* no await */
-		database.setPreferredSkinTone(skinTone);
-	}
-
-	// eslint-disable-next-line no-unused-vars
-	async function onClickSkinToneButton(event) {
-		$$invalidate(6, skinTonePickerExpanded = !skinTonePickerExpanded);
-		$$invalidate(20, activeSkinTone = currentSkinTone);
-
-		if (skinTonePickerExpanded) {
-			halt(event);
-			rAF(() => focus(`skintone-${activeSkinTone}`));
-		}
-	}
-
-	// eslint-disable-next-line no-unused-vars
-	function onSkinToneOptionsKeydown(event) {
-		if (!skinTonePickerExpanded) {
-			return;
-		}
-
-		const changeActiveSkinTone = async nextSkinTone => {
-			halt(event);
-			$$invalidate(20, activeSkinTone = nextSkinTone);
-			await tick();
-			focus(`skintone-${activeSkinTone}`);
-		};
-
-		switch (event.key) {
-			case 'ArrowUp':
-				return changeActiveSkinTone(incrementOrDecrement(true, activeSkinTone, skinTones));
-			case 'ArrowDown':
-				return changeActiveSkinTone(incrementOrDecrement(false, activeSkinTone, skinTones));
-			case 'Home':
-				return changeActiveSkinTone(0);
-			case 'End':
-				return changeActiveSkinTone(skinTones.length - 1);
-			case 'Enter':
-				// enter on keydown, space on keyup. this is just how browsers work for buttons
-				// https://lists.w3.org/Archives/Public/w3c-wai-ig/2019JanMar/0086.html
-				return onSkinToneOptionsClick(event);
-			case 'Escape':
-				halt(event);
-				$$invalidate(6, skinTonePickerExpanded = false);
-				return focus('skintone-button');
-		}
-	}
-
-	// eslint-disable-next-line no-unused-vars
-	function onSkinToneOptionsKeyup(event) {
-		if (!skinTonePickerExpanded) {
-			return;
-		}
-
-		switch (event.key) {
-			case ' ':
-				// enter on keydown, space on keyup. this is just how browsers work for buttons
-				// https://lists.w3.org/Archives/Public/w3c-wai-ig/2019JanMar/0086.html
-				return onSkinToneOptionsClick(event);
-		}
-	}
-
-	// eslint-disable-next-line no-unused-vars
-	async function onSkinToneOptionsFocusOut(event) {
-		// On blur outside of the skintone options, collapse the skintone picker.
-		// Except if focus is just moving to another skintone option, e.g. pressing up/down to change focus
-		const { relatedTarget } = event;
-
-		if (!relatedTarget || !isSkinToneOption(relatedTarget)) {
-			$$invalidate(6, skinTonePickerExpanded = false);
-		}
-	}
-
-	function input_input_handler() {
-		rawSearchText = this.value;
-		$$invalidate(2, rawSearchText);
-	}
-
-	function div3_binding($$value) {
-		binding_callbacks[$$value ? 'unshift' : 'push'](() => {
-			skinToneDropdown = $$value;
-			$$invalidate(7, skinToneDropdown);
-		});
-	}
-
-	const click_handler = group => onNavClick(group);
-
-	function div10_binding($$value) {
-		binding_callbacks[$$value ? 'unshift' : 'push'](() => {
-			tabpanelElement = $$value;
-			$$invalidate(3, tabpanelElement);
-		});
-	}
-
-	function button1_binding($$value) {
-		binding_callbacks[$$value ? 'unshift' : 'push'](() => {
-			baselineEmoji = $$value;
-			$$invalidate(17, baselineEmoji);
-		});
-	}
-
-	function section_binding($$value) {
-		binding_callbacks[$$value ? 'unshift' : 'push'](() => {
-			rootElement = $$value;
-			$$invalidate(16, rootElement);
-		});
-	}
-
-	$$self.$$set = $$props => {
-		if ('skinToneEmoji' in $$props) $$invalidate(40, skinToneEmoji = $$props.skinToneEmoji);
-		if ('i18n' in $$props) $$invalidate(0, i18n = $$props.i18n);
-		if ('database' in $$props) $$invalidate(39, database = $$props.database);
-		if ('customEmoji' in $$props) $$invalidate(41, customEmoji = $$props.customEmoji);
-		if ('customCategorySorting' in $$props) $$invalidate(42, customCategorySorting = $$props.customCategorySorting);
-		if ('emojiVersion' in $$props) $$invalidate(43, emojiVersion = $$props.emojiVersion);
-	};
-
-	$$self.$$.update = () => {
-		if ($$self.$$.dirty[1] & /*customEmoji, database*/ 1280) {
-			/* eslint-enable no-unused-vars */
-			//
-			// Set or update the customEmoji
-			//
-			{
-				if (customEmoji && database) {
-					$$invalidate(39, database.customEmoji = customEmoji, database);
-				}
-			}
-		}
-
-		if ($$self.$$.dirty[0] & /*i18n*/ 1 | $$self.$$.dirty[1] & /*database*/ 256) {
-			//
-			// Set or update the database object
-			//
-			{
-				// show a Loading message if it takes a long time, or show an error if there's a network/IDB error
-				async function handleDatabaseLoading() {
-					let showingLoadingMessage = false;
-
-					const timeoutHandle = setTimeout(
-						() => {
-							showingLoadingMessage = true;
-							$$invalidate(18, message = i18n.loadingMessage);
-						},
-						TIMEOUT_BEFORE_LOADING_MESSAGE
-					);
-
-					try {
-						await database.ready();
-						$$invalidate(14, databaseLoaded = true); // eslint-disable-line no-unused-vars
-					} catch(err) {
-						console.error(err);
-						$$invalidate(18, message = i18n.networkErrorMessage);
-					} finally {
-						clearTimeout(timeoutHandle);
-
-						if (showingLoadingMessage) {
-							// Seems safer than checking the i18n string, which may change
-							showingLoadingMessage = false;
-
-							$$invalidate(18, message = ''); // eslint-disable-line no-unused-vars
-						}
-					}
-				}
-
-				if (database) {
-					/* no await */
-					handleDatabaseLoading();
-				}
-			}
-		}
-
-		if ($$self.$$.dirty[0] & /*groups, currentGroupIndex*/ 6144 | $$self.$$.dirty[1] & /*customEmoji*/ 1024) {
-			{
-				if (customEmoji && customEmoji.length) {
-					$$invalidate(12, groups$1 = [customGroup, ...groups]);
-				} else if (groups$1 !== groups) {
-					if (currentGroupIndex) {
-						// If the current group is anything other than "custom" (which is first), decrement.
-						// This fixes the odd case where you set customEmoji, then pick a category, then unset customEmoji
-						$$invalidate(11, currentGroupIndex--, currentGroupIndex);
-					}
-
-					$$invalidate(12, groups$1 = groups);
-				}
-			}
-		}
-
-		if ($$self.$$.dirty[0] & /*rawSearchText*/ 4) {
-			/* eslint-enable no-unused-vars */
-			//
-			// Handle user input on the search input
-			//
-			{
-				rIC(() => {
-					$$invalidate(45, searchText = (rawSearchText || '').trim()); // defer to avoid input delays, plus we can trim here
-					$$invalidate(5, activeSearchItem = -1);
-				});
-			}
-		}
-
-		if ($$self.$$.dirty[0] & /*groups, currentGroupIndex*/ 6144) {
-			//
-			// Update the current group based on the currentGroupIndex
-			//
-			$$invalidate(13, currentGroup = groups$1[currentGroupIndex]);
-		}
-
-		if ($$self.$$.dirty[0] & /*databaseLoaded, currentGroup*/ 24576 | $$self.$$.dirty[1] & /*searchText*/ 16384) {
-			//
-			// Set or update the currentEmojis. Check for invalid ZWJ renderings
-			// (i.e. double emoji).
-			//
-			{
-				async function updateEmojis() {
-
-					if (!databaseLoaded) {
-						$$invalidate(1, currentEmojis = []);
-						$$invalidate(4, searchMode = false);
-					} else if (searchText.length >= MIN_SEARCH_TEXT_LENGTH) {
-						const currentSearchText = searchText;
-						const newEmojis = await getEmojisBySearchQuery(currentSearchText);
-
-						if (currentSearchText === searchText) {
-							// if the situation changes asynchronously, do not update
-							$$invalidate(1, currentEmojis = newEmojis);
-
-							$$invalidate(4, searchMode = true);
-						}
-					} else if (currentGroup) {
-						const currentGroupId = currentGroup.id;
-						const newEmojis = await getEmojisByGroup(currentGroupId);
-
-						if (currentGroupId === currentGroup.id) {
-							// if the situation changes asynchronously, do not update
-							$$invalidate(1, currentEmojis = newEmojis);
-
-							$$invalidate(4, searchMode = false);
-						}
-					}
-				}
-
-				/* no await */
-				updateEmojis();
-			}
-		}
-
-		if ($$self.$$.dirty[0] & /*groups, searchMode*/ 4112) {
-			//
-			// Global styles for the entire picker
-			//
-			/* eslint-disable no-unused-vars */
-			$$invalidate(22, pickerStyle = `
-  --num-groups: ${groups$1.length}; 
-  --indicator-opacity: ${searchMode ? 0 : 1}; 
-  --num-skintones: ${NUM_SKIN_TONES};`);
-		}
-
-		if ($$self.$$.dirty[0] & /*databaseLoaded*/ 16384 | $$self.$$.dirty[1] & /*database*/ 256) {
-			//
-			// Set or update the preferred skin tone
-			//
-			{
-				async function updatePreferredSkinTone() {
-					if (databaseLoaded) {
-						$$invalidate(8, currentSkinTone = await database.getPreferredSkinTone());
-					}
-				}
-
-				/* no await */
-				updatePreferredSkinTone();
-			}
-		}
-
-		if ($$self.$$.dirty[1] & /*skinToneEmoji*/ 512) {
-			$$invalidate(9, skinTones = Array(NUM_SKIN_TONES).fill().map((_, i) => applySkinTone(skinToneEmoji, i)));
-		}
-
-		if ($$self.$$.dirty[0] & /*skinTones, currentSkinTone*/ 768) {
-			/* eslint-disable no-unused-vars */
-			$$invalidate(21, skinToneButtonText = skinTones[currentSkinTone]);
-		}
-
-		if ($$self.$$.dirty[0] & /*i18n, currentSkinTone*/ 257) {
-			$$invalidate(23, skinToneButtonLabel = i18n.skinToneLabel.replace('{skinTone}', i18n.skinTones[currentSkinTone]));
-		}
-
-		if ($$self.$$.dirty[0] & /*databaseLoaded*/ 16384 | $$self.$$.dirty[1] & /*database*/ 256) {
-			/* eslint-enable no-unused-vars */
-			//
-			// Set or update the favorites emojis
-			//
-			{
-				async function updateDefaultFavoriteEmojis() {
-					$$invalidate(46, defaultFavoriteEmojis = (await Promise.all(MOST_COMMONLY_USED_EMOJI.map(unicode => database.getEmojiByUnicodeOrName(unicode)))).filter(Boolean)); // filter because in Jest tests we don't have all the emoji in the DB
-				}
-
-				if (databaseLoaded) {
-					/* no await */
-					updateDefaultFavoriteEmojis();
-				}
-			}
-		}
-
-		if ($$self.$$.dirty[0] & /*databaseLoaded*/ 16384 | $$self.$$.dirty[1] & /*database, numColumns, defaultFavoriteEmojis*/ 98560) {
-			{
-				async function updateFavorites() {
-					const dbFavorites = await database.getTopFavoriteEmoji(numColumns);
-					const favorites = await summarizeEmojis(uniqBy([...dbFavorites, ...defaultFavoriteEmojis], _ => _.unicode || _.name).slice(0, numColumns));
-					$$invalidate(10, currentFavorites = favorites);
-				}
-
-				if (databaseLoaded && defaultFavoriteEmojis) {
-					/* no await */
-					updateFavorites();
-				}
-			}
-		}
-
-		if ($$self.$$.dirty[0] & /*currentEmojis, tabpanelElement*/ 10 | $$self.$$.dirty[1] & /*emojiVersion*/ 4096) {
-			// Some emojis have their ligatures rendered as two or more consecutive emojis
-			// We want to treat these the same as unsupported emojis, so we compare their
-			// widths against the baseline widths and remove them as necessary
-			{
-				const zwjEmojisToCheck = currentEmojis.filter(emoji => emoji.unicode).filter(emoji => hasZwj(emoji) && !supportedZwjEmojis.has(emoji.unicode)); // filter custom emoji
-
-				if (!emojiVersion && zwjEmojisToCheck.length) {
-					// render now, check their length later
-					rAF(() => checkZwjSupportAndUpdate(zwjEmojisToCheck));
-				} else {
-					$$invalidate(1, currentEmojis = emojiVersion
-					? currentEmojis
-					: currentEmojis.filter(isZwjSupported));
-
-					// Reset scroll top to 0 when emojis change
-					rAF(() => resetScrollTopIfPossible(tabpanelElement));
-				}
-			}
-		}
-
-		if ($$self.$$.dirty[0] & /*currentEmojis, currentFavorites*/ 1026 | $$self.$$.dirty[1] & /*initialLoad*/ 8192) {
-			{
-				// consider initialLoad to be complete when the first tabpanel and favorites are rendered
-				/* istanbul ignore next */
-				if ("production" !== 'production' || false) {
-					if (currentEmojis.length && currentFavorites.length && initialLoad) {
-						$$invalidate(44, initialLoad = false);
-						requestPostAnimationFrame(() => (void 0));
-					}
-				}
-			}
-		}
-
-		if ($$self.$$.dirty[0] & /*searchMode, currentEmojis*/ 18 | $$self.$$.dirty[1] & /*customCategorySorting*/ 2048) {
-			//
-			// Derive currentEmojisWithCategories from currentEmojis. This is always done even if there
-			// are no categories, because it's just easier to code the HTML this way.
-			//
-			{
-				function calculateCurrentEmojisWithCategories() {
-					if (searchMode) {
-						return [{ category: '', emojis: currentEmojis }];
-					}
-
-					const categoriesToEmoji = new Map();
-
-					for (const emoji of currentEmojis) {
-						const category = emoji.category || '';
-						let emojis = categoriesToEmoji.get(category);
-
-						if (!emojis) {
-							emojis = [];
-							categoriesToEmoji.set(category, emojis);
-						}
-
-						emojis.push(emoji);
-					}
-
-					return [...categoriesToEmoji.entries()].map(([category, emojis]) => ({ category, emojis })).sort((a, b) => customCategorySorting(a.category, b.category));
-				}
-
-				// eslint-disable-next-line no-unused-vars
-				$$invalidate(15, currentEmojisWithCategories = calculateCurrentEmojisWithCategories());
-			}
-		}
-
-		if ($$self.$$.dirty[0] & /*activeSearchItem, currentEmojis*/ 34) {
-			//
-			// Handle active search item (i.e. pressing up or down while searching)
-			//
-			/* eslint-disable no-unused-vars */
-			$$invalidate(26, activeSearchItemId = activeSearchItem !== -1 && currentEmojis[activeSearchItem].id);
-		}
-
-		if ($$self.$$.dirty[0] & /*skinTonePickerExpanded, skinToneDropdown*/ 192) {
-			// To make the animation nicer, change the z-index of the skintone picker button
-			// *after* the animation has played. This makes it appear that the picker box
-			// is expanding "below" the button
-			{
-				if (skinTonePickerExpanded) {
-					skinToneDropdown.addEventListener(
-						'transitionend',
-						() => {
-							$$invalidate(19, skinTonePickerExpandedAfterAnimation = true); // eslint-disable-line no-unused-vars
-						},
-						{ once: true }
-					);
-				} else {
-					$$invalidate(19, skinTonePickerExpandedAfterAnimation = false); // eslint-disable-line no-unused-vars
-				}
-			}
-		}
-	};
-
-	return [
-		i18n,
-		currentEmojis,
-		rawSearchText,
-		tabpanelElement,
-		searchMode,
-		activeSearchItem,
-		skinTonePickerExpanded,
-		skinToneDropdown,
-		currentSkinTone,
-		skinTones,
-		currentFavorites,
-		currentGroupIndex,
-		groups$1,
-		currentGroup,
-		databaseLoaded,
-		currentEmojisWithCategories,
-		rootElement,
-		baselineEmoji,
-		message,
-		skinTonePickerExpandedAfterAnimation,
-		activeSkinTone,
-		skinToneButtonText,
-		pickerStyle,
-		skinToneButtonLabel,
-		isRtl,
-		scrollbarWidth,
-		activeSearchItemId,
-		unicodeWithSkin,
-		labelWithSkin,
-		calculateEmojiGridStyle,
-		onSearchKeydown,
-		onNavClick,
-		onNavKeydown,
-		onEmojiClick,
-		onSkinToneOptionsClick,
-		onClickSkinToneButton,
-		onSkinToneOptionsKeydown,
-		onSkinToneOptionsKeyup,
-		onSkinToneOptionsFocusOut,
-		database,
-		skinToneEmoji,
-		customEmoji,
-		customCategorySorting,
-		emojiVersion,
-		initialLoad,
-		searchText,
-		defaultFavoriteEmojis,
-		numColumns,
-		input_input_handler,
-		div3_binding,
-		click_handler,
-		div10_binding,
-		button1_binding,
-		section_binding
-	];
-}
-
-class Picker extends SvelteComponent {
-	constructor(options) {
-		super();
-
-		init(
-			this,
-			options,
-			instance,
-			create_fragment,
-			safe_not_equal,
-			{
-				skinToneEmoji: 40,
-				i18n: 0,
-				database: 39,
-				customEmoji: 41,
-				customCategorySorting: 42,
-				emojiVersion: 43
-			},
-			null,
-			[-1, -1, -1]
-		);
-	}
+/* eslint-disable prefer-const,no-labels,no-inner-declarations */
+
+// constants
+const EMPTY_ARRAY = [];
+
+const { assign } = Object;
+
+function createRoot (shadowRoot, props) {
+  const refs = {};
+  const abortController = new AbortController();
+  const abortSignal = abortController.signal;
+  const { state, createEffect } = createState(abortSignal);
+
+  // initial state
+  assign(state, {
+    skinToneEmoji: undefined,
+    i18n: undefined,
+    database: undefined,
+    customEmoji: undefined,
+    customCategorySorting: undefined,
+    emojiVersion: undefined
+  });
+
+  // public props
+  assign(state, props);
+
+  // private props
+  assign(state, {
+    initialLoad: true,
+    currentEmojis: [],
+    currentEmojisWithCategories: [],
+    rawSearchText: '',
+    searchText: '',
+    searchMode: false,
+    activeSearchItem: -1,
+    message: undefined,
+    skinTonePickerExpanded: false,
+    skinTonePickerExpandedAfterAnimation: false,
+    currentSkinTone: 0,
+    activeSkinTone: 0,
+    skinToneButtonText: undefined,
+    pickerStyle: undefined,
+    skinToneButtonLabel: '',
+    skinTones: [],
+    currentFavorites: [],
+    defaultFavoriteEmojis: undefined,
+    numColumns: DEFAULT_NUM_COLUMNS,
+    isRtl: false,
+    scrollbarWidth: 0,
+    currentGroupIndex: 0,
+    groups: groups,
+    databaseLoaded: false,
+    activeSearchItemId: undefined
+  });
+
+  //
+  // Update the current group based on the currentGroupIndex
+  //
+  createEffect(() => {
+    if (state.currentGroup !== state.groups[state.currentGroupIndex]) {
+      state.currentGroup = state.groups[state.currentGroupIndex];
+    }
+  });
+
+  //
+  // Utils/helpers
+  //
+
+  const focus = id => {
+    shadowRoot.getElementById(id).focus();
+  };
+
+  const emojiToDomNode = emoji => shadowRoot.getElementById(`emo-${emoji.id}`);
+
+  // fire a custom event that crosses the shadow boundary
+  const fireEvent = (name, detail) => {
+    refs.rootElement.dispatchEvent(new CustomEvent(name, {
+      detail,
+      bubbles: true,
+      composed: true
+    }));
+  };
+
+  //
+  // Comparison utils
+  //
+
+  const compareEmojiArrays = (a, b) => a.id === b.id;
+
+  const compareCurrentEmojisWithCategories = (a, b) => {
+    const { category: aCategory, emojis: aEmojis } = a;
+    const { category: bCategory, emojis: bEmojis } = b;
+
+    if (aCategory !== bCategory) {
+      return false
+    }
+
+    return arraysAreEqualByFunction(aEmojis, bEmojis, compareEmojiArrays)
+  };
+
+  //
+  // Update utils to avoid excessive re-renders
+  //
+
+  // avoid excessive re-renders by checking the value before setting
+  const updateCurrentEmojis = (newEmojis) => {
+    if (!arraysAreEqualByFunction(state.currentEmojis, newEmojis, compareEmojiArrays)) {
+      state.currentEmojis = newEmojis;
+    }
+  };
+
+  // avoid excessive re-renders
+  const updateSearchMode = (newSearchMode) => {
+    if (state.searchMode !== newSearchMode) {
+      state.searchMode = newSearchMode;
+    }
+  };
+
+  // avoid excessive re-renders
+  const updateCurrentEmojisWithCategories = (newEmojisWithCategories) => {
+    if (!arraysAreEqualByFunction(state.currentEmojisWithCategories, newEmojisWithCategories, compareCurrentEmojisWithCategories)) {
+      state.currentEmojisWithCategories = newEmojisWithCategories;
+    }
+  };
+
+  // Helpers used by PickerTemplate
+
+  const unicodeWithSkin = (emoji, currentSkinTone) => (
+    (currentSkinTone && emoji.skins && emoji.skins[currentSkinTone]) || emoji.unicode
+  );
+
+  const labelWithSkin = (emoji, currentSkinTone) => (
+    uniq([
+      (emoji.name || unicodeWithSkin(emoji, currentSkinTone)),
+      emoji.annotation,
+      ...(emoji.shortcodes || EMPTY_ARRAY)
+    ].filter(Boolean)).join(', ')
+  );
+
+  const titleForEmoji = (emoji) => (
+    emoji.annotation || (emoji.shortcodes || EMPTY_ARRAY).join(', ')
+  );
+
+  const helpers = {
+    labelWithSkin, titleForEmoji, unicodeWithSkin
+  };
+  const events = {
+    onClickSkinToneButton,
+    onEmojiClick,
+    onNavClick,
+    onNavKeydown,
+    onSearchKeydown,
+    onSkinToneOptionsClick,
+    onSkinToneOptionsFocusOut,
+    onSkinToneOptionsKeydown,
+    onSkinToneOptionsKeyup,
+    onSearchInput
+  };
+  const actions = {
+    calculateEmojiGridStyle
+  };
+
+  let firstRender = true;
+  createEffect(() => {
+    render(shadowRoot, state, helpers, events, actions, refs, abortSignal, firstRender);
+    firstRender = false;
+  });
+
+  //
+  // Determine the emoji support level (in requestIdleCallback)
+  //
+
+  // mount logic
+  if (!state.emojiVersion) {
+    detectEmojiSupportLevel().then(level => {
+      // Can't actually test emoji support in Jest/JSDom, emoji never render in color in Cairo
+      /* istanbul ignore next */
+      if (!level) {
+        state.message = state.i18n.emojiUnsupportedMessage;
+      }
+    });
+  }
+
+  //
+  // Set or update the database object
+  //
+
+  createEffect(() => {
+    // show a Loading message if it takes a long time, or show an error if there's a network/IDB error
+    async function handleDatabaseLoading () {
+      let showingLoadingMessage = false;
+      const timeoutHandle = setTimeout(() => {
+        showingLoadingMessage = true;
+        state.message = state.i18n.loadingMessage;
+      }, TIMEOUT_BEFORE_LOADING_MESSAGE);
+      try {
+        await state.database.ready();
+        state.databaseLoaded = true; // eslint-disable-line no-unused-vars
+      } catch (err) {
+        console.error(err);
+        state.message = state.i18n.networkErrorMessage;
+      } finally {
+        clearTimeout(timeoutHandle);
+        if (showingLoadingMessage) { // Seems safer than checking the i18n string, which may change
+          showingLoadingMessage = false;
+          state.message = ''; // eslint-disable-line no-unused-vars
+        }
+      }
+    }
+
+    if (state.database) {
+      /* no await */
+      handleDatabaseLoading();
+    }
+  });
+
+  //
+  // Global styles for the entire picker
+  //
+
+  createEffect(() => {
+    state.pickerStyle = `
+      --num-groups: ${state.groups.length}; 
+      --indicator-opacity: ${state.searchMode ? 0 : 1}; 
+      --num-skintones: ${NUM_SKIN_TONES};`;
+  });
+
+  //
+  // Set or update the customEmoji
+  //
+
+  createEffect(() => {
+    if (state.customEmoji && state.database) {
+      updateCustomEmoji(); // re-run whenever customEmoji change
+    }
+  });
+
+  createEffect(() => {
+    if (state.customEmoji && state.customEmoji.length) {
+      if (state.groups !== allGroups) { // don't update unnecessarily
+        state.groups = allGroups;
+      }
+    } else if (state.groups !== groups) {
+      if (state.currentGroupIndex) {
+        // If the current group is anything other than "custom" (which is first), decrement.
+        // This fixes the odd case where you set customEmoji, then pick a category, then unset customEmoji
+        state.currentGroupIndex--;
+      }
+      state.groups = groups;
+    }
+  });
+
+  //
+  // Set or update the preferred skin tone
+  //
+
+  createEffect(() => {
+    async function updatePreferredSkinTone () {
+      if (state.databaseLoaded) {
+        state.currentSkinTone = await state.database.getPreferredSkinTone();
+      }
+    }
+
+    /* no await */ updatePreferredSkinTone();
+  });
+
+  createEffect(() => {
+    state.skinTones = Array(NUM_SKIN_TONES).fill().map((_, i) => applySkinTone(state.skinToneEmoji, i));
+  });
+
+  createEffect(() => {
+    state.skinToneButtonText = state.skinTones[state.currentSkinTone];
+  });
+
+  createEffect(() => {
+    state.skinToneButtonLabel = state.i18n.skinToneLabel.replace('{skinTone}', state.i18n.skinTones[state.currentSkinTone]);
+  });
+
+  //
+  // Set or update the favorites emojis
+  //
+
+  createEffect(() => {
+    async function updateDefaultFavoriteEmojis () {
+      const { database } = state;
+      const favs = (await Promise.all(MOST_COMMONLY_USED_EMOJI.map(unicode => (
+        database.getEmojiByUnicodeOrName(unicode)
+      )))).filter(Boolean); // filter because in Jest tests we don't have all the emoji in the DB
+      state.defaultFavoriteEmojis = favs;
+    }
+
+    if (state.databaseLoaded) {
+      /* no await */ updateDefaultFavoriteEmojis();
+    }
+  });
+
+  function updateCustomEmoji () {
+    // Certain effects have an implicit dependency on customEmoji since it affects the database
+    // Getting it here on the state ensures this effect re-runs when customEmoji change.
+    // Setting it on the database is pointless but prevents this code from being removed by a minifier.
+    state.database.customEmoji = state.customEmoji || EMPTY_ARRAY;
+  }
+
+  createEffect(() => {
+    async function updateFavorites () {
+      updateCustomEmoji(); // re-run whenever customEmoji change
+      const { database, defaultFavoriteEmojis, numColumns } = state;
+      const dbFavorites = await database.getTopFavoriteEmoji(numColumns);
+      const favorites = await summarizeEmojis(uniqBy([
+        ...dbFavorites,
+        ...defaultFavoriteEmojis
+      ], _ => (_.unicode || _.name)).slice(0, numColumns));
+      state.currentFavorites = favorites;
+    }
+
+    if (state.databaseLoaded && state.defaultFavoriteEmojis) {
+      /* no await */ updateFavorites();
+    }
+  });
+
+  //
+  // Calculate the width of the emoji grid. This serves two purposes:
+  // 1) Re-calculate the --num-columns var because it may have changed
+  // 2) Re-calculate the scrollbar width because it may have changed
+  //   (i.e. because the number of items changed)
+  // 3) Re-calculate whether we're in RTL mode or not.
+  //
+  // The benefit of doing this in one place is to align with rAF/ResizeObserver
+  // and do all the calculations in one go. RTL vs LTR is not strictly width-related,
+  // but since we're already reading the style here, and since it's already aligned with
+  // the rAF loop, this is the most appropriate place to do it perf-wise.
+  //
+
+  function calculateEmojiGridStyle (node) {
+    calculateWidth(node, abortSignal, width => {
+      /* istanbul ignore next */
+      { // jsdom throws errors for this kind of fancy stuff
+        // read all the style/layout calculations we need to make
+        const style = getComputedStyle(refs.rootElement);
+        const newNumColumns = parseInt(style.getPropertyValue('--num-columns'), 10);
+        const newIsRtl = style.getPropertyValue('direction') === 'rtl';
+        const parentWidth = node.parentElement.getBoundingClientRect().width;
+        const newScrollbarWidth = parentWidth - width;
+
+        // write to state variables
+        state.numColumns = newNumColumns;
+        state.scrollbarWidth = newScrollbarWidth; // eslint-disable-line no-unused-vars
+        state.isRtl = newIsRtl; // eslint-disable-line no-unused-vars
+      }
+    });
+  }
+
+  //
+  // Set or update the currentEmojis. Check for invalid ZWJ renderings
+  // (i.e. double emoji).
+  //
+
+  createEffect(() => {
+    async function updateEmojis () {
+      const { searchText, currentGroup, databaseLoaded, customEmoji } = state;
+      if (!databaseLoaded) {
+        state.currentEmojis = [];
+        state.searchMode = false;
+      } else if (searchText.length >= MIN_SEARCH_TEXT_LENGTH) {
+        const newEmojis = await getEmojisBySearchQuery(searchText);
+        if (state.searchText === searchText) { // if the situation changes asynchronously, do not update
+          updateCurrentEmojis(newEmojis);
+          updateSearchMode(true);
+        }
+      } else { // database is loaded and we're not in search mode, so we're in normal category mode
+        const { id: currentGroupId } = currentGroup;
+        // avoid race condition where currentGroupId is -1 and customEmoji is undefined/empty
+        if (currentGroupId !== -1 || (customEmoji && customEmoji.length)) {
+          const newEmojis = await getEmojisByGroup(currentGroupId);
+          if (state.currentGroup.id === currentGroupId) { // if the situation changes asynchronously, do not update
+            updateCurrentEmojis(newEmojis);
+            updateSearchMode(false);
+          }
+        }
+      }
+    }
+
+    /* no await */ updateEmojis();
+  });
+
+  // Some emojis have their ligatures rendered as two or more consecutive emojis
+  // We want to treat these the same as unsupported emojis, so we compare their
+  // widths against the baseline widths and remove them as necessary
+  createEffect(() => {
+    const { currentEmojis, emojiVersion } = state;
+    const zwjEmojisToCheck = currentEmojis
+      .filter(emoji => emoji.unicode) // filter custom emoji
+      .filter(emoji => hasZwj(emoji) && !supportedZwjEmojis.has(emoji.unicode));
+    if (!emojiVersion && zwjEmojisToCheck.length) {
+      // render now, check their length later
+      updateCurrentEmojis(currentEmojis);
+      rAF(() => checkZwjSupportAndUpdate(zwjEmojisToCheck));
+    } else {
+      const newEmojis = emojiVersion ? currentEmojis : currentEmojis.filter(isZwjSupported);
+      updateCurrentEmojis(newEmojis);
+      // Reset scroll top to 0 when emojis change
+      rAF(() => resetScrollTopIfPossible(refs.tabpanelElement));
+    }
+  });
+
+  function checkZwjSupportAndUpdate (zwjEmojisToCheck) {
+    checkZwjSupport(zwjEmojisToCheck, refs.baselineEmoji, emojiToDomNode);
+    // force update
+    // eslint-disable-next-line no-self-assign
+    state.currentEmojis = state.currentEmojis;
+  }
+
+  function isZwjSupported (emoji) {
+    return !emoji.unicode || !hasZwj(emoji) || supportedZwjEmojis.get(emoji.unicode)
+  }
+
+  async function filterEmojisByVersion (emojis) {
+    const emojiSupportLevel = state.emojiVersion || await detectEmojiSupportLevel();
+    // !version corresponds to custom emoji
+    return emojis.filter(({ version }) => !version || version <= emojiSupportLevel)
+  }
+
+  async function summarizeEmojis (emojis) {
+    return summarizeEmojisForUI(emojis, state.emojiVersion || await detectEmojiSupportLevel())
+  }
+
+  async function getEmojisByGroup (group) {
+    // -1 is custom emoji
+    const emoji = group === -1 ? state.customEmoji : await state.database.getEmojiByGroup(group);
+    return summarizeEmojis(await filterEmojisByVersion(emoji))
+  }
+
+  async function getEmojisBySearchQuery (query) {
+    return summarizeEmojis(await filterEmojisByVersion(await state.database.getEmojiBySearchQuery(query)))
+  }
+
+  createEffect(() => {
+  });
+
+  //
+  // Derive currentEmojisWithCategories from currentEmojis. This is always done even if there
+  // are no categories, because it's just easier to code the HTML this way.
+  //
+
+  createEffect(() => {
+    function calculateCurrentEmojisWithCategories () {
+      const { searchMode, currentEmojis } = state;
+      if (searchMode) {
+        return [
+          {
+            category: '',
+            emojis: currentEmojis
+          }
+        ]
+      }
+      const categoriesToEmoji = new Map();
+      for (const emoji of currentEmojis) {
+        const category = emoji.category || '';
+        let emojis = categoriesToEmoji.get(category);
+        if (!emojis) {
+          emojis = [];
+          categoriesToEmoji.set(category, emojis);
+        }
+        emojis.push(emoji);
+      }
+      return [...categoriesToEmoji.entries()]
+        .map(([category, emojis]) => ({ category, emojis }))
+        .sort((a, b) => state.customCategorySorting(a.category, b.category))
+    }
+
+    const newEmojisWithCategories = calculateCurrentEmojisWithCategories();
+    updateCurrentEmojisWithCategories(newEmojisWithCategories);
+  });
+
+  //
+  // Handle active search item (i.e. pressing up or down while searching)
+  //
+
+  createEffect(() => {
+    state.activeSearchItemId = state.activeSearchItem !== -1 && state.currentEmojis[state.activeSearchItem].id;
+  });
+
+  //
+  // Handle user input on the search input
+  //
+
+  createEffect(() => {
+    const { rawSearchText } = state;
+    rIC(() => {
+      state.searchText = (rawSearchText || '').trim(); // defer to avoid input delays, plus we can trim here
+      state.activeSearchItem = -1;
+    });
+  });
+
+  function onSearchKeydown (event) {
+    if (!state.searchMode || !state.currentEmojis.length) {
+      return
+    }
+
+    const goToNextOrPrevious = (previous) => {
+      halt(event);
+      state.activeSearchItem = incrementOrDecrement(previous, state.activeSearchItem, state.currentEmojis);
+    };
+
+    switch (event.key) {
+      case 'ArrowDown':
+        return goToNextOrPrevious(false)
+      case 'ArrowUp':
+        return goToNextOrPrevious(true)
+      case 'Enter':
+        if (state.activeSearchItem === -1) {
+          // focus the first option in the list since the list must be non-empty at this point (it's verified above)
+          state.activeSearchItem = 0;
+        } else { // there is already an active search item
+          halt(event);
+          return clickEmoji(state.currentEmojis[state.activeSearchItem].id)
+        }
+    }
+  }
+
+  //
+  // Handle user input on nav
+  //
+
+  function onNavClick (event) {
+    const { target } = event;
+    const closestTarget = target.closest('.nav-button');
+    /* istanbul ignore if */
+    if (!closestTarget) {
+      return // This should never happen, but makes me nervous not to have it
+    }
+    const groupId = parseInt(closestTarget.dataset.groupId, 10);
+    refs.searchElement.value = ''; // clear search box input
+    state.rawSearchText = '';
+    state.searchText = '';
+    state.activeSearchItem = -1;
+    state.currentGroupIndex = state.groups.findIndex(_ => _.id === groupId);
+  }
+
+  function onNavKeydown (event) {
+    const { target, key } = event;
+
+    const doFocus = el => {
+      if (el) {
+        halt(event);
+        el.focus();
+      }
+    };
+
+    switch (key) {
+      case 'ArrowLeft':
+        return doFocus(target.previousElementSibling)
+      case 'ArrowRight':
+        return doFocus(target.nextElementSibling)
+      case 'Home':
+        return doFocus(target.parentElement.firstElementChild)
+      case 'End':
+        return doFocus(target.parentElement.lastElementChild)
+    }
+  }
+
+  //
+  // Handle user input on an emoji
+  //
+
+  async function clickEmoji (unicodeOrName) {
+    const emoji = await state.database.getEmojiByUnicodeOrName(unicodeOrName);
+    const emojiSummary = [...state.currentEmojis, ...state.currentFavorites]
+      .find(_ => (_.id === unicodeOrName));
+    const skinTonedUnicode = emojiSummary.unicode && unicodeWithSkin(emojiSummary, state.currentSkinTone);
+    await state.database.incrementFavoriteEmojiCount(unicodeOrName);
+    fireEvent('emoji-click', {
+      emoji,
+      skinTone: state.currentSkinTone,
+      ...(skinTonedUnicode && { unicode: skinTonedUnicode }),
+      ...(emojiSummary.name && { name: emojiSummary.name })
+    });
+  }
+
+  async function onEmojiClick (event) {
+    const { target } = event;
+    /* istanbul ignore if */
+    if (!target.classList.contains('emoji')) {
+      // This should never happen, but makes me nervous not to have it
+      return
+    }
+    halt(event);
+    const id = target.id.substring(4); // replace 'emo-' or 'fav-' prefix
+
+    /* no await */ clickEmoji(id);
+  }
+
+  //
+  // Handle user input on the skintone picker
+  //
+
+  function changeSkinTone (skinTone) {
+    state.currentSkinTone = skinTone;
+    state.skinTonePickerExpanded = false;
+    focus('skintone-button');
+    fireEvent('skin-tone-change', { skinTone });
+    /* no await */ state.database.setPreferredSkinTone(skinTone);
+  }
+
+  function onSkinToneOptionsClick (event) {
+    const { target: { id } } = event;
+    const match = id && id.match(/^skintone-(\d)/); // skintone option format
+    /* istanbul ignore if */
+    if (!match) { // not a skintone option
+      return // This should never happen, but makes me nervous not to have it
+    }
+    halt(event);
+    const skinTone = parseInt(match[1], 10); // remove 'skintone-' prefix
+    changeSkinTone(skinTone);
+  }
+
+  function onClickSkinToneButton (event) {
+    state.skinTonePickerExpanded = !state.skinTonePickerExpanded;
+    state.activeSkinTone = state.currentSkinTone;
+    // this should always be true, since the button is obscured by the listbox, so this `if` is just to be sure
+    if (state.skinTonePickerExpanded) {
+      halt(event);
+      rAF(() => focus('skintone-list'));
+    }
+  }
+
+  // To make the animation nicer, change the z-index of the skintone picker button
+  // *after* the animation has played. This makes it appear that the picker box
+  // is expanding "below" the button
+  createEffect(() => {
+    if (state.skinTonePickerExpanded) {
+      refs.skinToneDropdown.addEventListener('transitionend', () => {
+        state.skinTonePickerExpandedAfterAnimation = true; // eslint-disable-line no-unused-vars
+      }, { once: true });
+    } else {
+      state.skinTonePickerExpandedAfterAnimation = false; // eslint-disable-line no-unused-vars
+    }
+  });
+
+  function onSkinToneOptionsKeydown (event) {
+    // this should never happen, but makes me nervous not to have it
+    /* istanbul ignore if */
+    if (!state.skinTonePickerExpanded) {
+      return
+    }
+    const changeActiveSkinTone = async nextSkinTone => {
+      halt(event);
+      state.activeSkinTone = nextSkinTone;
+    };
+
+    switch (event.key) {
+      case 'ArrowUp':
+        return changeActiveSkinTone(incrementOrDecrement(true, state.activeSkinTone, state.skinTones))
+      case 'ArrowDown':
+        return changeActiveSkinTone(incrementOrDecrement(false, state.activeSkinTone, state.skinTones))
+      case 'Home':
+        return changeActiveSkinTone(0)
+      case 'End':
+        return changeActiveSkinTone(state.skinTones.length - 1)
+      case 'Enter':
+        // enter on keydown, space on keyup. this is just how browsers work for buttons
+        // https://lists.w3.org/Archives/Public/w3c-wai-ig/2019JanMar/0086.html
+        halt(event);
+        return changeSkinTone(state.activeSkinTone)
+      case 'Escape':
+        halt(event);
+        state.skinTonePickerExpanded = false;
+        return focus('skintone-button')
+    }
+  }
+
+  function onSkinToneOptionsKeyup (event) {
+    // this should never happen, but makes me nervous not to have it
+    /* istanbul ignore if */
+    if (!state.skinTonePickerExpanded) {
+      return
+    }
+    switch (event.key) {
+      case ' ':
+        // enter on keydown, space on keyup. this is just how browsers work for buttons
+        // https://lists.w3.org/Archives/Public/w3c-wai-ig/2019JanMar/0086.html
+        halt(event);
+        return changeSkinTone(state.activeSkinTone)
+    }
+  }
+
+  async function onSkinToneOptionsFocusOut (event) {
+    // On blur outside of the skintone listbox, collapse the skintone picker.
+    const { relatedTarget } = event;
+    // The `else` should never happen, but makes me nervous not to have it
+    /* istanbul ignore else */
+    if (!relatedTarget || relatedTarget.id !== 'skintone-list') {
+      state.skinTonePickerExpanded = false;
+    }
+  }
+
+  function onSearchInput (event) {
+    state.rawSearchText = event.target.value;
+  }
+
+  return {
+    $set (newState) {
+      assign(state, newState);
+    },
+    $destroy () {
+      abortController.abort();
+    }
+  }
 }
 
 const DEFAULT_DATA_SOURCE = 'https://cdn.jsdelivr.net/npm/emoji-picker-element-data@^1/en/emojibase/data.json';
@@ -2608,17 +1589,14 @@ class PickerElement extends HTMLElement {
     // The _cmp may be defined if the component was immediately disconnected and then reconnected. In that case,
     // do nothing (preserve the state)
     if (!this._cmp) {
-      this._cmp = new Picker({
-        target: this.shadowRoot,
-        props: this._ctx
-      });
+      this._cmp = createRoot(this.shadowRoot, this._ctx);
     }
   }
 
   disconnectedCallback () {
     // Check in a microtask if the element is still connected. If so, treat this as a "move" rather than a disconnect
     // Inspired by Vue: https://vuejs.org/guide/extras/web-components.html#building-custom-elements-with-vue
-    Promise.resolve().then(() => {
+    qM(() => {
       // this._cmp may be defined if connect-disconnect-connect-disconnect occurs synchronously
       if (!this.isConnected && this._cmp) {
         this._cmp.$destroy();
@@ -2667,7 +1645,7 @@ class PickerElement extends HTMLElement {
   // Update the Database in one microtask if the locale/dataSource change. We do one microtask
   // so we don't create two Databases if e.g. both the locale and the dataSource change
   _dbFlush () {
-    Promise.resolve().then(() => (
+    qM(() => (
       this._dbCreate()
     ));
   }

@@ -7,8 +7,10 @@
 
 /**
  * Update Views Conditional condition value configuration.
+ *
+ * {@inheritdoc}
  */
-function views_conditional_update_8001(&$sandbox) {
+function views_conditional_update_8001(&$sandbox): void {
   $config_factory = \Drupal::configFactory();
   $mappings = [
     1 => 'eq',
@@ -29,7 +31,7 @@ function views_conditional_update_8001(&$sandbox) {
     $view = $config_factory->getEditable($view_config_name);
     $save = FALSE;
     $displays = $view->get('display');
-    foreach ($displays as $display_name => &$display) {
+    foreach ($displays as &$display) {
       if (!empty($display['display_options']['fields'])) {
         $fields = $display['display_options']['fields'];
         foreach ($fields as $field_name => $field) {

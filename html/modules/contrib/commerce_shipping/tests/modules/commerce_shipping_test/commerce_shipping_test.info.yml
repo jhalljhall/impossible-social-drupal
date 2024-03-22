@@ -7,7 +7,7 @@ dependencies:
   - commerce:commerce_payment
   - commerce_shipping:commerce_shipping
 
-# Information added by Drupal.org packaging script on 2023-03-10
-version: '8.x-2.6'
+# Information added by Drupal.org packaging script on 2024-02-06
+version: '8.x-2.8'
 project: 'commerce_shipping'
-datestamp: 1678443622
+datestamp: 1707227073

@@ -51,31 +51,35 @@
         </svg>
       </button>
       <ul{{ attributes.addClass('dropdown-menu') }}>
-        {%- for key, item in links|reverse if key != "comment-reply" -%}
-          <li{{ item.attributes.addClass(key|clean_class) }}>
-            {%- if item.link -%}
-              {{ item.link }}
-            {%- elseif item.text_attributes -%}
-              <span{{ item.text_attributes }}>{{ item.text }}</span>
-            {%- else -%}
-              {{ item.text }}
-            {%- endif -%}
-          </li>
+        {%- for key, item in links|reverse -%}
+          {%- if key != "comment-reply" -%}
+            <li{{ item.attributes.addClass(key|clean_class) }}>
+              {%- if item.link -%}
+                {{ item.link }}
+              {%- elseif item.text_attributes -%}
+                <span{{ item.text_attributes }}>{{ item.text }}</span>
+              {%- else -%}
+                {{ item.text }}
+              {%- endif -%}
+            </li>
+          {%- endif -%}
         {%- endfor -%}
       </ul>
     </div>
   {% else %}
 
-    {%- for key, item in links if key != "comment-reply" -%}
-      <li{{ item.attributes.addClass(key|clean_class) }}>
-        {%- if item.link -%}
-          {{ item.link }}
-        {%- elseif item.text_attributes -%}
-          <span{{ item.text_attributes }}>{{ item.text }}</span>
-        {%- else -%}
-          {{ item.text }}
-        {%- endif -%}
-      </li>
+    {%- for key, item in links -%}
+      {%- if key != "comment-reply" -%}
+        <li{{ item.attributes.addClass(key|clean_class) }}>
+          {%- if item.link -%}
+            {{ item.link }}
+          {%- elseif item.text_attributes -%}
+            <span{{ item.text_attributes }}>{{ item.text }}</span>
+          {%- else -%}
+            {{ item.text }}
+          {%- endif -%}
+        </li>
+      {%- endif -%}
     {%- endfor -%}
 
   {% endif %}
@@ -85,13 +89,15 @@
 {% if links['comment-reply'] %}
 
   <div class="btn comment__reply-btn">
-    {%- for key, item in links|reverse if key == "comment-reply" -%}
-      {%- if item.link -%}
-        {{ item.link }}
-      {%- elseif item.text_attributes -%}
-        <span{{ item.text_attributes }}>{{ item.text }}</span>
-      {%- else -%}
-        {{ item.text }}
+    {%- for key, item in links|reverse -%}
+      {%- if key == "comment-reply" -%}
+        {%- if item.link -%}
+          {{ item.link }}
+        {%- elseif item.text_attributes -%}
+          <span{{ item.text_attributes }}>{{ item.text }}</span>
+        {%- else -%}
+          {{ item.text }}
+        {%- endif -%}
       {%- endif -%}
     {%- endfor -%}
   </div>

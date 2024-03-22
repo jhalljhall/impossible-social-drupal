@@ -15,6 +15,7 @@ use Drupal\field\Entity\FieldStorageConfig;
 use Drupal\profile\Entity\Profile;
 use Drupal\profile\Entity\ProfileType;
 use Drupal\Tests\commerce\FunctionalJavascript\CommerceWebDriverTestBase;
+use Drupal\Tests\commerce_shipping\Traits\ShippingTestHelperTrait;
 
 /**
  * Tests the "Shipping information" checkout pane.
@@ -22,6 +23,8 @@ use Drupal\Tests\commerce\FunctionalJavascript\CommerceWebDriverTestBase;
  * @group commerce_shipping
  */
 class CheckoutPaneTest extends CommerceWebDriverTestBase {
+
+  use ShippingTestHelperTrait;
 
   /**
    * First sample product.
@@ -322,7 +325,6 @@ class CheckoutPaneTest extends CommerceWebDriverTestBase {
 
     // Confirm that the description for overnight shipping is shown.
     $this->assertSession()->pageTextContains('At your door tomorrow morning');
-    $this->assertSession()->assertWaitOnAjaxRequest();
     $selector = '//div[@data-drupal-selector="edit-order-summary"]';
     $this->assertSession()->elementTextContains('xpath', $selector, 'Shipping $9.99');
     $second_radio_button->click();
@@ -334,7 +336,7 @@ class CheckoutPaneTest extends CommerceWebDriverTestBase {
     $this->submitForm([
       'payment_information[add_payment_method][payment_details][number]' => '4111111111111111',
       'payment_information[add_payment_method][payment_details][expiration][month]' => '02',
-      'payment_information[add_payment_method][payment_details][expiration][year]' => '2024',
+      'payment_information[add_payment_method][payment_details][expiration][year]' => $this->getCardExpirationYear(),
       'payment_information[add_payment_method][payment_details][security_code]' => '123',
     ], 'Continue to review');
 
@@ -435,7 +437,7 @@ class CheckoutPaneTest extends CommerceWebDriverTestBase {
     $this->submitForm([
       'payment_information[add_payment_method][payment_details][number]' => '4111111111111111',
       'payment_information[add_payment_method][payment_details][expiration][month]' => '02',
-      'payment_information[add_payment_method][payment_details][expiration][year]' => '2024',
+      'payment_information[add_payment_method][payment_details][expiration][year]' => $this->getCardExpirationYear(),
       'payment_information[add_payment_method][payment_details][security_code]' => '123',
     ], 'Continue to review');
 
@@ -537,14 +539,13 @@ class CheckoutPaneTest extends CommerceWebDriverTestBase {
     // Confirm that the country list has been restricted.
     $this->assertOptions($address_prefix . '[country_code]', ['US', 'FR', 'DE']);
     $page->fillField($address_prefix . '[country_code]', 'US');
-    $this->assertSession()->assertWaitOnAjaxRequest();
     foreach ($address as $property => $value) {
       $page->fillField($address_prefix . '[' . $property . ']', $value);
     }
     $this->submitForm([
       'payment_information[add_payment_method][payment_details][number]' => '4111111111111111',
       'payment_information[add_payment_method][payment_details][expiration][month]' => '02',
-      'payment_information[add_payment_method][payment_details][expiration][year]' => '2024',
+      'payment_information[add_payment_method][payment_details][expiration][year]' => $this->getCardExpirationYear(),
       'payment_information[add_payment_method][payment_details][security_code]' => '123',
     ], 'Continue to review');
 
@@ -625,7 +626,7 @@ class CheckoutPaneTest extends CommerceWebDriverTestBase {
     $this->submitForm([
       'payment_information[add_payment_method][payment_details][number]' => '4111111111111111',
       'payment_information[add_payment_method][payment_details][expiration][month]' => '02',
-      'payment_information[add_payment_method][payment_details][expiration][year]' => '2024',
+      'payment_information[add_payment_method][payment_details][expiration][year]' => $this->getCardExpirationYear(),
       'payment_information[add_payment_method][payment_details][security_code]' => '123',
       'payment_information[add_payment_method][billing_information][address][0][address][given_name]' => 'Johnny',
       'payment_information[add_payment_method][billing_information][address][0][address][family_name]' => 'Appleseed',
@@ -725,14 +726,13 @@ class CheckoutPaneTest extends CommerceWebDriverTestBase {
     ];
     $address_prefix = 'shipping_information[shipping_profile][address][0][address]';
     $page->fillField($address_prefix . '[country_code]', 'US');
-    $this->assertSession()->assertWaitOnAjaxRequest();
     foreach ($address as $property => $value) {
       $page->fillField($address_prefix . '[' . $property . ']', $value);
     }
     $this->submitForm([
       'payment_information[add_payment_method][payment_details][number]' => '4111111111111111',
       'payment_information[add_payment_method][payment_details][expiration][month]' => '02',
-      'payment_information[add_payment_method][payment_details][expiration][year]' => '2024',
+      'payment_information[add_payment_method][payment_details][expiration][year]' => $this->getCardExpirationYear(),
       'payment_information[add_payment_method][payment_details][security_code]' => '123',
     ], 'Continue to review');
 
@@ -971,7 +971,7 @@ class CheckoutPaneTest extends CommerceWebDriverTestBase {
     $this->submitForm([
       'payment_information[add_payment_method][payment_details][number]' => '4111111111111111',
       'payment_information[add_payment_method][payment_details][expiration][month]' => '02',
-      'payment_information[add_payment_method][payment_details][expiration][year]' => '2026',
+      'payment_information[add_payment_method][payment_details][expiration][year]' => $this->getCardExpirationYear(),
       'payment_information[add_payment_method][payment_details][security_code]' => '123',
     ], 'Continue to review');
     $this->assertSession()->pageTextNotContains('The content has either been modified by another user');
@@ -1124,7 +1124,7 @@ class CheckoutPaneTest extends CommerceWebDriverTestBase {
     $this->submitForm([
       'payment_information[add_payment_method][payment_details][number]' => '4111111111111111',
       'payment_information[add_payment_method][payment_details][expiration][month]' => '02',
-      'payment_information[add_payment_method][payment_details][expiration][year]' => '2024',
+      'payment_information[add_payment_method][payment_details][expiration][year]' => $this->getCardExpirationYear(),
       'payment_information[add_payment_method][payment_details][security_code]' => '123',
     ], 'Continue to review');
     $this->assertSession()->pageTextContains('Standard shipping');

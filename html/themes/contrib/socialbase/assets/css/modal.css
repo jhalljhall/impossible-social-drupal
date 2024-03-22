@@ -111,7 +111,6 @@
   width: 1.75rem;
   height: 1.75rem;
   top: 50%;
-  right: 1.125rem;
   margin: 0;
   font-size: 0;
   background: 0 0;
@@ -124,6 +123,14 @@
           appearance: none;
   -webkit-transform: translateY(-50%);
           transform: translateY(-50%);
+}
+
+[dir='ltr'] .ui-dialog:not(.ui-dialog-off-canvas)[role='dialog'] .ui-dialog-titlebar .ui-dialog-titlebar-close {
+  right: 1.125rem;
+}
+
+[dir='rtl'] .ui-dialog:not(.ui-dialog-off-canvas)[role='dialog'] .ui-dialog-titlebar .ui-dialog-titlebar-close {
+  left: 1.125rem;
 }
 
 .ui-dialog:not(.ui-dialog-off-canvas)[role='dialog'] .ui-dialog-titlebar .ui-dialog-titlebar-close > span {

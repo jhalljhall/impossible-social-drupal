@@ -1,10 +1,10 @@
-(function ($) {
+(function (Drupal, $, once) {
 
   Drupal.behaviors.textareaAutogrow = {
     attach: function (context, settings) {
 
       // Attach autosize listener.
-      $(".form-control--autogrow", context).once("textareaAutogrow").each(function () {
+      $(once('textareaAutogrow', ".form-control--autogrow", context)).each(function () {
         autosize.destroy($('.form-control--autogrow'));
         autosize($('.form-control--autogrow'));
         autosize.update($('.form-control--autogrow'));
@@ -24,4 +24,4 @@
     }
   }
 
-})(jQuery);
+})(Drupal, jQuery, once);

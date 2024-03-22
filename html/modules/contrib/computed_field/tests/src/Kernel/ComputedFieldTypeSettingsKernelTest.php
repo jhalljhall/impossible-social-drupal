@@ -24,7 +24,6 @@ class ComputedFieldTypeSettingsKernelTest extends KernelTestBase implements Serv
     'system',
     'user',
     'field',
-    'field_ui',
     'entity_test',
     'computed_field',
     'link',

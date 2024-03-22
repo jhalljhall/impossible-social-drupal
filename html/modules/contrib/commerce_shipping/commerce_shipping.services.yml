@@ -3,7 +3,7 @@ services:
     class: Drupal\commerce_shipping\Access\ShipmentCollectionAccessCheck
     arguments: ['@entity_type.manager']
     tags:
-    - { name: access_check, applies_to: _shipment_collection_access }
+      - { name: access_check, applies_to: _shipment_collection_access }
 
   commerce_shipping.packer_manager:
     class: Drupal\commerce_shipping\PackerManager

@@ -64,7 +64,7 @@ class ShipmentAdminTest extends CommerceWebDriverTestBase {
   /**
    * The base admin shipment uri.
    *
-   * @var string
+   * @var \Drupal\Core\Url
    */
   protected $shipmentUri;
 
@@ -155,7 +155,7 @@ class ShipmentAdminTest extends CommerceWebDriverTestBase {
     ]);
     $this->shipmentUri = Url::fromRoute('entity.commerce_shipment.collection', [
       'commerce_order' => $this->order->id(),
-    ])->toString();
+    ]);
 
     $this->packageType = $this->createEntity('commerce_package_type', [
       'id' => 'package_type_a',
@@ -264,7 +264,7 @@ class ShipmentAdminTest extends CommerceWebDriverTestBase {
   public function testShipmentTabAndOperation() {
     $this->drupalGet($this->order->toUrl());
     $this->assertSession()->linkExists('Shipments');
-    $this->assertSession()->linkByHrefExists($this->shipmentUri);
+    $this->assertSession()->linkByHrefExists($this->shipmentUri->toString());
 
     // Make the order type non shippable, and make sure the "Shipments" tab
     // doesn't show up.
@@ -273,7 +273,7 @@ class ShipmentAdminTest extends CommerceWebDriverTestBase {
     $order_type->save();
     $this->drupalGet($this->order->toUrl());
     $this->assertSession()->linkNotExists('Shipments');
-    $this->assertSession()->linkByHrefNotExists($this->shipmentUri);
+    $this->assertSession()->linkByHrefNotExists($this->shipmentUri->toString());
 
     $order_type->setThirdPartySetting('commerce_shipping', 'shipment_type', 'default');
     $order_type->save();
@@ -281,7 +281,7 @@ class ShipmentAdminTest extends CommerceWebDriverTestBase {
     $this->assertSession()->linkExists('Shipments');
     // Ensure the "Shipments" operation is shown on the listing page.
     $this->drupalGet($this->order->toUrl('collection'));
-    $this->assertSession()->linkByHrefExists($this->shipmentUri);
+    $this->assertSession()->linkByHrefExists($this->shipmentUri->toString());
     $order_edit_link = $this->order->toUrl('edit-form')->toString();
     $this->assertSession()->linkByHrefExists($order_edit_link);
 
@@ -297,7 +297,7 @@ class ShipmentAdminTest extends CommerceWebDriverTestBase {
     $this->clickLink('Carts');
     $this->assertSession()->linkByHrefExists($order_edit_link);
     $this->assertSession()->linkNotExists('Shipments');
-    $this->assertSession()->linkByHrefNotExists($this->shipmentUri);
+    $this->assertSession()->linkByHrefNotExists($this->shipmentUri->toString());
   }
 
   /**
@@ -307,7 +307,8 @@ class ShipmentAdminTest extends CommerceWebDriverTestBase {
     $this->drupalGet($this->shipmentUri);
     $page = $this->getSession()->getPage();
     $page->clickLink('Add shipment');
-    $this->assertSession()->addressEquals($this->shipmentUri . '/add/default');
+    $shipment_uri = $this->shipmentUri->setAbsolute()->toString();
+    $this->assertSession()->addressEquals($shipment_uri . '/add/default');
 
     $shipment_type = $this->createEntity('commerce_shipment_type', [
       'id' => 'foo',
@@ -320,7 +321,7 @@ class ShipmentAdminTest extends CommerceWebDriverTestBase {
     $this->drupalGet($this->shipmentUri);
     $page = $this->getSession()->getPage();
     $page->clickLink('Add shipment');
-    $this->assertSession()->addressEquals($this->shipmentUri . '/add/foo');
+    $this->assertSession()->addressEquals($shipment_uri . '/add/foo');
   }
 
   /**
@@ -330,7 +331,8 @@ class ShipmentAdminTest extends CommerceWebDriverTestBase {
     $this->drupalGet($this->shipmentUri);
     $page = $this->getSession()->getPage();
     $page->clickLink('Add shipment');
-    $this->assertSession()->addressEquals($this->shipmentUri . '/add/default');
+    $shipment_uri = $this->shipmentUri->setAbsolute()->toString();
+    $this->assertSession()->addressEquals($shipment_uri . '/add/default');
     $this->assertTrue($page->hasSelect('package_type'));
     $this->assertSession()->optionExists('package_type', 'custom_box');
     $this->assertSession()->optionExists('package_type', 'commerce_package_type:' . $this->packageType->uuid());
@@ -356,7 +358,7 @@ class ShipmentAdminTest extends CommerceWebDriverTestBase {
       'shipment_items[1]' => TRUE,
       'title[0][value]' => 'Test shipment',
     ], 'Save');
-    $this->assertSession()->addressEquals($this->shipmentUri);
+    $this->assertSession()->addressEquals($shipment_uri);
     $this->assertSession()->pageTextContains($this->t('Saved shipment for order @order.', ['@order' => $this->order->getOrderNumber()]));
 
     \Drupal::entityTypeManager()->getStorage('commerce_order')->resetCache([$this->order->id()]);
@@ -598,10 +600,11 @@ class ShipmentAdminTest extends CommerceWebDriverTestBase {
     $this->assertSession()->pageTextContains($shipment->label());
     $this->assertSession()->pageTextContains('$10.00');
 
-    $this->assertSession()->linkByHrefExists($this->shipmentUri . '/' . $shipment->id() . '/delete');
-    $this->drupalGet($this->shipmentUri . '/' . $shipment->id() . '/delete');
+    $shipment_delete_uri = $shipment->toUrl('delete-form');
+    $this->assertSession()->linkByHrefExists($shipment_delete_uri->setAbsolute(FALSE)->toString());
+    $this->drupalGet($shipment_delete_uri);
     $this->getSession()->getPage()->pressButton('Delete');
-    $this->assertSession()->addressEquals($this->shipmentUri);
+    $this->assertSession()->addressEquals($this->shipmentUri->setAbsolute()->toString());
     $this->assertSession()->pageTextNotContains('$10.00');
 
     \Drupal::entityTypeManager()->getStorage('commerce_shipment')->resetCache([$shipment->id()]);
@@ -615,7 +618,7 @@ class ShipmentAdminTest extends CommerceWebDriverTestBase {
   public function testShipmentListing() {
     $this->drupalGet($this->order->toUrl());
     $this->assertSession()->linkExists('Shipments');
-    $this->assertSession()->linkByHrefExists($this->shipmentUri);
+    $this->assertSession()->linkByHrefExists($this->shipmentUri->toString());
 
     $this->clickLink('Shipments');
     $this->assertSession()->pageTextContains('There are no shipments yet.');
@@ -834,6 +837,47 @@ class ShipmentAdminTest extends CommerceWebDriverTestBase {
     $this->assertSession()->assertWaitOnAjaxRequest();
     $this->assertSession()->pageTextContains('Standard shipping');
     $this->assertSession()->pageTextContains('Overnight shipping');
+  }
+
+  /**
+   * Tests recalculating anonymous shipping by admin.
+   */
+  public function testRecalculateAnonymousShipping(): void {
+    $order = $this->order->createDuplicate();
+    $order->set('uid', 0);
+    $order->save();
+
+    $anonymous_profile = $this->createEntity('profile', [
+      'type' => 'customer',
+      'uid' => 0,
+      'address' => $this->defaultAddress,
+    ]);
+
+    /** @var \Drupal\commerce_shipping\Entity\ShipmentInterface $shipment */
+    $shipment = $this->createEntity('commerce_shipment', [
+      'type' => 'default',
+      'title' => 'Test shipment',
+      'order_id' => $order->id(),
+      'amount' => new Price('10', 'USD'),
+      'items' => [
+        new ShipmentItem([
+          'order_item_id' => 1,
+          'title' => 'Test shipment item label',
+          'quantity' => 1,
+          'weight' => new Weight(0, 'g'),
+          'declared_value' => new Price('1', 'USD'),
+        ]),
+      ],
+      'shipping_profile' => $anonymous_profile,
+    ]);
+
+    $this->drupalGet($shipment->toUrl('edit-form'));
+    $this->assertRenderedAddress($this->defaultAddress);
+
+    $this->getSession()->getPage()->findButton('Recalculate shipping')->click();
+    $this->assertSession()->assertWaitOnAjaxRequest();
+
+    $this->assertRenderedAddress($this->defaultAddress);
   }
 
 }

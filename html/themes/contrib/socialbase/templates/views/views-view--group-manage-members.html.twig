@@ -50,6 +50,8 @@
   ]
 %}
 
+{{ attach_library('socialbase/form--filter-membership') }}
+
 <div{{ attributes.addClass(classes) }}>
   {{ title_prefix }}
   {{ title }}
@@ -57,20 +59,22 @@
 
   {% if header %}
     <div class="row form-group-inline--right">
-      <div class="col-sm-6 right-auto">
-        <h4>
-          {{ header.result }}
-        </h4>
-      </div>
-      <div class="col-sm-6">
-        {{ header.actions }}
-      </div>
-    </div>
-  {% endif %}
+      {% block filter_block %}
+        <div class="right-auto">
+          <h4>
+            {{ header.result }}
+          </h4>
+        </div>
+        <div class="filter-block">
+          {% if exposed %}
+            <div class="view-filters form-group infinity-filter">
+              {{ 'Showing'|t }} {{ exposed }} <span class="separate-text">{{ 'of'|t }}</span> {{ view.total_rows }}
+            </div>
+          {% endif %}
 
-  {% if exposed %}
-    <div class="view-filters form-group">
-      {{ exposed }}
+          {{ header.actions }}
+        </div>
+      {% endblock %}
     </div>
   {% endif %}
 

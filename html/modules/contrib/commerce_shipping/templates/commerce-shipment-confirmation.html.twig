@@ -86,7 +86,7 @@
             {% endblock %}
           </td>
         </tr>
-        {% if (tracking_code) %}
+        {% if shipment_entity.tracking_code is not empty %}
           {% block tracking_info %}
             <tr>
               <td style="font-weight: bold; padding-top:15px; padding-bottom: 15px; text-align: left; vertical-align: top; border-top: 1px solid #cccccc">
@@ -98,13 +98,13 @@
                 {{ tracking_code }}
               </td>
             </tr>
-            <tr>
-              <td style="padding-top:15px; padding-bottom: 15px; text-align: center; border-top: 1px solid #cccccc">
-                {{ 'Thank you for your order!'|t }}
-              </td>
-            </tr>
           {% endblock %}
         {% endif %}
+        <tr>
+          <td style="padding-top:15px; padding-bottom: 15px; text-align: center; border-top: 1px solid #cccccc">
+            {{ 'Thank you for your order!'|t }}
+          </td>
+        </tr>
         </tbody>
       </table>
     </td>

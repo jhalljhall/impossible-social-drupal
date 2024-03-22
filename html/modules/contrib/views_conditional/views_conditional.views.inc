@@ -7,8 +7,11 @@
 
 /**
  * Implements hook_views_data().
+ *
+ * {@inheritdoc}
  */
-function views_conditional_views_data() {
+function views_conditional_views_data(): array {
+  $data = [];
   $data['views_conditional']['table']['group'] = t('Views');
   $data['views_conditional']['table']['join'] = [
     '#global' => [],

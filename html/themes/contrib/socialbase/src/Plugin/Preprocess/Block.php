@@ -198,7 +198,10 @@ class Block extends PreprocessBase implements ContainerFactoryPluginInterface {
       }
     }
 
-    $variables['content']['#attributes']['block'] = $variables['attributes']['id'];
+    // Don't add attributes for blocks that use lazy builder.
+    if (!isset($variables['content']['#lazy_builder'])) {
+      $variables['content']['#attributes']['block'] = $variables['attributes']['id'];
+    }
 
     // Fix label for Views exposed filter blocks.
     if (!empty($variables['configuration']['views_label']) && empty($variables['configuration']['label'])) {

@@ -1,10 +1,10 @@
-name: 'Test Computed Field Automatic'
+name: 'Computed Field test automatic plugins'
 type: module
 description: 'Test module providing automatic computed field plugins'
 package: Testing
 core_version_requirement: '^9 || ^10'
 
-# Information added by Drupal.org packaging script on 2023-07-14
-version: '4.0.0-alpha6'
+# Information added by Drupal.org packaging script on 2024-02-15
+version: '4.0.0-alpha8'
 project: 'computed_field'
-datestamp: 1689368345
+datestamp: 1708002878

@@ -80,6 +80,18 @@
         .fa-facebook-f {
           font-size: 1.25rem;
         }
+
+        .shariff-button {
+          &.twitter {
+            a {
+              background: url('../../components/04-organisms/hero/icons/icon-twitter-x.svg') no-repeat center/40px 40px;
+
+              .fab {
+                display: none;
+              }
+            }
+          }
+        }
       }
     }
 
@@ -732,6 +744,43 @@
 
         &:not(#edit-decline-invite) {
           min-width: 195px;
+
+          &[data-drupal-selector='edit-enroll-for-this-event'],
+          &[data-drupal-selector='edit-feedback-user-has-enrolled'] {
+            &[disabled]:not(.is-disabled) {
+              position: relative;
+              display: flex;
+              align-items: center;
+              justify-content: center;
+
+              &:after {
+                content: '';
+                margin-left: 8px;
+                display: inline-block;
+                width: 16px;
+                height: 16px;
+                background: url('../../components/04-organisms/hero/icons/icon-autorenew.svg') no-repeat center/16px 16px;
+                animation: glyphicon-spin 1s infinite linear;
+              }
+
+              @keyframes glyphicon-spin {
+                0% {
+                  transform: rotate(0deg);
+                }
+                100% {
+                  transform: rotate(359deg);
+                }
+              }
+            }
+          }
+
+          &[data-drupal-selector='edit-enroll-for-this-event'] {
+            min-width: 250px;
+          }
+
+          &[data-drupal-selector='edit-feedback-user-has-enrolled'] {
+            width: 100%;
+          }
         }
       }
     }

@@ -2,12 +2,21 @@
 
 namespace Drupal\state_machine\Form;
 
+use Drupal\Component\Serialization\Json;
 use Drupal\Core\Entity\ContentEntityInterface;
 use Drupal\Core\Form\FormBase;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Url;
+use Symfony\Component\DependencyInjection\ContainerInterface;
 
 class StateTransitionForm extends FormBase implements StateTransitionFormInterface {
+
+  /**
+   * The redirect destination.
+   *
+   * @var \Drupal\Core\Routing\RedirectDestinationInterface
+   */
+  protected $redirectDestination;
 
   /**
    * The entity.
@@ -22,6 +31,15 @@ class StateTransitionForm extends FormBase implements StateTransitionFormInterfa
    * @var string
    */
   protected $fieldName;
+
+  /**
+   * {@inheritdoc}
+   */
+  public static function create(ContainerInterface $container) {
+    $instance = parent::create($container);
+    $instance->redirectDestination = $container->get('redirect.destination');
+    return $instance;
+  }
 
   /**
    * {@inheritdoc}
@@ -83,6 +101,10 @@ class StateTransitionForm extends FormBase implements StateTransitionFormInterfa
     /** @var \Drupal\state_machine\Plugin\Field\FieldType\StateItemInterface $state_item */
     $state_item = $this->entity->get($this->fieldName)->first();
 
+    if (!isset($state_item)) {
+      return;
+    }
+
     $form['actions'] = [
       '#type' => 'container',
     ];
@@ -109,7 +131,9 @@ class StateTransitionForm extends FormBase implements StateTransitionFormInterfa
       $form['actions'][$transition_id] = [
         '#type' => 'link',
         '#title' => $transition->getLabel(),
-        '#url' => Url::fromRoute("entity.{$this->entity->getEntityTypeId()}.state_transition_form", $route_parameters),
+        '#url' => Url::fromRoute("entity.{$this->entity->getEntityTypeId()}.state_transition_form", $route_parameters, [
+          'query' => $this->redirectDestination->getAsArray(),
+        ]),
         '#attributes' => [
           'class' => [
             'button',
@@ -120,6 +144,9 @@ class StateTransitionForm extends FormBase implements StateTransitionFormInterfa
       if ($form_state->get('use_modal')) {
         $form['actions'][$transition_id]['#attributes']['class'][] = 'use-ajax';
         $form['actions'][$transition_id]['#attributes']['data-dialog-type'] = 'modal';
+        $form['actions'][$transition_id]['#attributes']['data-dialog-options'] = Json::encode([
+          'width' => 'auto',
+        ]);
         $form['#attached']['library'][] = 'core/drupal.dialog.ajax';
       }
     }

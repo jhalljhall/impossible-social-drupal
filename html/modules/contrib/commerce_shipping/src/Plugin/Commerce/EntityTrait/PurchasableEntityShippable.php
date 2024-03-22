@@ -3,6 +3,7 @@
 namespace Drupal\commerce_shipping\Plugin\Commerce\EntityTrait;
 
 use Drupal\commerce\Plugin\Commerce\EntityTrait\EntityTraitBase;
+use Drupal\Core\StringTranslation\TranslatableMarkup;
 use Drupal\entity\BundleFieldDefinition;
 use Drupal\physical\MeasurementType;
 
@@ -23,7 +24,7 @@ class PurchasableEntityShippable extends EntityTraitBase {
   public function buildFieldDefinitions() {
     $fields = [];
     $fields['weight'] = BundleFieldDefinition::create('physical_measurement')
-      ->setLabel('Weight')
+      ->setLabel(new TranslatableMarkup('Weight'))
       ->setRequired(TRUE)
       ->setSetting('measurement_type', MeasurementType::WEIGHT)
       ->setDisplayOptions('form', [

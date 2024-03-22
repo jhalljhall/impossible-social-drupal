@@ -83,6 +83,14 @@
   font-size: 1.25rem;
 }
 
+.socialblue--sky .hero__banner .shariff.card__block .orientation-horizontal .shariff-button.twitter a {
+  background: url("../../components/04-organisms/hero/icons/icon-twitter-x.svg") no-repeat center/40px 40px;
+}
+
+.socialblue--sky .hero__banner .shariff.card__block .orientation-horizontal .shariff-button.twitter a .fab {
+  display: none;
+}
+
 .socialblue--sky .hero__banner .hero-footer__list ul:not(.dropdown-menu),
 .socialblue--sky .hero__banner .hero__info-list {
   margin: 0;
@@ -534,8 +542,8 @@
 [dir='rtl'] .socialblue--sky.path-node:not(.page-node-type-topic) .hero__banner--static .article__special-fields .event-date-advanced, [dir='rtl']
 .socialblue--sky.path-node:not(.page-node-type-topic) .hero__banner--static .article__special-fields .event-location-address {
   -webkit-box-pack: end;
-  -ms-flex-pack: end;
-  justify-content: flex-end;
+      -ms-flex-pack: end;
+          justify-content: flex-end;
 }
 
 .socialblue--sky.path-node:not(.page-node-type-topic) .hero__banner--static .article__special-fields .article__special-fields-icon {
@@ -555,6 +563,60 @@
 
 .socialblue--sky.path-node:not(.page-node-type-topic) .hero__banner--static .hero-footer__cta .btn:not(#edit-decline-invite) {
   min-width: 195px;
+}
+
+.socialblue--sky.path-node:not(.page-node-type-topic) .hero__banner--static .hero-footer__cta .btn:not(#edit-decline-invite)[data-drupal-selector='edit-enroll-for-this-event'][disabled]:not(.is-disabled), .socialblue--sky.path-node:not(.page-node-type-topic) .hero__banner--static .hero-footer__cta .btn:not(#edit-decline-invite)[data-drupal-selector='edit-feedback-user-has-enrolled'][disabled]:not(.is-disabled) {
+  position: relative;
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-box-align: center;
+      -ms-flex-align: center;
+          align-items: center;
+  -webkit-box-pack: center;
+      -ms-flex-pack: center;
+          justify-content: center;
+}
+
+.socialblue--sky.path-node:not(.page-node-type-topic) .hero__banner--static .hero-footer__cta .btn:not(#edit-decline-invite)[data-drupal-selector='edit-enroll-for-this-event'][disabled]:not(.is-disabled):after, .socialblue--sky.path-node:not(.page-node-type-topic) .hero__banner--static .hero-footer__cta .btn:not(#edit-decline-invite)[data-drupal-selector='edit-feedback-user-has-enrolled'][disabled]:not(.is-disabled):after {
+  content: '';
+  margin-left: 8px;
+  display: inline-block;
+  width: 16px;
+  height: 16px;
+  background: url("../../components/04-organisms/hero/icons/icon-autorenew.svg") no-repeat center/16px 16px;
+  -webkit-animation: glyphicon-spin 1s infinite linear;
+          animation: glyphicon-spin 1s infinite linear;
+}
+
+@-webkit-keyframes glyphicon-spin {
+  0% {
+    -webkit-transform: rotate(0deg);
+            transform: rotate(0deg);
+  }
+  100% {
+    -webkit-transform: rotate(359deg);
+            transform: rotate(359deg);
+  }
+}
+
+@keyframes glyphicon-spin {
+  0% {
+    -webkit-transform: rotate(0deg);
+            transform: rotate(0deg);
+  }
+  100% {
+    -webkit-transform: rotate(359deg);
+            transform: rotate(359deg);
+  }
+}
+
+.socialblue--sky.path-node:not(.page-node-type-topic) .hero__banner--static .hero-footer__cta .btn:not(#edit-decline-invite)[data-drupal-selector='edit-enroll-for-this-event'] {
+  min-width: 250px;
+}
+
+.socialblue--sky.path-node:not(.page-node-type-topic) .hero__banner--static .hero-footer__cta .btn:not(#edit-decline-invite)[data-drupal-selector='edit-feedback-user-has-enrolled'] {
+  width: 100%;
 }
 
 .socialblue--sky main:not(.is-navbar-secondary) .hero__banner--static .hero-footer {
@@ -842,8 +904,8 @@
   [dir='rtl'] .socialblue--sky.path-node:not(.page-node-type-topic) .hero__banner--static .article__special-fields .event-date-advanced, [dir='rtl']
   .socialblue--sky.path-node:not(.page-node-type-topic) .hero__banner--static .article__special-fields .event-location-address {
     -webkit-box-pack: start;
-    -ms-flex-pack: start;
-    justify-content: flex-start;
+        -ms-flex-pack: start;
+            justify-content: flex-start;
   }
   .socialblue--sky.path-group .cover-wrap:not(.cover-wrap--course-statistic) .page-title {
     display: -webkit-box;

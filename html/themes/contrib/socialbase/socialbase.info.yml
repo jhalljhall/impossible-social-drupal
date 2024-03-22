@@ -28,7 +28,7 @@ base theme: bootstrap
 
 
 # The supported Drupal version.
-core_version_requirement: ^8.8 || ^9
+core_version_requirement: ^8.8 || ^9 || ^10
 
 # Libraries-extend is used to attach libraries to other libraries. If the
 # original library is conditionally included, the library it is extended with
@@ -65,33 +65,12 @@ stylesheets-remove:
 libraries-override:
   # The library name.
   core/normalize: false
-  # Remove jQuery UI styles
-  core/jquery.ui:
-    css:
-      component:
-        assets/vendor/jquery.ui/themes/base/core.css: false
-      theme:
-        assets/vendor/jquery.ui/themes/base/theme.css: false
-  core/jquery.ui.button:
-    css:
-      component:
-        assets/vendor/jquery.ui/themes/base/button.css: false
-  core/jquery.ui.dialog:
-    css:
-      component:
-        assets/vendor/jquery.ui/themes/base/dialog.css: false
-  core/jquery.ui.menu:
-    css:
-      component:
-        assets/vendor/jquery.ui/themes/base/menu.css: false
   system/base: false
   views/views.module: false
-  classy/file: false
   like_and_dislike/behavior:
     js:
       js/like_and_dislike_service.js: false
   like_and_dislike/icons: false
-  private_message/inbox_block: false
 
 # Libraries contain CSS and JavaScript files. The libraries setting is used to
 # globally add libraries, which means they will appear on every page. Libraries
@@ -176,7 +155,7 @@ regions:
 regions_hidden:
   - hidden
 
-# Information added by Drupal.org packaging script on 2023-10-12
-version: '2.5.8'
+# Information added by Drupal.org packaging script on 2024-03-11
+version: '2.5.14'
 project: 'socialbase'
-datestamp: 1697101791
+datestamp: 1710147315

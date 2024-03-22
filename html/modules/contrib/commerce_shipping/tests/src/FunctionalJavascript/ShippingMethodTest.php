@@ -131,7 +131,7 @@ class ShippingMethodTest extends CommerceWebDriverTestBase {
     ]);
     $this->drupalGet($shipping_method->toUrl('delete-form'));
     $this->assertSession()->pageTextContains('This action cannot be undone.');
-    $this->submitForm([], t('Delete'));
+    $this->submitForm([], 'Delete');
 
     $this->container->get('entity_type.manager')->getStorage('commerce_shipping_method')->resetCache([$shipping_method->id()]);
     $shipping_method_exists = (bool) ShippingMethod::load($shipping_method->id());

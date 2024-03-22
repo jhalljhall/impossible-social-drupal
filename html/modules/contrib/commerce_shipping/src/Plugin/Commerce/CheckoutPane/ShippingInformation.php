@@ -4,8 +4,8 @@ namespace Drupal\commerce_shipping\Plugin\Commerce\CheckoutPane;
 
 use Drupal\commerce\AjaxFormTrait;
 use Drupal\commerce\InlineFormManager;
-use Drupal\commerce_checkout\Plugin\Commerce\CheckoutPane\CheckoutPaneBase;
 use Drupal\commerce_checkout\Plugin\Commerce\CheckoutFlow\CheckoutFlowInterface;
+use Drupal\commerce_checkout\Plugin\Commerce\CheckoutPane\CheckoutPaneBase;
 use Drupal\commerce_shipping\Entity\ShipmentInterface;
 use Drupal\commerce_shipping\OrderShipmentSummaryInterface;
 use Drupal\commerce_shipping\PackerManagerInterface;
@@ -347,6 +347,16 @@ class ShippingInformation extends CheckoutPaneBase implements ContainerFactoryPl
       }, $shipments);
       $this->order->set('shipments', $shipments);
       $this->order->save();
+
+      $shipment_storage = $this->entityTypeManager->getStorage('commerce_shipment');
+      foreach ($shipments as $index => $shipment) {
+        if ($shipment->isNew()) {
+          continue;
+        }
+        // Reload the shipment in case it was updated e.g. the tax adjustments
+        // were applied to the shipment.
+        $pane_form['shipments'][$index]['#shipment'] = $shipment_storage->load($shipment->id());
+      }
     }
 
     return $pane_form;

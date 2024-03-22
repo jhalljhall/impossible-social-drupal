@@ -4,6 +4,7 @@ namespace Drupal\commerce_shipping\Form;
 
 use Drupal\commerce\AjaxFormTrait;
 use Drupal\commerce_order\Entity\OrderInterface;
+use Drupal\commerce_order\Entity\OrderItemInterface;
 use Drupal\commerce_shipping\PackageTypeManagerInterface;
 use Drupal\commerce_shipping\ShipmentItem;
 use Drupal\Component\Datetime\TimeInterface;
@@ -118,6 +119,11 @@ class ShipmentForm extends ContentEntityForm {
       $form['shipping_profile']['widget'][0]['profile']['select_address']['#recalculate'] = TRUE;
     }
 
+    // Prepopulate the title on shipments that have no title.
+    $existing_shipments = count($order->get('shipments')->referencedEntities());
+    $auto_title = $this->t('Shipment #@number', ['@number' => ($existing_shipments + 1)]);
+    $form['title']['widget'][0]['value']['#default_value'] = $shipment->getTitle() ?? $auto_title;
+
     $package_types = $this->packageTypeManager->getDefinitions();
     $package_type_options = [];
     foreach ($package_types as $package_type) {
@@ -136,6 +142,7 @@ class ShipmentForm extends ContentEntityForm {
     ];
 
     $order_items = $order->getItems();
+    $order_item_ids = array_map(fn (OrderItemInterface $order_item) => $order_item->id(), $order_items);
     /** @var \Drupal\commerce_shipping\ShipmentStorageInterface $shipment_storage */
     $shipment_storage = $this->entityTypeManager->getStorage('commerce_shipment');
     // Get all of the shipments for the current order.
@@ -160,6 +167,10 @@ class ShipmentForm extends ContentEntityForm {
     /** @var \Drupal\commerce_shipping\ShipmentItem $shipment_item */
     foreach ($shipment_items as $shipment_item) {
       $shipment_item_id = $shipment_item->getOrderItemId();
+      if (!in_array($shipment_item_id, $order_item_ids)) {
+        // The order item was deleted on the order.
+        continue;
+      }
       $shipment_item_defaults[$shipment_item_id] = $shipment_item_id;
       $shipment_item_options[$shipment_item_id] = $shipment_item->getTitle();
     }
@@ -263,19 +274,19 @@ class ShipmentForm extends ContentEntityForm {
       $selected_profile_id = $form_state->getValue($selected_profile_key);
       $address_key = array_merge($base_form_key, ['address', '0', 'address']);
       $address = $form_state->getValue($address_key);
+      // If the address entry form is open, copy the address into the shipping profile so
+      // rates can be returned. If a new address is being entered the shipment profile will
+      // be emptied so no rates are returned.
+      if ($address !== NULL || $selected_profile_id === '_new') {
+        $shipment->getShippingProfile()->set('address', $address);
+      }
       // If a different profile was selected, load it and use its address.
-      if (!empty($selected_profile_id) && is_numeric($selected_profile_id)) {
+      elseif (!empty($selected_profile_id) && is_numeric($selected_profile_id)) {
         $profile_storage = $this->entityTypeManager->getStorage('profile');
         $selected_profile = $profile_storage->load($selected_profile_id);
         assert($selected_profile instanceof ProfileInterface);
         $shipment->getShippingProfile()->set('address', $selected_profile->get('address')->first()->toArray());
       }
-      elseif ($selected_profile_id !== '_original') {
-        // We update the address, even it's NULL so that no shipping rates are
-        // returned in case none apply without entering an address.
-        $shipment->getShippingProfile()->get('address')->setValue($address);
-      }
-
       // Add the shipping items.
       $this->addShippingItems($form, $form_state);
 
@@ -355,6 +366,10 @@ class ShipmentForm extends ContentEntityForm {
       }
       /** @var \Drupal\commerce_order\Entity\OrderItemInterface $order_item */
       $order_item = $this->entityTypeManager->getStorage('commerce_order_item')->load($key);
+      if (!$order_item) {
+        // The order item was deleted on the order.
+        continue;
+      }
       $quantity = $order_item->getQuantity();
       $purchased_entity = $order_item->getPurchasedEntity();
 

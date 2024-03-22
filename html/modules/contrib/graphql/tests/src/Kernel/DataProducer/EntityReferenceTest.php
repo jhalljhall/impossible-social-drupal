@@ -2,14 +2,35 @@
 
 namespace Drupal\Tests\graphql\Kernel\DataProducer;
 
-use Drupal\Tests\field\Traits\EntityReferenceTestTrait;
-use Drupal\Tests\graphql\Kernel\GraphQLTestBase;
 use Drupal\Core\Field\FieldStorageDefinitionInterface;
-use Drupal\node\NodeInterface;
-use Drupal\Core\Entity\EntityInterface;
-use Drupal\node\Entity\NodeType;
 use Drupal\node\Entity\Node;
-use Drupal\user\UserInterface;
+use Drupal\node\Entity\NodeType;
+use Drupal\Tests\graphql\Kernel\GraphQLTestBase;
+
+// @todo Drupal 9 compatibility: use the deprecated trait for Drupal 9.
+if (strpos(\Drupal::VERSION, '9') === 0) {
+
+  /**
+   * Helper trait for compatibility with Drupal 9.
+   *
+   * @phpcs:disable Drupal.Classes.ClassFileName.NoMatch
+   */
+  trait EntityReferenceFieldCreationTrait {
+    // @phpstan-ignore-next-line
+    use \Drupal\Tests\field\Traits\EntityReferenceTestTrait;
+
+  }
+}
+else {
+
+  /**
+   * Helper trait for compatibility with Drupal 10.
+   */
+  trait EntityReferenceFieldCreationTrait {
+    use \Drupal\Tests\field\Traits\EntityReferenceFieldCreationTrait;
+
+  }
+}
 
 /**
  * Tests the entity_reference data producers.
@@ -17,25 +38,27 @@ use Drupal\user\UserInterface;
  * @group graphql
  */
 class EntityReferenceTest extends GraphQLTestBase {
-  use EntityReferenceTestTrait;
+  use EntityReferenceFieldCreationTrait;
+
+  /**
+   * Test node that will be referenced.
+   *
+   * @var \Drupal\node\Entity\Node
+   */
+  protected $referencedNode;
+
+  /**
+   * Test node.
+   *
+   * @var \Drupal\node\Entity\Node
+   */
+  protected $node;
 
   /**
    * {@inheritdoc}
    */
   public function setUp(): void {
     parent::setUp();
-
-    $this->entity = $this->getMockBuilder(NodeInterface::class)
-      ->disableOriginalConstructor()
-      ->getMock();
-
-    $this->entity_interface = $this->getMockBuilder(EntityInterface::class)
-      ->disableOriginalConstructor()
-      ->getMock();
-
-    $this->user = $this->getMockBuilder(UserInterface::class)
-      ->disableOriginalConstructor()
-      ->getMock();
 
     $content_type1 = NodeType::create([
       'type' => 'test1',
@@ -51,19 +74,19 @@ class EntityReferenceTest extends GraphQLTestBase {
 
     $this->createEntityReferenceField('node', 'test1', 'field_test1_to_test2', 'test1 lable', 'node', 'default', [], FieldStorageDefinitionInterface::CARDINALITY_UNLIMITED);
 
-    $this->referenced_node = Node::create([
+    $this->referencedNode = Node::create([
       'title' => 'Dolor2',
       'type' => 'test2',
     ]);
-    $this->referenced_node->save();
-    $this->referenced_node
+    $this->referencedNode->save();
+    $this->referencedNode
       ->addTranslation('fr', ['title' => 'Dolor2 French'])
       ->save();
 
     $this->node = Node::create([
       'title' => 'Dolor',
       'type' => 'test1',
-      'field_test1_to_test2' => $this->referenced_node->id(),
+      'field_test1_to_test2' => $this->referencedNode->id(),
     ]);
     $this->node->save();
   }
@@ -78,7 +101,7 @@ class EntityReferenceTest extends GraphQLTestBase {
       'access' => TRUE,
       'access_operation' => 'view',
     ]);
-    $this->assertEquals($this->referenced_node->id(), reset($result)->id());
+    $this->assertEquals($this->referencedNode->id(), reset($result)->id());
     $this->assertEquals('Dolor2', reset($result)->label());
 
     $result = $this->executeDataProducer('entity_reference', [
@@ -88,7 +111,7 @@ class EntityReferenceTest extends GraphQLTestBase {
       'access_operation' => 'view',
       'language' => 'fr',
     ]);
-    $this->assertEquals($this->referenced_node->id(), reset($result)->id());
+    $this->assertEquals($this->referencedNode->id(), reset($result)->id());
     $this->assertEquals('Dolor2 French', reset($result)->label());
   }
 

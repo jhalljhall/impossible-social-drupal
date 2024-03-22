@@ -28,7 +28,7 @@ class ComputedFieldClassFactory {
    */
   public function getFieldItemClass(string $field_type): string {
     return match($field_type) {
-      'entity_reference' => ComputedFieldEntityReferenceClass::class,
+      'entity_reference', 'image' => ComputedFieldEntityReferenceClass::class,
       default => ComputedFieldClass::class,
     };
   }
