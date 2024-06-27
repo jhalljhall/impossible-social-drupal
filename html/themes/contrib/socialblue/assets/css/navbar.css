@@ -123,6 +123,21 @@
   border-radius: 0 5px 5px 0;
 }
 
+.navbar-search,
+.navbar__open-search-control {
+  display:none;
+}
+
+#webform-submission-search-add-form .webform-button--submit,
+#webform-submission-search-add-form #edit-search {
+  margin: 10px;
+  width: 340px;
+}
+
+#webform-submission-search-add-form .control-label {
+  margin:20px;
+}
+
 .navbar__open-search-block {
   background: rgba(51, 51, 51, 0.95);
 }
