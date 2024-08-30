@@ -34,7 +34,8 @@
         "drush/drush": "^11.6",
         "drupal/commerce_license": "^3.0",
         "drupal/search_api_algolia": "^3.0@beta",
-        "algolia/algoliasearch-client-php": "3.3.2"
+        "algolia/algoliasearch-client-php": "3.3.2",
+        "drupal/content_access": "^2.0"
     },
     "repositories": [
         {
