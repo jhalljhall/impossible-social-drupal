@@ -851,15 +851,3 @@ $settings['config_sync_directory'] = 'sites/default/files/config_V48VW1KhVpSGILA
 //   'driver' => 'mysql',
 //   'autoload' => 'core/modules/mysql/src/Driver/Database/mysql/',
 // );
-
-$databases['default']['default'] = array (
-  'database' => 'sjxtksaqzh',
-  'username' => 'sjxtksaqzh',
-  'password' => 'cW4BUkTcJK',
-  'prefix' => '',
-  'host' => '104.236.71.37',
-  'port' => '3306',
-  'namespace' => 'Drupal\\mysql\\Driver\\Database\\mysql',
-  'driver' => 'mysql',
-  'autoload' => 'core/modules/mysql/src/Driver/Database/mysql/',
-);
