@@ -71,7 +71,7 @@ class SocialProfilePrivacyBatchHelper {
       $profiles = $profile_storage->loadMultiple($current_pids);
 
       foreach ($profiles as $profile) {
-        if ($profile instanceof ProfileInterface) {
+        if ($profile instanceof ProfileInterface && $profile->bundle() == 'profile') {
           SocialProfilePrivacyBatchHelper::updateProfileName($profile);
         }
 
@@ -120,7 +120,7 @@ class SocialProfilePrivacyBatchHelper {
    *   The profile.
    */
   public static function updateProfileName(ProfileInterface $profile) {
-    if ($profile instanceof ProfileInterface) {
+    if ($profile instanceof ProfileInterface && $profile->bundle() == 'profile') {
       /** @var \Drupal\social_profile\SocialProfileNameService $profile_name_service */
       $profile_name_service = \Drupal::service('social_profile.name_service');
 
