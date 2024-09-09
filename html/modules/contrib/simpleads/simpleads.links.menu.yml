@@ -1,0 +1,49 @@
+simpleads.admin:
+  title: 'SimpleAds'
+  description: 'Configure SimpleAds'
+  route_name: simpleads.admin
+  parent: system.admin_config
+
+simpleads.advertisement:
+  title: 'Settings'
+  description: 'Advertisement Settings'
+  route_name: simpleads.advertisement
+  parent: simpleads.admin
+  weight: -100
+
+entity.simpleads.collection:
+  title: 'Advertisements'
+  description: 'SimpleAds entities'
+  route_name: entity.simpleads.collection
+  parent: system.admin_content
+  weight: 100
+
+entity.simpleads.add_form:
+  title: 'Add Advertisement'
+  description: 'Add Advertisement'
+  route_name: entity.simpleads.add_form
+  parent: entity.simpleads.collection
+
+simpleads.groups:
+  title: 'Groups'
+  description: 'Advertisement groups'
+  route_name: simpleads.group
+  parent: entity.simpleads.collection
+
+simpleads.campaigns:
+  title: 'Campaigns'
+  description: 'Advertisement campaigns'
+  route_name: simpleads.campaign
+  parent: entity.simpleads.collection
+
+simpleads.group:
+  title: 'Group'
+  description: 'Advertisement Groups'
+  route_name: simpleads.group
+  parent: simpleads.admin
+
+simpleads.campaign:
+  title: 'Campaign'
+  description: 'Advertisement Campaigns'
+  route_name: simpleads.campaign
+  parent: simpleads.admin

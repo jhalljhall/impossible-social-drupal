@@ -1,0 +1,94 @@
+# Advertisement routing definition
+
+entity.simpleads.collection:
+  title: 'Advertisements'
+  route_name: entity.simpleads.collection
+  base_route: system.admin_content
+  weight: 100
+
+simpleads.advertisement:
+  title: 'Settings'
+  route_name: simpleads.advertisement
+  base_route: simpleads.advertisement
+
+simpleads.settings.general:
+  title: 'General'
+  route_name: simpleads.advertisement
+  parent_id: simpleads.advertisement
+
+simpleads.settings.responsive:
+  title: 'Responsive'
+  route_name: simpleads.advertisement.responsive
+  parent_id: simpleads.advertisement
+
+simpleads.settings.stats:
+  title: 'Statistics'
+  route_name: simpleads.advertisement.stats
+  parent_id: simpleads.advertisement
+
+entity.simpleads.canonical:
+  title: 'View'
+  route_name: entity.simpleads.canonical
+  base_route: entity.simpleads.canonical
+
+entity.simpleads.edit_form:
+  title: 'Edit'
+  route_name: entity.simpleads.edit_form
+  base_route: entity.simpleads.canonical
+
+entity.simpleads.delete_form:
+  title: 'Delete'
+  route_name: entity.simpleads.delete_form
+  base_route: entity.simpleads.canonical
+  weight: 10
+
+entity.simpleads.statistics:
+  route_name: entity.simpleads.statistics
+  title: 'Statistics'
+  base_route: entity.simpleads.canonical
+
+# Group routing definition
+
+simpleads.group_list:
+  title: 'List'
+  route_name: simpleads.group
+  base_route: simpleads.group
+
+entity.simpleads_group.canonical:
+  title: 'View'
+  route_name: entity.simpleads_group.canonical
+  base_route: entity.simpleads_group.canonical
+
+entity.simpleads_group.edit_form:
+  title: 'Edit'
+  route_name: entity.simpleads_group.edit_form
+  base_route: entity.simpleads_group.canonical
+
+entity.simpleads_group.delete_form:
+  title: Delete
+  route_name: entity.simpleads_group.delete_form
+  base_route: entity.simpleads_group.canonical
+  weight: 10
+
+# Campaign routing definition
+
+simpleads.campaign_list:
+  title: 'List'
+  route_name: simpleads.campaign
+  base_route: simpleads.campaign
+
+entity.simpleads_campaign.canonical:
+  route_name: entity.simpleads_campaign.canonical
+  base_route: entity.simpleads_campaign.canonical
+  title: 'View'
+
+entity.simpleads_campaign.edit_form:
+  route_name: entity.simpleads_campaign.edit_form
+  base_route: entity.simpleads_campaign.canonical
+  title: 'Edit'
+
+entity.simpleads_campaign.delete_form:
+  route_name:  entity.simpleads_campaign.delete_form
+  base_route:  entity.simpleads_campaign.canonical
+  title: Delete
+  weight: 10

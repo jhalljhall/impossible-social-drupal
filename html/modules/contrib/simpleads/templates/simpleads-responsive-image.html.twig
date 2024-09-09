@@ -1,0 +1,18 @@
+{#
+/**
+ * @file
+ * SimpleAds responsive image advertisement template.
+ */
+#}
+{% if options.desktop.src is not empty %}
+  <picture>
+  <source srcset="{{ options.desktop.src }}" media="{{ options.desktop.query }}"{% if options.desktop.prop.alt %} alt="{{ options.desktop.prop.alt }}"{% endif %}{% if options.desktop.prop.title %} title="{{ options.desktop.prop.title }}"{% endif %} />
+  {% if options.tablet.src is not empty %}
+    <source srcset="{{ options.tablet.src }}" media="{{ options.tablet.query }}"{% if options.tablet.prop.alt %} alt="{{ options.tablet.prop.alt }}"{% endif %}{% if options.tablet.prop.title %} title="{{ options.tablet.prop.title }}"{% endif %} />
+  {% endif %}
+  {% if options.mobile.src is not empty %}
+    <source srcset="{{ options.mobile.src }}" media="{{ options.mobile.query }}"{% if options.mobile.prop.alt %} alt="{{ options.mobile.prop.alt }}"{% endif %}{% if options.mobile.prop.title %} title="{{ options.mobile.prop.title }}"{% endif %} />
+  {% endif %}
+  <img srcset="{{ options.desktop.src }}" border="0"{% if options.desktop.prop.alt %} alt="{{ options.desktop.prop.alt }}"{% endif %}{% if options.desktop.prop.alt %} alt="{{ options.desktop.prop.alt }}"{% endif %}{% if options.desktop.prop.title %} title="{{ options.desktop.prop.title }}"{% endif %} />
+  </picture>
+{% endif %}

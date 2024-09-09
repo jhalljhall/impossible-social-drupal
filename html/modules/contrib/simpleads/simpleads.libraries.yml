@@ -1,0 +1,137 @@
+simpleads.lib.js:
+  version: VERSION
+  js:
+    js/simpleads.lib.js: {}
+  dependencies:
+    - core/jquery
+    - core/js-cookie
+
+simpleads.block.js:
+  version: VERSION
+  css:
+    theme:
+      css/simpleads.css: {}
+  js:
+    js/simpleads.block.js: {}
+  dependencies:
+    - simpleads/simpleads.lib.js
+    - simpleads/simpleads.slick
+    - simpleads/simpleads.modal
+    - core/jquery
+    - core/drupal
+
+simpleads.reference.js:
+  version: VERSION
+  css:
+    theme:
+      css/simpleads.css: {}
+  js:
+    js/simpleads.reference.js: {}
+  dependencies:
+    - simpleads/simpleads.lib.js
+    - simpleads/simpleads.slick
+    - simpleads/simpleads.modal
+    - core/jquery
+    - core/drupal
+
+simpleads.views.js:
+  version: VERSION
+  css:
+    theme:
+      css/simpleads.css: {}
+  js:
+    js/simpleads.views.js: {}
+  dependencies:
+    - simpleads/simpleads.lib.js
+    - simpleads/simpleads.slick
+    - simpleads/simpleads.modal
+    - core/jquery
+    - core/drupal
+
+advertisement.form.js:
+  version: VERSION
+  css:
+    theme:
+      css/advertisement.form.css: {}
+  js:
+    js/advertisement.form.js: {}
+  dependencies:
+    - core/jquery
+    - core/drupal
+    - core/drupalSettings
+
+campaign.form.js:
+  version: VERSION
+  css:
+    theme:
+      css/campaign.form.css: {}
+  js:
+    js/campaign.form.js: {}
+  dependencies:
+    - core/jquery
+    - core/drupal
+    - core/drupalSettings
+
+simpleads.stats.js:
+  version: VERSION
+  css:
+    theme:
+      css/simpleads.stats.css: {}
+  js:
+    js/simpleads.charts.js: {}
+    js/simpleads.stats.js: {}
+  dependencies:
+    - simpleads/simpleads.lib.js
+    - simpleads/simpleads.charts
+    - simpleads/simpleads.datatables
+    - core/drupal
+    - core/drupalSettings
+
+simpleads.slick:
+  version: VERSION
+  css:
+    theme:
+      js/slick/slick.min.css: {}
+  js:
+    js/slick/slick.min.js: {}
+  dependencies:
+    - core/jquery
+
+simpleads.modal:
+  version: VERSION
+  css:
+    theme:
+      js/modal/jquery.modal.min.css: {}
+  js:
+    js/modal/jquery.modal.min.js: {}
+  dependencies:
+    - core/jquery
+
+simpleads.charts:
+  version: VERSION
+  js:
+    js/charts/Chart.bundle.min.js: {}
+  dependencies:
+    - core/jquery
+
+simpleads.datatables:
+  version: VERSION
+  js:
+    js/datatables/datatables.min.js: {}
+  dependencies:
+    - core/jquery
+
+simpleads.ckeditor5:
+  js:
+    js/ckeditor5/SimpleAds.js: { preprocess: false, minified: true }
+  css:
+    theme:
+      css/simpleads_ckeditor5.css: { }
+  dependencies:
+    - ckeditor5/ckeditor5
+    - editor/drupal.editor.dialog
+
+simpleads.ckeditor5.admin:
+  css:
+    theme:
+      css/simpleads_ckeditor5.admin.css: { }

@@ -1,0 +1,7 @@
+{#
+/**
+ * @file
+ * SimpleAds block item.
+ */
+#}
+<div class="simpleads" data-group="{{ group }}" data-ref-node="{{ node_ref_field }}" data-ref-simpleads="{{ simpleads_ref_field }}" data-rotation-type="{{ rotation_type }}" data-random-limit="{{ multiple_random_limit }}" data-impressions="{{ impressions }}"{% if rotation_options[rotation_type] %} data-rotation-options="{{ rotation_options[rotation_type] }}"{% endif %}{% if show_in_modal %} data-is-modal="true" data-modal-options="{{ modal_options }}"{% endif %}></div>

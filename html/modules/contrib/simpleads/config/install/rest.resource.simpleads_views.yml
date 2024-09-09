@@ -1,0 +1,17 @@
+langcode: en
+status: true
+dependencies:
+  module:
+    - serialization
+    - simpleads
+    - user
+id: simpleads_views
+plugin_id: simpleads_views
+granularity: resource
+configuration:
+  methods:
+    - GET
+  formats:
+    - json
+  authentication:
+    - cookie

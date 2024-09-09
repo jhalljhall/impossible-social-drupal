@@ -1,0 +1,35 @@
+langcode: en
+status: true
+dependencies:
+  config:
+    - core.entity_view_mode.simpleads.statistics
+  module:
+    - simpleads
+id: simpleads.simpleads.statistics
+targetEntityType: simpleads
+bundle: simpleads
+mode: statistics
+content:
+  stats:
+    label: hidden
+    type: simpleads_stats_chart
+    weight: 0
+    region: content
+    settings: {  }
+    third_party_settings: {  }
+hidden:
+  advertisement: true
+  campaign: true
+  end_date: true
+  group: true
+  html5: true
+  image: true
+  responsive_image_desktop: true
+  responsive_image_mobile: true
+  responsive_image_tablet: true
+  start_date: true
+  status: true
+  title: true
+  type: true
+  url: true
+  url_target: true

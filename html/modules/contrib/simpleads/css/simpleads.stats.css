@@ -1,0 +1,80 @@
+.statistics-wrapper {
+  display: inline-block;
+  width: 100%;
+}
+
+.stats-row-wrapper {
+  display: inline-block;
+  width: 100%;
+}
+
+.stats-row-wrapper .one-fourth {
+  width: 25%;
+  float: left;
+}
+
+.stats-row-wrapper .fourth {
+  width: 75%;
+  float: left;
+}
+
+.stats-row-wrapper .two-fourth {
+  width: 50%;
+  float: left;
+}
+
+#simpleads-stats-tabs-content .tab-content {
+  display: none;
+}
+
+#simpleads-stats-tabs-content .tab-content.is-active {
+  display: block;
+}
+
+#simpleads-table {
+  width: 100% !important;
+}
+
+#simpleads-table_length {
+  padding: 10px;
+}
+
+#simpleads-table_paginate {
+  padding-top: 10px;
+}
+
+#simpleads-table_paginate .paginate_button {
+  cursor: pointer;
+}
+
+#simpleads-table_paginate .paginate_button,
+#simpleads-table_paginate .ellipsis {
+  margin-right: 10px;
+}
+
+#simpleads-table_paginate .current {
+  font-weight: bold;
+  color: #000;
+}
+
+#simpleads-table_paginate .disabled {
+  display: none;
+}
+
+#simpleads-table_info {
+  color: gray;
+}
+
+#simpleads-export-csv {
+  float: right;
+  margin-top: -25px;
+}
+
+#simpleads-stats-tabs .button {
+  padding: calc(1rem - 10px) calc(1.5rem - 15px);
+  background-color: #ededed;
+}
+
+#simpleads-stats-tabs .button.is-active {
+  background-color:  #d3d4d9;
+}

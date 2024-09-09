@@ -1,0 +1,9 @@
+.field--name-start-date,
+.field--name-end-date,
+.field--name-image,
+.field--name-responsive-image-desktop,
+.field--name-responsive-image-tablet,
+.field--name-responsive-image-mobile,
+.field--name-html5 {
+  display: none;
+}

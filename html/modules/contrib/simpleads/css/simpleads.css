@@ -1,0 +1,33 @@
+.simpleads {
+  cursor: pointer;
+}
+
+.simpleads.modal {
+  padding: 0;
+  background: transparent;
+}
+
+.simpleads.modal ul {
+  padding: 0;
+}
+
+.simpleads .simpleads-html5-blocker {
+  position:absolute;
+  height:100%;
+  width:100%;
+  z-index:1;
+}
+.simpleads iframe {
+  z-index: 2;
+}
+
+.simpleads ul.simpleads-multiple-random {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.simpleads .simpleads-multiple-random li {
+  margin-top: 15px;
+  margin-bottom: 15px;
+}

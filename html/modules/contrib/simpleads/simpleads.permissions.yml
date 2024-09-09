@@ -1,0 +1,65 @@
+add simpleads entities:
+  title: 'Create new Advertisement entities'
+
+administer simpleads entities:
+  title: 'Administer Advertisement entities'
+  description: 'Allow to access the administration form to configure Advertisement entities.'
+  restrict access: true
+
+delete simpleads entities:
+  title: 'Delete Advertisement entities'
+
+edit simpleads entities:
+  title: 'Edit Advertisement entities'
+
+view published simpleads entities:
+  title: 'View published Advertisement entities'
+
+view unpublished simpleads entities:
+  title: 'View unpublished Advertisement entities'
+
+add simpleads_group entities:
+  title: 'Create new Group entities'
+
+administer simpleads_group entities:
+  title: 'Administer Group entities'
+  description: 'Allow to access the administration form to configure Group entities.'
+  restrict access: true
+
+delete simpleads_group entities:
+  title: 'Delete Group entities'
+
+edit simpleads_group entities:
+  title: 'Edit Group entities'
+
+view published simpleads_group entities:
+  title: 'View published Group entities'
+
+view unpublished simpleads_group entities:
+  title: 'View unpublished Group entities'
+
+add simpleads_campaign entities:
+  title: 'Create new Campaign entities'
+
+administer simpleads_campaign entities:
+  title: 'Administer Campaign entities'
+  description: 'Allow to access the administration form to configure Campaign entities.'
+  restrict access: true
+
+delete simpleads_campaign entities:
+  title: 'Delete Campaign entities'
+
+edit simpleads_campaign entities:
+  title: 'Edit Campaign entities'
+
+view published simpleads_campaign entities:
+  title: 'View published Campaign entities'
+
+view unpublished simpleads_campaign entities:
+  title: 'View unpublished Campaign entities'
+
+count simpleads clicks:
+  title: 'Count Advertisement clicks'
+
+count simpleads impressions:
+  title: 'Count Advertisement impressions'

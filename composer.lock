@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "44a68393b0f1df2b586097dbc7ae0f1e",
+    "content-hash": "ce211aa2e360d5ba152d59a5daa6a51a",
     "packages": [
         {
             "name": "algolia/algoliasearch-client-php",
@@ -5427,6 +5427,44 @@
             }
         },
         {
+            "name": "drupal/gnode",
+            "version": "3.2.2",
+            "require": {
+                "drupal/core": "^9.5 || ^10",
+                "drupal/group": "*"
+            },
+            "type": "metapackage",
+            "extra": {
+                "drupal": {
+                    "version": "3.2.2",
+                    "datestamp": "1701886939",
+                    "security-coverage": {
+                        "status": "covered",
+                        "message": "Covered by Drupal's security advisory policy"
+                    }
+                }
+            },
+            "notification-url": "https://packages.drupal.org/8/downloads",
+            "license": [
+                "GPL-2.0-or-later"
+            ],
+            "authors": [
+                {
+                    "name": "dww",
+                    "homepage": "https://www.drupal.org/user/46549"
+                },
+                {
+                    "name": "kristiaanvandeneynde",
+                    "homepage": "https://www.drupal.org/user/1345130"
+                }
+            ],
+            "description": "Enables Group functionality for the Node module",
+            "homepage": "https://www.drupal.org/project/group",
+            "support": {
+                "source": "https://git.drupalcode.org/project/group"
+            }
+        },
+        {
             "name": "drupal/graphql",
             "version": "4.7.0",
             "source": {
@@ -7993,6 +8031,56 @@
             }
         },
         {
+            "name": "drupal/simpleads",
+            "version": "2.0.10",
+            "source": {
+                "type": "git",
+                "url": "https://git.drupalcode.org/project/simpleads.git",
+                "reference": "2.0.10"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://ftp.drupal.org/files/projects/simpleads-2.0.10.zip",
+                "reference": "2.0.10",
+                "shasum": "7087cb5b0fd6b8b0888c586d1eae079868bc42bb"
+            },
+            "require": {
+                "drupal/core": "^9 || ^10"
+            },
+            "type": "drupal-module",
+            "extra": {
+                "drupal": {
+                    "version": "2.0.10",
+                    "datestamp": "1686325149",
+                    "security-coverage": {
+                        "status": "covered",
+                        "message": "Covered by Drupal's security advisory policy"
+                    }
+                }
+            },
+            "notification-url": "https://packages.drupal.org/8/downloads",
+            "license": [
+                "GPL-2.0-or-later"
+            ],
+            "authors": [
+                {
+                    "name": "Minnur Yunusov (minnur)",
+                    "homepage": "https://www.drupal.org/u/minnur",
+                    "role": "Maintainer"
+                }
+            ],
+            "description": "Advertisement module.",
+            "homepage": "http://drupal.org/project/simpleads",
+            "keywords": [
+                "Advertisement",
+                "SimpleAds"
+            ],
+            "support": {
+                "source": "https://git.drupalcode.org/project/simpleads",
+                "issues": "https://www.drupal.org/project/issues/simpleads"
+            }
+        },
+        {
             "name": "drupal/social_tour",
             "version": "1.0.0-alpha2",
             "source": {
@@ -9266,6 +9354,122 @@
                 "issues": "https://www.drupal.org/project/issues/webform?version=8.x",
                 "docs": "https://www.drupal.org/docs/8/modules/webform",
                 "forum": "https://drupal.stackexchange.com/questions/tagged/webform"
+            }
+        },
+        {
+            "name": "drupal/webform_group",
+            "version": "1.0.0",
+            "source": {
+                "type": "git",
+                "url": "https://git.drupalcode.org/project/webform_group.git",
+                "reference": "1.0.0"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://ftp.drupal.org/files/projects/webform_group-1.0.0.zip",
+                "reference": "1.0.0",
+                "shasum": "7cd392668c53a40fb296be7bbb83be92842600cf"
+            },
+            "require": {
+                "drupal/core": "^9.4 || ^10",
+                "drupal/gnode": "*",
+                "drupal/group": "^1.0",
+                "drupal/webform": "^6.2",
+                "drupal/webform_node": "*"
+            },
+            "require-dev": {
+                "drupal/gnode": "*",
+                "drupal/group": "*",
+                "drupal/webform": "*",
+                "drupal/webform_node": "*"
+            },
+            "type": "drupal-module",
+            "extra": {
+                "drupal": {
+                    "version": "1.0.0",
+                    "datestamp": "1696870347",
+                    "security-coverage": {
+                        "status": "covered",
+                        "message": "Covered by Drupal's security advisory policy"
+                    }
+                }
+            },
+            "notification-url": "https://packages.drupal.org/8/downloads",
+            "license": [
+                "GPL-2.0-or-later"
+            ],
+            "authors": [
+                {
+                    "name": "Lucas Hedding (heddn)",
+                    "homepage": "https://www.drupal.org/u/heddn",
+                    "role": "Maintainer"
+                },
+                {
+                    "name": "Jacob Rockowitz (jrockowitz)",
+                    "homepage": "https://www.drupal.org/u/jrockowitz",
+                    "role": "Maintainer"
+                },
+                {
+                    "name": "Contributors",
+                    "homepage": "https://git.drupalcode.org/project/webform_group/-/graphs/HEAD",
+                    "role": "Contributor"
+                }
+            ],
+            "description": "Enables the creation of webforms and questionnaires for groups.",
+            "homepage": "https://drupal.org/project/webform_group",
+            "support": {
+                "source": "https://git.drupalcode.org/project/webform_group",
+                "issues": "https://www.drupal.org/project/issues/webform_group"
+            }
+        },
+        {
+            "name": "drupal/webform_node",
+            "version": "6.2.6",
+            "require": {
+                "drupal/core": "^9.4 || ^10",
+                "drupal/webform": "*"
+            },
+            "type": "metapackage",
+            "extra": {
+                "drupal": {
+                    "version": "6.2.6",
+                    "datestamp": "1721424721",
+                    "security-coverage": {
+                        "status": "covered",
+                        "message": "Covered by Drupal's security advisory policy"
+                    }
+                }
+            },
+            "notification-url": "https://packages.drupal.org/8/downloads",
+            "license": [
+                "GPL-2.0-or-later"
+            ],
+            "authors": [
+                {
+                    "name": "DanChadwick",
+                    "homepage": "https://www.drupal.org/user/504278"
+                },
+                {
+                    "name": "jrockowitz",
+                    "homepage": "https://www.drupal.org/user/371407"
+                },
+                {
+                    "name": "Liam Morland",
+                    "homepage": "https://www.drupal.org/user/493050"
+                },
+                {
+                    "name": "quicksketch",
+                    "homepage": "https://www.drupal.org/user/35821"
+                },
+                {
+                    "name": "torotil",
+                    "homepage": "https://www.drupal.org/user/865256"
+                }
+            ],
+            "description": "Provides a Webform content type which allows webforms to be integrated into a website as nodes.",
+            "homepage": "https://www.drupal.org/project/webform",
+            "support": {
+                "source": "https://git.drupalcode.org/project/webform"
             }
         },
         {

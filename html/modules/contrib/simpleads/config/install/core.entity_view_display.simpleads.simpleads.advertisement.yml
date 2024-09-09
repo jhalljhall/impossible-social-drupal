@@ -1,0 +1,35 @@
+langcode: en
+status: true
+dependencies:
+  config:
+    - core.entity_view_mode.simpleads.advertisement
+  module:
+    - simpleads
+id: simpleads.simpleads.advertisement
+targetEntityType: simpleads
+bundle: simpleads
+mode: advertisement
+content:
+  advertisement:
+    label: hidden
+    type: simpleads_advertisement
+    weight: 0
+    region: content
+    settings: {  }
+    third_party_settings: {  }
+hidden:
+  campaign: true
+  end_date: true
+  group: true
+  html5: true
+  image: true
+  responsive_image_desktop: true
+  responsive_image_mobile: true
+  responsive_image_tablet: true
+  start_date: true
+  stats: true
+  status: true
+  title: true
+  type: true
+  url: true
+  url_target: true

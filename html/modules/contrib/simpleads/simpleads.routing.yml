@@ -1,0 +1,83 @@
+simpleads.admin:
+  path: '/admin/config/simpleads'
+  defaults:
+    _controller: '\Drupal\system\Controller\SystemController::systemAdminMenuBlockPage'
+    _title: 'Advertisements'
+  requirements:
+    _permission: 'administer simpleads entities'
+
+entity.simpleads.statistics:
+  path: '/admin/content/simpleads/{simpleads}/stats'
+  defaults:
+    _controller: '\Drupal\simpleads\Controller\SimpleAdsStats::index'
+    _title: 'Statistics'
+  requirements:
+    _permission: 'administer simpleads entities'
+  options:
+    parameters:
+      simpleads:
+        type: 'entity:simpleads'
+        converter: paramconverter.entity.simpleads
+
+simpleads.advertisement:
+  path: '/admin/config/simpleads/advertisement'
+  defaults:
+    _title: 'Advertisement'
+    _form: '\Drupal\simpleads\Form\SettingsForm'
+  requirements:
+    _permission: 'administer simpleads entities'
+
+simpleads.advertisement.responsive:
+  path: '/admin/config/simpleads/advertisement/responsive'
+  defaults:
+    _title: 'Responsive'
+    _form: '\Drupal\simpleads\Form\ResponsiveSettingsForm'
+  requirements:
+    _permission: 'administer simpleads entities'
+
+simpleads.advertisement.stats:
+  path: '/admin/config/simpleads/advertisement/stats'
+  defaults:
+    _title: 'Statistics'
+    _form: '\Drupal\simpleads\Form\StatisticSettingsForm'
+  requirements:
+    _permission: 'administer simpleads entities'
+
+simpleads.group:
+  path: '/admin/config/simpleads/group'
+  defaults:
+    _entity_list: 'simpleads_group'
+    _title: 'Group'
+  requirements:
+    _permission: 'administer simpleads_group entities'
+
+simpleads.campaign:
+  path: '/admin/config/simpleads/campaign'
+  defaults:
+    _entity_list: 'simpleads_campaign'
+    _title: 'Campaign'
+  requirements:
+    _permission: 'administer simpleads_campaign entities'
+
+simpleads.autocomplete:
+  path: '/admin/config/simpleads/autocomplete'
+  defaults:
+    _controller: '\Drupal\simpleads\Controller\SimpleAdsAutocomplete::handleAutocomplete'
+  requirements:
+    _permission: 'add simpleads entities'
+
+simpleads.ckeditor5_dialog:
+  path: '/simpleads/dialog/{uuid}'
+  defaults:
+    _title: 'Insert Advertisement'
+    _form: '\Drupal\simpleads\Form\CKEditorDialogForm'
+    uuid: null
+  requirements:
+    _permission: 'use text format advanced'
+
+simpleads.ckeditor5_preview:
+  path: '/simpleads/preview/{editor}'
+  defaults:
+    _controller: '\Drupal\simpleads\Controller\SimpleAdsPreview::preview'
+  requirements:
+    _custom_access: '\Drupal\simpleads\Controller\SimpleAdsPreview::checkAccess'

@@ -1,0 +1,28 @@
+simpleads_SimpleAds:
+  provider: simpleads
+  ckeditor5:
+    plugins:
+      - SimpleAds.SimpleAds
+    config:
+      SimpleAds:
+        openDialog:
+          func:
+            name: Drupal.ckeditor5.openDialog
+            invoke: false
+        dialogSettings:
+          height: 75%
+          dialogClass: simpleads-widget-modal
+          title: SimpleAds
+  drupal:
+    label: SimpleAds
+    elements:
+      - <simpleads>
+      - <simpleads data-group data-rotation-type data-random-limit data-impressions>
+    admin_library: simpleads/simpleads.ckeditor5.admin
+    class: Drupal\simpleads\Plugin\CKEditor5Plugin\SimpleAds
+    library: simpleads/simpleads.ckeditor5
+    toolbar_items:
+      SimpleAds:
+        label: SimpleAds
+    conditions:
+      filter: simpleads

@@ -1,0 +1,45 @@
+simpleads.config:
+  type: config_object
+  label: 'SimpleAds settings'
+  mapping:
+    stats_view_mode:
+      type: string
+      label: 'View mode to use when viewing SimpleAds statistics.'
+    ads_view_mode:
+      type: string
+      label: 'View mode to use when viewing SimpleAds advertisement.'
+    desktop_media_query:
+      type: string
+      label: 'Desktop media query.'
+    tablet_media_query:
+      type: string
+      label: 'Tablet media query.'
+    mobile_media_query:
+      type: string
+      label: 'Mobile media query.'
+    stats_date_format:
+      type: string
+      label: 'Statistics date format.'
+
+field.formatter.settings.simpleads_stats_chart:
+  type: mapping
+  label: 'Chart formatter settings'
+  mapping:
+    clicks:
+      type: string
+      label: 'Clicks color'
+    clicks_unique:
+      type: string
+      label: 'Unique clicks color'
+    impressions:
+      type: string
+      label: 'Impressions color'
+    impressions_unique:
+      type: string
+      label: 'Unique impressions color'
+    ctr:
+      type: string
+      label: 'CTR color'
+    default_tab:
+      type: string
+      label: 'Default statistics tab'

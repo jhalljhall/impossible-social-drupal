@@ -1,0 +1,18 @@
+services:
+  paramconverter.entity.simpleads:
+    class: Drupal\simpleads\Entity\ParamConverter\AdvertisementConverter
+    tags:
+      - { name: paramconverter }
+    arguments: ['@entity_type.manager', '@entity.repository']
+
+  simpleads.cron:
+    class: Drupal\simpleads\SimpleAdsCron
+    arguments: ['@database', '@entity_type.manager', '@state', '@datetime.time']
+
+  simpleads.module:
+    class: Drupal\simpleads\SimpleAdsModule
+    arguments: ['@module_handler']
+
+  simpleads.stats:
+    class: Drupal\simpleads\SimpleAdsStats
+    arguments: ['@database', '@config.factory']

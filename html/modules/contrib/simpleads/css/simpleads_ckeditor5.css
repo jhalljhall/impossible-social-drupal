@@ -1,0 +1,38 @@
+.simpleads-preview {
+  border: 1px #8dbff0 dashed;
+  padding: 1rem;
+  pointer-events: none;
+  position: relative;
+  background-color: aliceblue;
+  border-radius: 10px;
+}
+
+.simpleads-preview .preview-ad-label {
+  position: absolute;
+  top: 5px;
+  right: 5px;
+  border-radius: 10px;
+  background-color: #2790f1;
+  padding: 5px 10px 5px 10px;
+  font-size: 10px;
+  font-weight: bold;
+  color: #fff;
+}
+
+.ad-preview-wrapper {
+  display: block;
+}
+
+.ad-preview-wrapper .preview-ad-item {
+  display: inline-block;
+  margin-right: 0px;
+  background-color: rgb(50 117 224);
+  padding: 3px 7px 3px 7px;
+  border-radius: 5px;
+  color: #fff;
+  font-size: 14px;
+}
+
+.ad-preview-wrapper .preview-ad-item span {
+  font-style: italic;
+}

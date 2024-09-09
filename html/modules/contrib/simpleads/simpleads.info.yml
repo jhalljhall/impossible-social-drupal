@@ -1,0 +1,14 @@
+name: SimpleAds
+description: 'Advertisement module'
+type: module
+package: Advertisement
+configure: simpleads.advertisement
+dependencies:
+  - drupal:rest
+  - drupal:views
+core_version_requirement: ^9 || ^10
+
+# Information added by Drupal.org packaging script on 2023-06-09
+version: '2.0.10'
+project: 'simpleads'
+datestamp: 1686325152

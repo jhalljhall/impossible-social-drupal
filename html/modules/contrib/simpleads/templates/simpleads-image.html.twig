@@ -1,0 +1,9 @@
+{#
+/**
+ * @file
+ * SimpleAds image advertisement template.
+ */
+#}
+{% if options.type == 'image' %}
+  <img src="{{ options.image }}" border="0"{% if options.image_prop.alt is not empty %} alt="{{ options.image_prop.alt }}"{% endif %}{% if options.image_prop.title is not empty %} title="{{ options.image_prop.title }}"{% endif %} />
+{% endif %}

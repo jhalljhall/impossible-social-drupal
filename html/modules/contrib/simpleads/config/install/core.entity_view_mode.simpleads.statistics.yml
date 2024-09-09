@@ -1,0 +1,9 @@
+langcode: en
+status: true
+dependencies:
+  module:
+    - simpleads
+id: simpleads.statistics
+label: Statistics
+targetEntityType: simpleads
+cache: true

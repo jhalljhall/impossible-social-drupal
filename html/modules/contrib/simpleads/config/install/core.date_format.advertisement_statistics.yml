@@ -1,0 +1,7 @@
+langcode: en
+status: true
+dependencies: {  }
+id: advertisement_statistics
+label: 'Advertisement Statistics'
+locked: false
+pattern: 'F d, Y'

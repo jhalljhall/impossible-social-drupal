@@ -1,0 +1,19 @@
+{
+  "name": "drupal/simpleads",
+  "description": "Advertisement module.",
+  "type": "drupal-module",
+  "keywords": ["Advertisement", "SimpleAds"],
+  "homepage": "http://drupal.org/project/simpleads",
+  "license": "GPL-2.0-or-later",
+  "authors": [
+    {
+      "name": "Minnur Yunusov (minnur)",
+      "homepage": "https://www.drupal.org/u/minnur",
+      "role": "Maintainer"
+    }
+  ],
+  "support": {
+    "issues": "https://www.drupal.org/project/issues/simpleads",
+    "source": "https://git.drupalcode.org/project/simpleads"
+  }
+}

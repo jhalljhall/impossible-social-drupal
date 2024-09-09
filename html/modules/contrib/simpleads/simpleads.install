@@ -1,0 +1,251 @@
+<?php
+
+use Drupal\user\Entity\Role;
+use Drupal\Core\Datetime\Entity\DateFormat;
+use Drupal\Core\Url;
+use Drupal\Core\Config\FileStorage;
+use Drupal\Core\Config\Entity\ConfigEntityType;
+use Drupal\Core\StringTranslation\TranslatableMarkup;
+use Drupal\simpleads\Entity\Group;
+use Drupal\simpleads\Entity\Campaign;
+
+/**
+ * Implements hook_schema().
+ */
+function simpleads_schema() {
+  $schema['simpleads_clicks'] = [
+    'description' => 'Store ad clicks.',
+    'fields' => [
+      'id'      => [
+        'description' => 'Advertisement Click ID',
+        'type'        => 'serial',
+        'unsigned'    => TRUE,
+        'not null'    => TRUE,
+      ],
+      'entity_id' => [
+        'description' => 'Entity ID',
+        'type'        => 'int',
+        'unsigned'    => TRUE,
+        'not null'    => TRUE,
+        'default'     => 0,
+      ],
+      'timestamp' => [
+        'description' => 'Timestamp',
+        'type'        => 'int',
+        'unsigned'    => TRUE,
+        'not null'    => TRUE,
+        'default'     => 0,
+      ],
+      'ip_address' => [
+        'description' => 'IP Address',
+        'type'        => 'varchar',
+        'length'      => 255,
+        'not null'    => TRUE,
+        'default'     => '',
+      ],
+    ],
+    'primary key' => ['id'],
+    'indexes' => [
+      'id'  => ['id'],
+      'entity_id' => ['entity_id'],
+    ],
+    'foreign keys' => [
+      'entity_id' => [
+        'simpleads' => 'id'
+      ],
+    ],
+  ];
+  $schema['simpleads_impressions'] = [
+    'description' => 'Store ad impressions.',
+    'fields' => [
+      'id'      => [
+        'description' => 'Advertisement Impression ID',
+        'type'        => 'serial',
+        'unsigned'    => TRUE,
+        'not null'    => TRUE,
+      ],
+      'entity_id' => [
+        'description' => 'Entity ID',
+        'type'        => 'int',
+        'unsigned'    => TRUE,
+        'not null'    => TRUE,
+        'default'     => 0,
+      ],
+      'timestamp' => [
+        'description' => 'Timestamp',
+        'type'        => 'int',
+        'unsigned'    => TRUE,
+        'not null'    => TRUE,
+        'default'     => 0,
+      ],
+      'ip_address' => [
+        'description' => 'IP Address',
+        'type'        => 'varchar',
+        'length'      => 255,
+        'not null'    => TRUE,
+        'default'     => '',
+      ],
+    ],
+    'primary key' => ['id'],
+    'indexes' => [
+      'id'  => ['id'],
+      'entity_id' => ['entity_id'],
+    ],
+    'foreign keys' => [
+      'entity_id' => [
+        'simpleads' => 'id'
+      ],
+    ],
+  ];
+  $schema['simpleads_stats'] = [
+    'description' => 'Store ad statistics.',
+    'fields' => [
+      'entity_id' => [
+        'description' => 'Entity ID',
+        'type'        => 'int',
+        'unsigned'    => TRUE,
+        'not null'    => TRUE,
+        'default'     => 0,
+      ],
+      'date' => [
+        'description' => 'Date',
+        'type'        => 'varchar',
+        'length'      => 10,
+        'not null'    => TRUE,
+        'default'     => '',
+      ],
+      'timestamp' => [
+        'description' => 'Timestamp',
+        'type'        => 'int',
+        'unsigned'    => TRUE,
+        'not null'    => TRUE,
+        'default'     => 0,
+      ],
+      'clicks' => [
+        'description' => 'Clicks counter',
+        'type'        => 'int',
+        'unsigned'    => TRUE,
+        'not null'    => FALSE,
+        'default'     => 0,
+      ],
+      'clicks_unique' => [
+        'description' => 'Unique clicks counter',
+        'type'        => 'int',
+        'unsigned'    => TRUE,
+        'not null'    => FALSE,
+        'default'     => 0,
+      ],
+      'impressions' => [
+        'description' => 'Impressions counter',
+        'type'        => 'int',
+        'unsigned'    => TRUE,
+        'not null'    => FALSE,
+        'default'     => 0,
+      ],
+      'impressions_unique' => [
+        'description' => 'Unique impressions counter',
+        'type'        => 'int',
+        'unsigned'    => TRUE,
+        'not null'    => FALSE,
+        'default'     => 0,
+      ],
+    ],
+    'primary key' => ['entity_id', 'date'],
+    'indexes' => [
+      'entity_id'  => ['entity_id'],
+    ],
+    'foreign keys' => [
+      'entity_id' => [
+        'simpleads' => 'id'
+      ],
+    ],
+  ];
+
+  return $schema;
+}
+
+/**
+ * Implements hook_install().
+ */
+function simpleads_install() {
+  // Set initial role permissions.
+  $roles = [
+    'authenticated' => [
+      'restful get simpleads_group',
+      'restful post simpleads_click',
+      'restful post simpleads_impression',
+      'restful get simpleads_reference',
+      'restful get simpleads_views',
+      'count simpleads clicks',
+      'count simpleads impressions',
+    ],
+    'anonymous' => [
+      'restful get simpleads_group',
+      'restful post simpleads_click',
+      'restful post simpleads_impression',
+      'restful get simpleads_reference',
+      'restful get simpleads_views',
+      'count simpleads clicks',
+      'count simpleads impressions',
+    ],
+  ];
+  foreach ($roles as $role => $permissions) {
+    $role = Role::load($role);
+    foreach ($permissions as $permission) {
+      $role->grantPermission($permission);
+    }
+    $role->save();
+  }
+  // Create default ad group.
+  $group = Group::create([
+    'name' => 'Default',
+    'description' => 'Default advertisement group',
+  ]);
+  $group->save();
+  // Create default ad campaign.
+  $campaign = Campaign::create([
+    'name' => 'Example campaign',
+    'type' => 'click',
+    'click' => 100,
+  ]);
+  $campaign->save();
+}
+
+/**
+ * Implements hook_uninstall().
+ */
+function simpleads_uninstall() {
+  // Set initial role permissions.
+  $roles = [
+    'authenticated' => [
+      'restful get simpleads_group',
+      'restful post simpleads_click',
+      'restful post simpleads_impression',
+      'restful get simpleads_reference',
+      'restful get simpleads_views',
+      'count simpleads clicks',
+      'count simpleads impressions',
+    ],
+    'anonymous' => [
+      'restful get simpleads_group',
+      'restful post simpleads_click',
+      'restful post simpleads_impression',
+      'restful get simpleads_reference',
+      'restful get simpleads_views',
+      'count simpleads clicks',
+      'count simpleads impressions',
+    ],
+  ];
+  foreach ($roles as $role => $permissions) {
+    $role = Role::load($role);
+    foreach ($permissions as $permission) {
+      $role->revokePermission($permission);
+    }
+    $role->save();
+  }
+  // Cleanup state variables
+  \Drupal::state()->delete('simpleads_last_aggregation_time');
+  // Delete custom date format.
+  $format = DateFormat::load('advertisement_statistics');
+  $format->delete();
+}

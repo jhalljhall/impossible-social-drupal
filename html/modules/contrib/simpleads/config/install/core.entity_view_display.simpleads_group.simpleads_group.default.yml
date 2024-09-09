@@ -1,0 +1,37 @@
+langcode: en
+status: true
+dependencies:
+  module:
+    - simpleads
+id: simpleads_group.simpleads_group.default
+targetEntityType: simpleads_group
+bundle: simpleads_group
+mode: default
+content:
+  description:
+    label: above
+    type: string
+    weight: -4
+    region: content
+    settings:
+      link_to_entity: false
+    third_party_settings: {  }
+  name:
+    label: hidden
+    type: string
+    weight: -4
+    region: content
+    settings:
+      link_to_entity: false
+    third_party_settings: {  }
+  status:
+    label: above
+    type: boolean
+    weight: 101
+    region: content
+    settings:
+      format: default
+      format_custom_false: ''
+      format_custom_true: ''
+    third_party_settings: {  }
+hidden: {  }

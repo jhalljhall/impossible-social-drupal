@@ -1,0 +1,70 @@
+<?php
+
+/**
+ * Implements hook_theme().
+ */
+function simpleads_theme() {
+  return \Drupal::service('simpleads.module')->hook_theme();
+}
+
+/**
+ * Advertisement types.
+ * Alter available via `hook_simpleads_advertisement_types_alter(&$types)`.
+ */
+function simpleads_advertisement_types() {
+  return \Drupal::service('simpleads.module')->hook_simpleads_advertisement_types();
+}
+
+/**
+ * Campaign types.
+ * Alter available via `hook_simpleads_campaign_types_alter(&$types)`.
+ */
+function simpleads_campaign_types() {
+  return \Drupal::service('simpleads.module')->hook_simpleads_campaign_types();
+}
+
+/**
+ * UI field mapping for advertisement and campaing types.
+ * Alter available via `hook_simpleads_ui_field_mapping_alter(&$types)`.
+ */
+function simpleads_ui_field_mapping() {
+  return \Drupal::service('simpleads.module')->hook_simpleads_ui_field_mapping();
+}
+
+/**
+ * Statistics types (graphs formatter).
+ * Alter available via `hook_simpleads_graph_reports_alter(&$types)`.
+ */
+function simpleads_graph_reports() {
+  return \Drupal::service('simpleads.module')->hook_simpleads_graph_reports();
+}
+
+/**
+ * Implements hook_page_attachments().
+ */
+function simpleads_page_attachments(array &$page) {
+  \Drupal::service('simpleads.module')->hook_page_attachments($page);
+}
+
+/**
+ * Implements hook_preprocess_HOOK().
+ */
+function simpleads_preprocess_block(&$variables) {
+  if ($variables['elements']['#base_plugin_id'] == 'simpleads') {
+    $variables['attributes']['class'][] = 'block-simpleads';
+  }
+}
+
+/**
+ * Implements template_preprocess_views_view().
+ */
+function simpleads_preprocess_views_view_simpleads(&$variables) {
+  \Drupal::service('simpleads.module')->hook_preprocess_views_view($variables);
+}
+
+/**
+ * Implements hook_cron().
+ */
+function simpleads_cron() {
+  \Drupal::service('simpleads.cron')->init();
+}

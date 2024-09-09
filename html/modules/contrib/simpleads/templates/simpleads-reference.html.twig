@@ -1,0 +1,7 @@
+{#
+/**
+ * @file
+ * SimpleAds reference field item.
+ */
+#}
+<div class="simpleads-reference-field" data-entity-type="{{ entity_type }}" data-field-name="{{ field_name }}" data-entity-id="{{ entity_id }}" data-rotation-type="{{ rotation_type }}" data-impressions="{{ impressions }}"{% if rotation_options[rotation_type] %} data-rotation-options="{{ rotation_options[rotation_type] }}"{% endif %}{% if show_in_modal %} data-is-modal="true" data-modal-options="{{ modal_options }}"{% endif %}></div>

@@ -1,0 +1,11 @@
+{#
+/**
+ * @file
+ * Default theme implementation for SimpleAds view template.
+ *
+ * @see template_preprocess_views_view_simleads()
+ *
+ * @ingroup themeable
+ */
+#}
+<div class="simpleads-views-view" data-view-id="{{ view_id }}" data-display-id="{{ display_id }}" data-rotation-type="{{ rotation_type }}" data-random-limit="{{ multiple_random_limit }}" data-impressions="{{ impressions }}"{% if rotation_options[rotation_type] %} data-rotation-options="{{ rotation_options[rotation_type] }}"{% endif %}{% if show_in_modal %} data-is-modal="true" data-modal-options="{{ modal_options }}"{% endif %}></div>

@@ -38,7 +38,9 @@
         "drupal/content_access": "^2.0",
         "drupal/menu_item_role_access": "^2.0",
         "drupal/twig_tweak": "^3.3",
-        "drupal/twig_vardumper": "^3.1"
+        "drupal/twig_vardumper": "^3.1",
+        "drupal/simpleads": "^2.0",
+        "drupal/webform_group": "^1.0"
     },
     "repositories": [
         {

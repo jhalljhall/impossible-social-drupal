@@ -1,0 +1,31 @@
+entity.simpleads.add_form:
+  route_name: entity.simpleads.add_form
+  title: 'Add Advertisement'
+  appears_on:
+    - entity.simpleads.collection
+
+entity.simpleads_group.add_form:
+  route_name: entity.simpleads_group.add_form
+  title: 'Add Group'
+  appears_on:
+    - entity.simpleads_group.collection
+    - simpleads.group
+  options:
+    attributes:
+      class:
+        - 'use-ajax'
+      data-dialog-type: 'modal'
+      data-dialog-options: '{"width":"700"}'
+
+entity.simpleads_campaign.add_form:
+  route_name: entity.simpleads_campaign.add_form
+  title: 'Add Campaign'
+  appears_on:
+    - entity.simpleads_campaign.collection
+    - simpleads.campaign
+  options:
+    attributes:
+      class:
+        - 'use-ajax'
+      data-dialog-type: 'modal'
+      data-dialog-options: '{"width":"700"}'

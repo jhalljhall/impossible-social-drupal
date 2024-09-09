@@ -1,0 +1,10 @@
+{#
+/**
+ * @file
+ * SimpleAds advertisement template.
+ */
+#}
+{% if options.html5 %}
+<div class="simpleads-html5-blocker"></div>
+<iframe scrolling="no" frameborder="0" src="{{ options.html5 }}"></iframe>
+{% endif %}
