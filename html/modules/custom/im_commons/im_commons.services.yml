@@ -1,0 +1,5 @@
+services:
+  im_commons.checkout_subscriber:
+    class: Drupal\im_commons\EventSubscriber\CheckoutCompleteSubscriber
+    tags:
+      - { name: event_subscriber }

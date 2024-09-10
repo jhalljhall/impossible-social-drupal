@@ -1,6 +1,5 @@
 name: IM Commons
 description: This module provides Webform handlers and common overrides.
 package: IMPossible
-
 type: module
 core_version_requirement: ^9 || ^10

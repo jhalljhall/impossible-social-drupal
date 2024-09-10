@@ -1,66 +1,38 @@
 <?php
 
-use Drupal\Core\Entity\ContentEntityBase;
-use Drupal\Core\Block\BlockPluginInterface;
-use Drupal\user\UserInterface;
-use Drupal\entity\EntityInterface;
-
-function im_commons_form_alter(&$form, &$form_state, $form_id){
-    //
-    //dd($form_id);
-    //var_dump ($form_id);
-}
+use Drupal\Core\StringTranslation\TranslatableMarkup;
+use Drupal\Core\Url;
 
 /**
- * @file
- * Adds "Subscriber" role to users upon checkout completion.
+ * Implements hook_social_user_account_header_items().
+ *
+ * Adds an indicator to the user account menu.
  */
-
- use Drupal\commerce_order\Entity\OrderInterface;
- use Drupal\user\Entity\User;
- 
- /**
-  * Implements hook_commerce_checkout_complete().
-  */
- function im_commons_commerce_checkout_complete(OrderInterface $order) {
-   // Get the user who made the purchase.
-   $uid = $order->getCustomerId();
-   $user = User::load($uid);
- 
-   if ($user && !$user->hasRole('subscriber')) {
-     // Add the "Subscriber" role to the user.
-     $user->addRole('subscriber');
-     $user->save();
-   }
- }
-
- /**
- * Implements hook_cron().
- */
-function manage_subscriber_role_cron() {
-    $users = User::loadMultiple();
-  
-    foreach ($users as $user) {
-      // Check if the user has the "Subscriber" role
-      if ($user->hasRole('subscriber')) {
-        $hasActiveSubscription = FALSE;
-  
-        // Load subscriptions for the user
-        $subscriptions = Subscription::loadMultipleByUser($user->id());
-  
-        foreach ($subscriptions as $subscription) {
-          // Check if any subscription is active and has successful recent payment
-          if ($subscription->isActive() && checkRecentSuccessfulPayment($subscription)) {
-            $hasActiveSubscription = TRUE;
-            break;
-          }
-        }
-  
-        // Remove the role if no active subscription with successful payment
-        if (!$hasActiveSubscription) {
-          $user->removeRole('subscriber');
-          $user->save();
-        }
-      }
-    }
+function im_commons_social_user_account_header_items_alter(array &$menu_links, array $context) {
+  // We require a logged in user for this indicator.
+  if (empty($context['user']) || !$context['user']->isAuthenticated()) {
+    return;
   }
+
+  // If the account_box link was removed we have nothing to do.
+  if (!isset($menu_links['account_box'])) {
+    return;
+  }
+
+  $uid = $context['user']->id();
+  \Drupal::logger('im_commons')->info('im_commons_social_user_account_header_items ' . $uid);
+
+  // Define the "My Orders" link.
+  $my_orders_link = [
+    '#type' => 'link',
+    '#title' => new TranslatableMarkup('My orders'),
+    '#attributes' => [
+      'title' => new TranslatableMarkup('View my orders'),
+    ],
+    '#url' => Url::fromUserInput("/user/" . $uid . "/orders"),
+    '#weight' => 700,
+  ];
+
+  // Add the "My Orders" link to the account_box menu.
+  $menu_links['account_box']['my_orders'] = $my_orders_link;
+}
