@@ -13,7 +13,6 @@ class CheckoutCompleteSubscriber implements EventSubscriberInterface {
    * {@inheritdoc}
    */
   public static function getSubscribedEvents() {
-    \Drupal::logger("im_commons")->error("getSubscribedEvents");
     $events[CheckoutEvents::COMPLETION][] = ['onCheckoutComplete'];
     return $events;
   }

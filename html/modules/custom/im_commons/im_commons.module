@@ -20,7 +20,6 @@ function im_commons_social_user_account_header_items_alter(array &$menu_links, a
   }
 
   $uid = $context['user']->id();
-  \Drupal::logger('im_commons')->info('im_commons_social_user_account_header_items ' . $uid);
 
   // Define the "My Orders" link.
   $my_orders_link = [
