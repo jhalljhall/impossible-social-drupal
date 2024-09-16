@@ -42,14 +42,14 @@ class CheckoutCompleteSubscriber implements EventSubscriberInterface {
         $sku = $purchased_entity->get('sku')->value;
 
         // Check if the purchased product is "kiosk".
-        if ($sku === 'kiosk-yearly-sub-4001' || $sku === 'kiosk-monthly-sub-4001') {
+        if (strpos($sku, 'kiosk') !== false) {
           // Add the 'kiosk_owner' role to the user.
           $user->addRole('kiosk_owner');
           $user->save();
         }
 
         // Check if the purchased product is "subscriber".
-        if ($sku === 'impossible-yearly-sub-0001' || $sku === 'impossible-monthly-sub-0001') {
+        if (strpos($sku, 'impossible') !== false) {
           // Add the 'subscriber' role to the user.
           $user->addRole('subscriber');
           $user->save();
