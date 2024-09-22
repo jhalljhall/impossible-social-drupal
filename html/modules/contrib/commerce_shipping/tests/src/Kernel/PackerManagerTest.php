@@ -84,7 +84,7 @@ class PackerManagerTest extends ShippingKernelTestBase {
    * ::covers packToShipments.
    */
   public function testPackToShipments() {
-    $user = $this->createUser(['mail' => $this->randomString() . '@example.com']);
+    $user = $this->createUser();
     $first_variation = ProductVariation::create([
       'type' => 'default',
       'sku' => 'test-product-01',

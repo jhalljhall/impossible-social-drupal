@@ -40,7 +40,7 @@ class PackageTypeForm extends EntityForm {
     $weight = $package_type->getWeight();
     $form['weight'] = [
       '#type' => 'physical_measurement',
-      '#title' => $this->t('Weight'),
+      '#title' => $this->t('Weight', [], ['context' => 'physical']),
       '#measurement_type' => MeasurementType::WEIGHT,
       '#default_value' => $weight ?: ['number' => 0, 'unit' => 'g'],
       '#required' => TRUE,

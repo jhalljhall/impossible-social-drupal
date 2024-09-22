@@ -8,7 +8,7 @@ dependencies:
 configure: legal.config_legal
 core_version_requirement: ^8.9 || ^9 || ^10
 
-# Information added by Drupal.org packaging script on 2023-04-12
-version: '3.0.1'
+# Information added by Drupal.org packaging script on 2024-06-09
+version: '3.0.2'
 project: 'legal'
-datestamp: 1681314001
+datestamp: 1717951485

@@ -69,7 +69,7 @@ class ShipmentTest extends ShippingKernelTestBase {
    * @covers ::recalculateWeight
    */
   public function testShipment() {
-    $user = $this->createUser(['mail' => $this->randomString() . '@example.com']);
+    $user = $this->createUser();
     /** @var \Drupal\commerce_order\Entity\OrderInterface $order */
     $order = Order::create([
       'type' => 'default',
@@ -233,8 +233,7 @@ class ShipmentTest extends ShippingKernelTestBase {
     $this->assertCount(4, $order->getAdjustments());
     $this->assertCount(1, $order->get('shipments')->referencedEntities());
     $shipment->delete();
-    $profile = $this->reloadEntity($profile);
-    $this->assertNull($profile);
+    $this->assertNull($this->entityTypeManager->getStorage('profile')->load($profile->id()));
     // The order shipments are cleared on destruct by the shipment subscriber.
     $this->container->get('commerce_shipping.shipment_subscriber')->destruct();
     $order = $this->reloadEntity($order);
@@ -372,7 +371,7 @@ class ShipmentTest extends ShippingKernelTestBase {
    */
   public function testClearRate() {
     $fields = ['amount', 'original_amount', 'shipping_method', 'shipping_service'];
-    $user = $this->createUser(['mail' => $this->randomString() . '@example.com']);
+    $user = $this->createUser();
     /** @var \Drupal\commerce_order\Entity\OrderInterface $order */
     $order = Order::create([
       'type' => 'default',

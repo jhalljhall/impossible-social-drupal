@@ -2,11 +2,10 @@
 
 namespace Drupal\legal\Entity;
 
-use Drupal\Core\Entity\EntityStorageInterface;
-use Drupal\Core\Field\BaseFieldDefinition;
 use Drupal\Core\Entity\ContentEntityBase;
+use Drupal\Core\Entity\EntityStorageInterface;
 use Drupal\Core\Entity\EntityTypeInterface;
-use Drupal\Core\Entity\EntityChangedTrait;
+use Drupal\Core\Field\BaseFieldDefinition;
 use Drupal\legal\ConditionsInterface;
 use Drupal\user\UserInterface;
 
@@ -27,9 +26,6 @@ use Drupal\user\UserInterface;
  * )
  */
 class Conditions extends ContentEntityBase implements ConditionsInterface {
-
-  // Implements methods defined by EntityChangedInterface.
-  use EntityChangedTrait;
 
   /**
    * {@inheritdoc}

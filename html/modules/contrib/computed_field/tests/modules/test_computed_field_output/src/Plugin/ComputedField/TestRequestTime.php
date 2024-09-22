@@ -2,7 +2,9 @@
 
 namespace Drupal\test_computed_field_output\Plugin\ComputedField;
 
+use Drupal\Core\StringTranslation\TranslatableMarkup;
 use Drupal\Component\Datetime\TimeInterface;
+use Drupal\computed_field\Attribute\ComputedField;
 use Drupal\computed_field\Field\ComputedFieldDefinitionWithValuePluginInterface;
 use Drupal\computed_field\Plugin\ComputedField\ComputedFieldBase;
 use Drupal\computed_field\Plugin\ComputedField\SingleValueTrait;
@@ -17,20 +19,17 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
  * Uses a string field type, as both the datetime field type requires an extra
  * module to be installed and the timestamp field requires a date format config
  * entity to be created.
- *
- * @ComputedField(
- *   id = "test_request_timestamp_attached",
- *   label = @Translation("Test Request Timestamp"),
- *   field_type = "string",
- *   attach = {
- *     "scope" = "base",
- *     "field_name" = "test_request_timestamp",
- *     "entity_types" = {
- *       "entity_test" = {},
- *     },
- *   }
- * )
  */
+#[ComputedField(
+  id: 'test_request_timestamp_attached',
+  label: new TranslatableMarkup('Test Request Timestamp'),
+  field_type: 'string',
+  attach: [
+    'scope' => 'base',
+    'field_name' => 'test_request_timestamp',
+    'entity_types' => ['entity_test' => []],
+  ],
+)]
 class TestRequestTime extends ComputedFieldBase implements ContainerFactoryPluginInterface {
 
   use SingleValueTrait;

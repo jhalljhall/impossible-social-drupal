@@ -90,7 +90,7 @@ class ShipmentPercentageOffTest extends ShippingKernelTestBase {
     /** @var \Drupal\commerce_order\Entity\OrderInterface $order */
     $order = Order::create([
       'type' => 'default',
-      'uid' => $this->createUser(['mail' => $this->randomString() . '@example.com']),
+      'uid' => $this->createUser(),
       'store_id' => $this->store->id(),
       'order_items' => [$first_order_item, $second_order_item],
     ]);
@@ -146,6 +146,7 @@ class ShipmentPercentageOffTest extends ShippingKernelTestBase {
     $first_shipment->setShippingMethodId($first_shipping_method->id());
     $first_shipment->setShippingService('default');
     $first_shipment->setOriginalAmount(new Price('5', 'USD'));
+    $first_shipment->setData('pre_promotion_amount', new Price('5', 'USD'));
     $first_shipment->setAmount(new Price('5', 'USD'));
     $first_shipment->addAdjustment(new Adjustment([
       'type' => 'shipping_promotion',
@@ -157,6 +158,7 @@ class ShipmentPercentageOffTest extends ShippingKernelTestBase {
     $second_shipment->setShippingMethodId($second_shipping_method->id());
     $second_shipment->setShippingService('default');
     $second_shipment->setOriginalAmount(new Price('20', 'USD'));
+    $second_shipment->setData('pre_promotion_amount', new Price('20', 'USD'));
     $second_shipment->setAmount(new Price('20', 'USD'));
     $order->set('shipments', [$first_shipment, $second_shipment]);
     $order->setRefreshState(Order::REFRESH_SKIP);

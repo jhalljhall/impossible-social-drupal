@@ -89,6 +89,7 @@ libraries:
   # Atoms
   - socialbase/alert
   - socialbase/badge
+  - socialbase/big-pipe-skeleton
   - socialbase/button
   - socialbase/cards
   - socialbase/close-icon
@@ -155,7 +156,7 @@ regions:
 regions_hidden:
   - hidden
 
-# Information added by Drupal.org packaging script on 2024-03-11
-version: '2.5.14'
+# Information added by Drupal.org packaging script on 2024-08-14
+version: '2.5.20'
 project: 'socialbase'
-datestamp: 1710147315
+datestamp: 1723636482

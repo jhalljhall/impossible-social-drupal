@@ -12,6 +12,8 @@ use Drupal\Core\Url;
 use Drupal\field\Entity\FieldConfig;
 use Drupal\Tests\commerce\FunctionalJavascript\CommerceWebDriverTestBase;
 
+// cspell:ignore Sentier sentier
+
 /**
  * Tests the "Shipping information" checkout pane.
  *
@@ -658,7 +660,7 @@ class ProfileFieldCopyTest extends CommerceWebDriverTestBase {
       'label' => 'On-site',
       'plugin' => 'example_onsite',
       'configuration' => [
-        'api_key' => '2342fewfsfs',
+        'api_key' => '2342',
         'payment_method_types' => ['credit_card'],
       ],
     ]);

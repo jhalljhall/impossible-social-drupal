@@ -2,6 +2,8 @@
 
 namespace Drupal\test_computed_field_plugins\Plugin\ComputedField;
 
+use Drupal\Core\StringTranslation\TranslatableMarkup;
+use Drupal\computed_field\Attribute\ComputedField;
 use Drupal\computed_field\Field\ComputedFieldDefinitionWithValuePluginInterface;
 use Drupal\computed_field\Plugin\ComputedField\ComputedFieldBase;
 use Drupal\computed_field\Plugin\ComputedField\SingleValueTrait;
@@ -13,13 +15,12 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
  * Computed field which shows the current user's name.
- *
- * @ComputedField(
- *   id = "test_current_user",
- *   label = @Translation("Test current user"),
- *   field_type = "string",
- * )
  */
+#[ComputedField(
+  id: 'test_current_user',
+  label: new TranslatableMarkup('Test current user'),
+  field_type: 'string',
+)]
 class TestCurrentUser extends ComputedFieldBase implements ContainerFactoryPluginInterface {
 
   /**

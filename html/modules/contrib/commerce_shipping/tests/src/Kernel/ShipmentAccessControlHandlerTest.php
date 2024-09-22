@@ -41,41 +41,41 @@ class ShipmentAccessControlHandlerTest extends ShippingKernelTestBase {
     $shipment->save();
     $shipment = $this->reloadEntity($shipment);
 
-    $account = $this->createUser([], ['access administration pages']);
+    $account = $this->createUser(['access administration pages']);
     $this->assertFalse($shipment->access('view', $account));
     $this->assertFalse($shipment->access('update', $account));
     $this->assertFalse($shipment->access('delete', $account));
 
-    $account = $this->createUser([], ['view commerce_order']);
+    $account = $this->createUser(['view commerce_order']);
     $this->assertTrue($shipment->access('view', $account));
     $this->assertFalse($shipment->access('update', $account));
     $this->assertFalse($shipment->access('delete', $account));
 
-    $account = $this->createUser([], ['update default commerce_order']);
+    $account = $this->createUser(['update default commerce_order']);
     $this->assertFalse($shipment->access('view', $account));
     $this->assertTrue($shipment->access('update', $account));
     $this->assertFalse($shipment->access('delete', $account));
 
-    $account = $this->createUser([], ['view commerce_order', 'update default commerce_order']);
+    $account = $this->createUser(['view commerce_order', 'update default commerce_order']);
     $this->assertTrue($shipment->access('view', $account));
     $this->assertTrue($shipment->access('update', $account));
     $this->assertFalse($shipment->access('delete', $account));
 
-    $account = $this->createUser([], [
+    $account = $this->createUser([
       'manage default commerce_shipment',
     ]);
     $this->assertTrue($shipment->access('view', $account));
     $this->assertTrue($shipment->access('update', $account));
     $this->assertTrue($shipment->access('delete', $account));
 
-    $account = $this->createUser([], ['administer commerce_shipment']);
+    $account = $this->createUser(['administer commerce_shipment']);
     $this->assertTrue($shipment->access('view', $account));
     $this->assertTrue($shipment->access('update', $account));
     $this->assertTrue($shipment->access('delete', $account));
 
     // Broken order reference.
     $shipment->set('order_id', '999');
-    $account = $this->createUser([], ['manage default commerce_order_item']);
+    $account = $this->createUser(['manage default commerce_order_item']);
     $this->assertFalse($shipment->access('view', $account));
     $this->assertFalse($shipment->access('update', $account));
     $this->assertFalse($shipment->access('delete', $account));
@@ -87,13 +87,13 @@ class ShipmentAccessControlHandlerTest extends ShippingKernelTestBase {
   public function testCreateAccess() {
     $access_control_handler = \Drupal::entityTypeManager()->getAccessControlHandler('commerce_shipment');
 
-    $account = $this->createUser([], ['access content']);
+    $account = $this->createUser(['access content']);
     $this->assertFalse($access_control_handler->createAccess('default', $account));
 
-    $account = $this->createUser([], ['administer commerce_shipment']);
+    $account = $this->createUser(['administer commerce_shipment']);
     $this->assertTrue($access_control_handler->createAccess('default', $account));
 
-    $account = $this->createUser([], ['manage default commerce_shipment']);
+    $account = $this->createUser(['manage default commerce_shipment']);
     $this->assertTrue($access_control_handler->createAccess('default', $account));
   }
 

@@ -5,6 +5,7 @@ namespace Drupal\simple_oauth\Controller;
 use Drupal\Component\Utility\UrlHelper;
 use Drupal\Core\Controller\ControllerBase;
 use Drupal\Core\Url;
+use Drupal\Core\Utility\Error;
 use Drupal\simple_oauth\Entities\ScopeEntity;
 use Drupal\simple_oauth\Entities\UserEntity;
 use Drupal\simple_oauth\Form\Oauth2AuthorizeForm;
@@ -13,6 +14,7 @@ use Drupal\simple_oauth\Server\AuthorizationServerFactoryInterface;
 use GuzzleHttp\Psr7\Response;
 use League\OAuth2\Server\Exception\OAuthServerException;
 use League\OAuth2\Server\Repositories\ClientRepositoryInterface;
+use Psr\Log\LoggerInterface;
 use Symfony\Bridge\PsrHttpMessage\HttpMessageFactoryInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\HttpFoundation\RedirectResponse;
@@ -52,6 +54,13 @@ class Oauth2AuthorizeController extends ControllerBase {
   protected ClientRepositoryInterface $clientRepository;
 
   /**
+   * The simple_oauth logger channel.
+   *
+   * @var \Psr\Log\LoggerInterface
+   */
+  protected LoggerInterface $logger;
+
+  /**
    * Oauth2AuthorizeController construct.
    *
    * @param \Symfony\Bridge\PsrHttpMessage\HttpMessageFactoryInterface $http_message_factory
@@ -62,17 +71,21 @@ class Oauth2AuthorizeController extends ControllerBase {
    *   The known client repository service.
    * @param \League\OAuth2\Server\Repositories\ClientRepositoryInterface $client_repository
    *   The client repository service.
+   * @param \Psr\Log\LoggerInterface $logger
+   *   The simple_oauth logger channel.
    */
   public function __construct(
     HttpMessageFactoryInterface $http_message_factory,
     AuthorizationServerFactoryInterface $authorization_server_factory,
     KnownClientsRepositoryInterface $known_clients_repository,
-    ClientRepositoryInterface $client_repository
+    ClientRepositoryInterface $client_repository,
+    LoggerInterface $logger
   ) {
     $this->httpMessageFactory = $http_message_factory;
     $this->authorizationServerFactory = $authorization_server_factory;
     $this->knownClientRepository = $known_clients_repository;
     $this->clientRepository = $client_repository;
+    $this->logger = $logger;
   }
 
   /**
@@ -83,7 +96,8 @@ class Oauth2AuthorizeController extends ControllerBase {
       $container->get('psr7.http_message_factory'),
       $container->get('simple_oauth.server.authorization_server.factory'),
       $container->get('simple_oauth.known_clients'),
-      $container->get('simple_oauth.repositories.client')
+      $container->get('simple_oauth.repositories.client'),
+      $container->get('logger.channel.simple_oauth')
     );
   }
 
@@ -152,7 +166,7 @@ class Oauth2AuthorizeController extends ControllerBase {
       }
     }
     catch (OAuthServerException $exception) {
-      watchdog_exception('simple_oauth', $exception);
+      Error::logException($this->logger, $exception);
       $response = $exception->generateHttpResponse($server_response);
     }
 

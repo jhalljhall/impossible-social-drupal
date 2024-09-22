@@ -24,7 +24,7 @@ class PurchasableEntityShippable extends EntityTraitBase {
   public function buildFieldDefinitions() {
     $fields = [];
     $fields['weight'] = BundleFieldDefinition::create('physical_measurement')
-      ->setLabel(new TranslatableMarkup('Weight'))
+      ->setLabel(new TranslatableMarkup('Weight', [], ['context' => 'physical']))
       ->setRequired(TRUE)
       ->setSetting('measurement_type', MeasurementType::WEIGHT)
       ->setDisplayOptions('form', [

@@ -6,7 +6,7 @@ dependencies:
   - computed_field:computed_field
   - drupal:field_ui
 
-# Information added by Drupal.org packaging script on 2024-02-15
-version: '4.0.0-alpha8'
+# Information added by Drupal.org packaging script on 2024-05-13
+version: '4.0.0-alpha9'
 project: 'computed_field'
-datestamp: 1708002878
+datestamp: 1715618029

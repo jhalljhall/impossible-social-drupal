@@ -3,12 +3,12 @@
 namespace Drupal\simple_oauth\Repositories;
 
 use Drupal\Core\Entity\EntityTypeManagerInterface;
+use Drupal\simple_oauth\Entities\ScopeEntity;
 use Drupal\simple_oauth\Oauth2ScopeInterface;
 use Drupal\simple_oauth\Oauth2ScopeProviderInterface;
 use League\OAuth2\Server\Entities\ClientEntityInterface;
 use League\OAuth2\Server\Exception\OAuthServerException;
 use League\OAuth2\Server\Repositories\ScopeRepositoryInterface;
-use Drupal\simple_oauth\Entities\ScopeEntity;
 
 /**
  * The repository for scopes.

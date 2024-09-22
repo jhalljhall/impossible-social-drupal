@@ -2,15 +2,19 @@
 
 namespace Drupal\commerce_license\Plugin\Commerce\LicenseType;
 
+use Drupal\commerce_license\Entity\LicenseInterface;
 use Drupal\Component\Utility\NestedArray;
 use Drupal\Core\Form\FormStateInterface;
+use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
 use Drupal\Core\Plugin\PluginBase;
-use Drupal\commerce_license\Entity\LicenseInterface;
+use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
  * Provides the base license type class.
+ *
+ * @phpstan-consistent-constructor
  */
-abstract class LicenseTypeBase extends PluginBase implements LicenseTypeInterface {
+abstract class LicenseTypeBase extends PluginBase implements LicenseTypeInterface, ContainerFactoryPluginInterface {
 
   /**
    * Constructs a new plugin instance.
@@ -26,6 +30,13 @@ abstract class LicenseTypeBase extends PluginBase implements LicenseTypeInterfac
     parent::__construct($configuration, $plugin_id, $plugin_definition);
 
     $this->setConfiguration($configuration);
+  }
+
+  /**
+   * {@inheritDoc}
+   */
+  public static function create(ContainerInterface $container, array $configuration, $plugin_id, $plugin_definition) {
+    return new static($configuration, $plugin_id, $plugin_definition);
   }
 
   /**

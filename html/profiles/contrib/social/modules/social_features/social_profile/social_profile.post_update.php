@@ -38,7 +38,7 @@ function social_profile_post_update_10101_profile_names_update(&$sandbox) {
 
   /** @var \Drupal\profile\Entity\ProfileInterface $profile */
   foreach ($profiles as $profile) {
-    if ($profile instanceof ProfileInterface && $profile->bundle() == 'profile') {
+    if ($profile instanceof ProfileInterface) {
       // Get generated profile name.
       $profile_name = $profile_name_service->getProfileName($profile);
       // Add generated profile name.

@@ -9,6 +9,7 @@ use Drupal\computed_field\Field\ComputedFieldDefinitionWithValuePluginInterface;
 use Drupal\Core\Cache\CacheableMetadata;
 use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Entity\EntityTypeInterface;
+use Drupal\Core\Field\FieldStorageDefinitionInterface;
 
 /**
  * Base class for Computed Field plugins.
@@ -55,6 +56,13 @@ abstract class ComputedFieldBase extends PluginBase implements ComputedFieldPlug
    */
   public function getCacheability(EntityInterface $host_entity, ComputedFieldDefinitionWithValuePluginInterface $computed_field_definition): ?CacheableMetadata {
     return NULL;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function getFieldCardinality(): int {
+    return $this->pluginDefinition['cardinality'];
   }
 
   /**

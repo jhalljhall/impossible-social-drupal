@@ -14,14 +14,14 @@ class MeasurementComparator extends Comparator {
   /**
    * {@inheritdoc}
    */
-  public function accepts($expected, $actual) {
+  public function accepts(mixed $expected, mixed $actual): bool {
     return $expected instanceof Measurement && $actual instanceof Measurement;
   }
 
   /**
    * {@inheritdoc}
    */
-  public function assertEquals($expected, $actual, $delta = 0.0, $canonicalize = FALSE, $ignoreCase = FALSE) {
+  public function assertEquals($expected, $actual, $delta = 0.0, $canonicalize = FALSE, $ignoreCase = FALSE): void {
     assert($expected instanceof Measurement);
     assert($actual instanceof Measurement);
     if (!$actual->equals($expected)) {

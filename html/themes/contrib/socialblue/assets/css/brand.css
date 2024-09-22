@@ -1,3 +1,10 @@
+:root {
+  --primary-color: #29abe2;
+  --secondary-color: #1f80aa;
+  --accent-color: #ffc142;
+  --accent-color--text: #343434;
+}
+
 [type="radio"]:checked + label:before {
   border-color: #29abe2;
 }

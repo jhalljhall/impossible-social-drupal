@@ -46,6 +46,13 @@ final class ShippingRate {
   protected $amount;
 
   /**
+   * The pre promotion amount (amount just before the promotions are applied).
+   *
+   * @var \Drupal\commerce_price\Price|null
+   */
+  protected $prePromotionAmount;
+
+  /**
    * The description.
    *
    * @var string
@@ -96,6 +103,7 @@ final class ShippingRate {
     $this->shippingMethodId = $definition['shipping_method_id'];
     $this->service = $definition['service'];
     $this->originalAmount = $definition['original_amount'] ?? $definition['amount'];
+    $this->prePromotionAmount = $definition['pre_promotion_amount'] ?? NULL;
     $this->amount = $definition['amount'];
     $this->description = $definition['description'] ?? '';
     $this->deliveryDate = $definition['delivery_date'] ?? NULL;
@@ -184,6 +192,29 @@ final class ShippingRate {
   }
 
   /**
+   * Gets the pre promotion amount.
+   *
+   * @return \Drupal\commerce_price\Price|null
+   *   The amount.
+   */
+  public function getPrePromotionAmount(): ?Price {
+    return $this->prePromotionAmount;
+  }
+
+  /**
+   * Sets the pre promotion amount.
+   *
+   * @param \Drupal\commerce_price\Price $pre_promotion_amount
+   *   The pre promotion amount.
+   *
+   * @return $this
+   */
+  public function setPrePromotionAmount(Price $pre_promotion_amount) {
+    $this->prePromotionAmount = $pre_promotion_amount;
+    return $this;
+  }
+
+  /**
    * Gets the description.
    *
    * Displayed to the end-user when available.
@@ -266,6 +297,7 @@ final class ShippingRate {
       'shipping_method_id' => $this->shippingMethodId,
       'service' => $this->service,
       'original_amount' => $this->originalAmount,
+      'pre_promotion_amount' => $this->prePromotionAmount,
       'amount' => $this->amount,
       'description' => $this->description,
       'delivery_date' => $this->deliveryDate,

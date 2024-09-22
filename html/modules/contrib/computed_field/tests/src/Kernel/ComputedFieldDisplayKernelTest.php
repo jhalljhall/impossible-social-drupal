@@ -52,7 +52,6 @@ class ComputedFieldDisplayKernelTest extends KernelTestBase {
   protected function setUp(): void {
     parent::setUp();
 
-    $this->installSchema('system', ['sequences']);
     $this->installEntitySchema('user');
     // We don't need to test bundles, so use an entity type without them.
     $this->installEntitySchema('entity_test');

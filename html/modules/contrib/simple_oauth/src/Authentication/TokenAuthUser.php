@@ -5,10 +5,10 @@ namespace Drupal\simple_oauth\Authentication;
 use Drupal\Core\Entity\EntityStorageInterface;
 use Drupal\Core\Entity\EntityTypeInterface;
 use Drupal\Core\Session\AccountInterface;
+use Drupal\consumers\Entity\Consumer;
 use Drupal\simple_oauth\Entity\Oauth2TokenInterface;
 use Drupal\user\Entity\User;
 use Drupal\user\UserInterface;
-use Drupal\consumers\Entity\Consumer;
 use League\OAuth2\Server\Exception\OAuthServerException;
 
 /**
@@ -697,14 +697,14 @@ class TokenAuthUser implements TokenAuthUserInterface {
    * {@inheritdoc}
    */
   public function addRole($rid) {
-    $this->subject->addRole($rid);
+    return $this->subject->addRole($rid);
   }
 
   /**
    * {@inheritdoc}
    */
   public function removeRole($rid) {
-    $this->subject->removeRole($rid);
+    return $this->subject->removeRole($rid);
   }
 
   /**

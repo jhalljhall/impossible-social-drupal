@@ -7,7 +7,6 @@ use Drupal\commerce_license\Entity\LicenseInterface;
 use Drupal\commerce_license\ExistingRights\ExistingRightsResult;
 use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Form\FormStateInterface;
-use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
 use Drupal\entity\BundleFieldDefinition;
 use Drupal\user\RoleInterface;
 use Drupal\user\UserInterface;
@@ -20,8 +19,10 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
  *   id = "role",
  *   label = @Translation("Role"),
  * )
+ *
+ * @phpstan-consistent-constructor
  */
-class Role extends LicenseTypeBase implements ExistingRightsFromConfigurationCheckingInterface, GrantedEntityLockingInterface, ContainerFactoryPluginInterface {
+class Role extends LicenseTypeBase implements ExistingRightsFromConfigurationCheckingInterface, GrantedEntityLockingInterface {
 
   /**
    * The entity type manager service.

@@ -69,9 +69,9 @@ class CommerceAvailabilityExistingRightsTest extends CartKernelTestBase {
       'orderType' => $order_type->id(),
       'traits' => ['commerce_license_order_item_type'],
     ]);
-    $this->traitManager = \Drupal::service('plugin.manager.commerce_entity_trait');
-    $trait = $this->traitManager->createInstance('commerce_license_order_item_type');
-    $this->traitManager->installTrait($trait, 'commerce_order_item', $order_item_type->id());
+    $trait_manager = \Drupal::service('plugin.manager.commerce_entity_trait');
+    $trait = $trait_manager->createInstance('commerce_license_order_item_type');
+    $trait_manager->installTrait($trait, 'commerce_order_item', $order_item_type->id());
 
     // Create a product variation type with the license trait, using our order
     // item type.
@@ -81,13 +81,14 @@ class CommerceAvailabilityExistingRightsTest extends CartKernelTestBase {
       'orderItemType' => 'license_order_item_type',
       'traits' => ['commerce_license'],
     ]);
-    $trait = $this->traitManager->createInstance('commerce_license');
-    $this->traitManager->installTrait($trait, 'commerce_product_variation', $product_variation_type->id());
+    $trait = $trait_manager->createInstance('commerce_license');
+    $trait_manager->installTrait($trait, 'commerce_product_variation', $product_variation_type->id());
 
     // Create a product variation which grants a license.
     $this->variation = $this->createEntity('commerce_product_variation', [
       'type' => 'license_pv_type',
       'sku' => $this->randomMachineName(),
+      'title' => $this->randomString(),
       'price' => [
         'number' => 999,
         'currency_code' => 'USD',
@@ -115,7 +116,7 @@ class CommerceAvailabilityExistingRightsTest extends CartKernelTestBase {
     $this->variation->save();
 
     // Create a user to use for orders.
-    $this->user = $this->createUser();
+    $this->createUser();
   }
 
   /**

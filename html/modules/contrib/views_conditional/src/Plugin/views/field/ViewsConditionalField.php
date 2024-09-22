@@ -7,6 +7,7 @@ use Drupal\Component\Render\MarkupInterface;
 use Drupal\Core\Datetime\DateFormatter;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
+use Drupal\Core\Render\Markup;
 use Drupal\Core\Render\RendererInterface;
 use Drupal\views\Plugin\views\field\FieldPluginBase;
 use Drupal\views\ResultRow;
@@ -33,6 +34,8 @@ class ViewsConditionalField extends FieldPluginBase implements ContainerFactoryP
 
   /**
    * The renderer.
+   *
+   * @var \Drupal\Core\Render\RendererInterface
    */
   protected $renderer;
 
@@ -253,13 +256,14 @@ class ViewsConditionalField extends FieldPluginBase implements ContainerFactoryP
    * @param string $value
    *   The value to be displayed.
    *
-   * @return MarkupInterface|string
+   * @return \Drupal\Component\Render\MarkupInterface|string
    *   The rendered HTML.
+   *
    * @throws \Exception
    */
   private function markup(string $value): MarkupInterface|string {
     $value = [
-      '#markup' => $value,
+      '#markup' => Markup::create($value),
     ];
     return $this->renderer->render($value);
   }

@@ -2,10 +2,10 @@
 
 namespace Drupal\simple_oauth\Entity;
 
-use Drupal\Core\Field\BaseFieldDefinition;
 use Drupal\Core\Entity\ContentEntityBase;
 use Drupal\Core\Entity\EntityChangedTrait;
 use Drupal\Core\Entity\EntityTypeInterface;
+use Drupal\Core\Field\BaseFieldDefinition;
 use Drupal\Core\Field\FieldStorageDefinitionInterface;
 use Drupal\user\EntityOwnerTrait;
 
@@ -227,7 +227,7 @@ class Oauth2Token extends ContentEntityBase implements Oauth2TokenInterface {
     $field = $this->get('scopes');
 
     foreach ($field->getScopes() as $scope) {
-      if (in_array($permission, $scope_provider->getFlattenPermissionTree($scope))) {
+      if ($scope_provider->scopeHasPermission($permission, $scope)) {
         return TRUE;
       }
     }

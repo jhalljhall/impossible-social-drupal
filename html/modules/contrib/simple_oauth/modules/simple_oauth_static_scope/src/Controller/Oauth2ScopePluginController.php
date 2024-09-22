@@ -161,12 +161,10 @@ class Oauth2ScopePluginController extends ControllerBase {
       'value' => $plugin_definition['umbrella'] ? 'TRUE' : 'FALSE',
     ];
     foreach (['parent', 'granularity', 'permission', 'role'] as $key) {
-      if (!empty($plugin_definition[$key])) {
-        $build['#rows'][$key] = [
-          'key' => 'parent',
-          'value' => $plugin_definition[$key],
-        ];
-      }
+      $build['#rows'][$key] = [
+        'key' => $key,
+        'value' => $plugin_definition[$key],
+      ];
     }
 
     return $build;

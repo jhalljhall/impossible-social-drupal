@@ -78,8 +78,15 @@ class EarlyOrderProcessor implements OrderProcessorInterface {
 
     $should_refresh = $this->shouldRefresh($order);
     foreach ($shipments as $key => $shipment) {
-      if ($original_amount = $shipment->getOriginalAmount()) {
-        $shipment->setAmount($original_amount);
+      $original_amount = $shipment->getOriginalAmount();
+      $pre_promotion_amount = $shipment->getData('pre_promotion_amount');
+      if ($pre_promotion_amount) {
+        if ($original_amount) {
+          $shipment->setAmount($pre_promotion_amount);
+        }
+        else {
+          $shipment->unsetData('pre_promotion_amount');
+        }
       }
       $shipment->clearAdjustments();
 

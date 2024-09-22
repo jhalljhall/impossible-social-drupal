@@ -31,3 +31,6 @@ legal.settings:
     login_modal_terms:
       type: boolean
       label: 'How to display the T&Cs when a user clicks on the link on the login form.'
+    login_redirect_url:
+      type: string
+      label: 'Login redirect URL'

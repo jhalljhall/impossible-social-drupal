@@ -250,6 +250,12 @@ abstract class ShippingMethodBase extends PluginBase implements ContainerFactory
     $shipment->setShippingMethodId($rate->getShippingMethodId());
     $shipment->setShippingService($rate->getService()->getId());
     $shipment->setOriginalAmount($rate->getOriginalAmount());
+    if ($pre_promotion_amount = $rate->getPrePromotionAmount()) {
+      $shipment->setData('pre_promotion_amount', $pre_promotion_amount);
+    }
+    elseif ($shipment->getData('pre_promotion_amount')) {
+      $shipment->unsetData('pre_promotion_amount');
+    }
     $shipment->setAmount($rate->getAmount());
   }
 

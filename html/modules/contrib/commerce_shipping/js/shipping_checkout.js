@@ -29,7 +29,7 @@
       waitForAjaxComplete(element);
     },
     init(context) {
-      // Everytime a required field value is updated, attempt to trigger the
+      // When a required field value is updated, attempt to trigger the
       // shipping rates recalculation if possible.
       const requiredInputs = document
         .getElementById(this.wrapper)
@@ -39,9 +39,11 @@
       if (requiredInputs.length) {
         once('shipping-recalculate', requiredInputs, context).forEach(
           (element) => {
-            element.addEventListener('change', (el) => {
-              this.onChange(el.target);
-            });
+            if (!element.getAttribute('name').includes('[shipping_method]')) {
+              element.addEventListener('change', (el) => {
+                this.onChange(el.target);
+              });
+            }
           },
         );
       }

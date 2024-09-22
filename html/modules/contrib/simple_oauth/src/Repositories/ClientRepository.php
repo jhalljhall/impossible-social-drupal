@@ -4,9 +4,9 @@ namespace Drupal\simple_oauth\Repositories;
 
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Password\PasswordInterface;
+use Drupal\simple_oauth\Entities\ClientEntity;
 use League\OAuth2\Server\Exception\OAuthServerException;
 use League\OAuth2\Server\Repositories\ClientRepositoryInterface;
-use Drupal\simple_oauth\Entities\ClientEntity;
 
 /**
  * The client repository.
@@ -75,7 +75,7 @@ class ClientRepository implements ClientRepositoryInterface {
     // @see https://datatracker.ietf.org/doc/html/rfc6749#section-4.4
     if (!$client_drupal_entity->get('confidential')->value &&
       $secret_field->isEmpty() &&
-      empty($client_secret) &&
+      empty($clientSecret) &&
       $grantType !== 'client_credentials') {
       return TRUE;
     }

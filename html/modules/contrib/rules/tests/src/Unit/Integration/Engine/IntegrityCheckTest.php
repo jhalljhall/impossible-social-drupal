@@ -2,6 +2,8 @@
 
 namespace Drupal\Tests\rules\Unit\Integration\Engine;
 
+// cspell:ignore näme
+
 use Drupal\Core\Messenger\MessengerInterface;
 use Drupal\rules\Context\ContextConfig;
 use Drupal\rules\Context\ContextDefinition;
@@ -367,8 +369,8 @@ class IntegrityCheckTest extends RulesEntityIntegrationTestBase {
   /**
    * Tests context can be refined based upon mapped context.
    */
-  public function testRefiningContextBasedonMappedContext() {
-    // DataComparision condition refines context based on selected data. Thus
+  public function testRefiningContextBasedOnMappedContext() {
+    // DataComparison condition refines context based on selected data. Thus
     // it for the test and ensure checking integrity passes when the comparison
     // value is of a compatible type and fails else.
     $rule = $this->rulesExpressionManager->createRule();

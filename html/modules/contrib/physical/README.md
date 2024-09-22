@@ -11,7 +11,8 @@ Supported measurement types:
 
 Provided field types:
 - Physical measurement: Stores a single measurement and its unit.
-- Physical dimensions: Stores the length/width/height measurements and their unit.
+- Physical dimensions: Stores the length/width/height measurements
+  and their unit.
 
 Other features:
 - Unit conversions

@@ -116,7 +116,7 @@ class LicenseAvailabilityCheckerExistingRights implements AvailabilityCheckerInt
       return AvailabilityResult::neutral();
     }
 
-    // Handle licence renewal.
+    // Handle license renewal.
     /** @var \Drupal\commerce_license\Entity\LicenseInterface $existing_license */
     $existing_license = $this->entityTypeManager
       ->getStorage('commerce_license')

@@ -9,6 +9,8 @@ use Drupal\rules\Context\ContextHandlerTrait;
 use Drupal\rules\Context\ExecutionStateInterface;
 use Drupal\rules\Exception\EvaluationException;
 
+// cspell:ignore testplugin
+
 /**
  * @coversDefaultClass \Drupal\rules\Context\ContextHandlerTrait
  * @group Rules

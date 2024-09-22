@@ -294,10 +294,12 @@ class ComputedField extends FieldConfigBase implements
    * {@inheritdoc}
    */
   public function getFieldStorageDefinition() {
+    $plugin = $this->getFieldValuePlugin();
     // Create a dummy with just the essentials.
     return FieldStorageDefinition::create($this->getType())
       ->setName($this->getName())
       ->setComputed(TRUE)
+      ->setCardinality($plugin->getFieldCardinality())
       ->setTargetEntityTypeId($this->entity_type);
   }
 

@@ -22,6 +22,7 @@ class Oauth2ScopeReferenceItemTestBase extends FieldKernelTestBase {
    * {@inheritdoc}
    */
   protected static $modules = [
+    'consumers',
     'serialization',
     'system',
     'simple_oauth',

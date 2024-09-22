@@ -71,7 +71,7 @@ class ResourceServerFactory implements ResourceServerFactoryInterface {
    * Get the public key.
    *
    * @return \League\OAuth2\Server\CryptKey
-   *   Returns the private key as crypt key.
+   *   Returns the public key as crypt key.
    *
    * @throws \League\OAuth2\Server\Exception\OAuthServerException
    *   If public key is not set.
@@ -82,7 +82,7 @@ class ResourceServerFactory implements ResourceServerFactoryInterface {
     $key = file_get_contents($file_path);
 
     if (!$key) {
-      throw OAuthServerException::serverError('You need to set the OAuth2 private key.');
+      throw OAuthServerException::serverError('You need to set the OAuth2 public key.');
     }
 
     return new CryptKey(

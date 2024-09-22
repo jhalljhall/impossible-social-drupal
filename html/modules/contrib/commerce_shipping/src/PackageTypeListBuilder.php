@@ -54,7 +54,7 @@ class PackageTypeListBuilder extends ConfigEntityListBuilder {
   public function buildHeader() {
     $header['label'] = $this->t('Package type');
     $header['dimensions'] = $this->t('Dimensions');
-    $header['weight'] = $this->t('Weight');
+    $header['weight'] = $this->t('Weight', [], ['context' => 'physical']);
     return $header + parent::buildHeader();
   }
 

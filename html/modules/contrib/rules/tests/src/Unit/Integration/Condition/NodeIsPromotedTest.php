@@ -5,6 +5,8 @@ namespace Drupal\Tests\rules\Unit\Integration\Condition;
 use Drupal\node\NodeInterface;
 use Drupal\Tests\rules\Unit\Integration\RulesEntityIntegrationTestBase;
 
+// cspell:ignore unpromoted
+
 /**
  * @coversDefaultClass \Drupal\rules\Plugin\Condition\NodeIsPromoted
  * @group RulesCondition

@@ -11,7 +11,7 @@ class FilterShippingMethodsSubscriber implements EventSubscriberInterface {
   /**
    * {@inheritdoc}
    */
-  public static function getSubscribedEvents() {
+  public static function getSubscribedEvents(): array {
     return [
       ShippingEvents::FILTER_SHIPPING_METHODS => 'onFilter',
     ];

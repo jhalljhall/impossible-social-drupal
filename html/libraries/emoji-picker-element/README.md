@@ -13,7 +13,7 @@ A lightweight emoji picker, distributed as a web component.
 
 - Supports [Emoji v15.1](https://emojipedia.org/emoji-15.1/) (depending on OS) and custom emoji
 - Uses IndexedDB, so it consumes [far less memory](https://nolanlawson.com/2020/06/28/introducing-emoji-picker-element-a-memory-efficient-emoji-picker-for-the-web/) than other emoji pickers
-- [Small bundle size](https://bundlephobia.com/result?p=emoji-picker-element) (<15kB min+gz)
+- [Small bundle size](https://bundlephobia.com/result?p=emoji-picker-element) (~12.5kB min+gz)
 - Renders native emoji by default, with support for custom fonts
 - [Accessible by default](https://nolanlawson.com/2020/07/01/building-an-accessible-emoji-picker/)
 - Framework and bundler not required, just add a `<script>` tag and use it
@@ -135,7 +135,7 @@ This will log:
 - [Button with tooltip/popover](https://nolanlawson.github.io/emoji-picker-element/demos/tooltip/index.html) ([source](https://github.com/nolanlawson/emoji-picker-element/blob/master/docs/demos/tooltip/index.html))
 - [Inserting emoji into a text input](https://nolanlawson.github.io/emoji-picker-element/demos/input/index.html) ([source](https://github.com/nolanlawson/emoji-picker-element/blob/master/docs/demos/input/index.html))
 - [In a React app](https://nolanlawson.github.io/emoji-picker-element/demos/react/index.html) ([source](https://github.com/nolanlawson/emoji-picker-element/blob/master/docs/demos/react/index.html))
-- [Custom emoji font](https://nolanlawson.github.io/emoji-picker-element/demos/twemoji-mozilla/index.html) ([source](https://github.com/nolanlawson/emoji-picker-element/blob/master/docs/demos/twemoji-mozilla/index.html)) 
+- [Custom emoji font](https://nolanlawson.github.io/emoji-picker-element/demos/custom-font/index.html) ([source](https://github.com/nolanlawson/emoji-picker-element/blob/master/docs/demos/custom-font/index.html))
 - [Fallback for missing flag emoji on Windows](https://nolanlawson.github.io/emoji-picker-element/demos/flags/index.html) ([source](https://github.com/nolanlawson/emoji-picker-element/blob/master/docs/demos/flags/index.html))
 
 ### Emoji support
@@ -154,7 +154,7 @@ emoji-picker {
 }
 ```
 
-Then, specify the maximum emoji version supported by the font (see [Emojipedia](https://emojipedia.org/emoji-versions/) for a list of versions).
+Then, specify the maximum emoji version supported by the font. (See [Emojipedia](https://emojipedia.org/emoji-versions/) for a list of versions.)
 
 In HTML:
 
@@ -244,6 +244,7 @@ Here is a full list of options:
 | ---------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------- | -------------- | ---------------------------------------------------------------------------------------------------- |
 | `--background`               | `#fff`                                                                                                                                    | `#222`         | Background of the entire `<emoji-picker>`                                                            |
 | `--border-color`             | `#e0e0e0`                                                                                                                                 | `#444`         |                                                                                                      |
+| `--border-radius`            | `0`                                                                                                                                       |                | Border radius of the entire picker                                                                   |
 | `--border-size`              | `1px`                                                                                                                                     |                | Width of border used in most of the picker                                                           |
 | `--button-active-background` | `#e6e6e6`                                                                                                                                 | `#555555`      | Background of an active button                                                                       |
 | `--button-hover-background`  | `#d9d9d9`                                                                                                                                 | `#484848`      | Background of a hovered button                                                                       |
@@ -273,7 +274,7 @@ Here is a full list of options:
 
 ### Focus outline
 
-For accessibility reasons, `emoji-picker-element` displays a prominent focus ring. If you want to hide the focus ring for non-keyboard users (e.g. mouse and touch only), then use the [focus-visible](https://github.com/WICG/focus-visible) polyfill, e.g.:
+For accessibility reasons, `emoji-picker-element` displays a prominent focus ring for keyboard users. This uses [`:focus-visible`](https://developer.mozilla.org/en-US/docs/Web/CSS/:focus-visible) under the hood. To properly support [browsers that do not support `:focus-visible`](https://caniuse.com/css-focus-visible), you can use the [focus-visible](https://github.com/WICG/focus-visible) polyfill, e.g.:
 
 ```js
 import 'focus-visible';

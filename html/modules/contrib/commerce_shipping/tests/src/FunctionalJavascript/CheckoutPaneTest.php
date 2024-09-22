@@ -17,6 +17,8 @@ use Drupal\profile\Entity\ProfileType;
 use Drupal\Tests\commerce\FunctionalJavascript\CommerceWebDriverTestBase;
 use Drupal\Tests\commerce_shipping\Traits\ShippingTestHelperTrait;
 
+// cspell:ignore Hauptstrasse Sentier sentier
+
 /**
  * Tests the "Shipping information" checkout pane.
  *
@@ -107,7 +109,7 @@ class CheckoutPaneTest extends CommerceWebDriverTestBase {
       'plugin' => 'example_onsite',
     ]);
     $gateway->getPlugin()->setConfiguration([
-      'api_key' => '2342fewfsfs',
+      'api_key' => '2342',
       'payment_method_types' => ['credit_card'],
     ]);
     $gateway->save();
@@ -606,7 +608,6 @@ class CheckoutPaneTest extends CommerceWebDriverTestBase {
     $this->assertOptions($address_prefix . '[country_code]', ['US', 'FR', 'DE']);
     $page = $this->getSession()->getPage();
     $page->fillField($address_prefix . '[country_code]', 'US');
-    $this->assertSession()->assertWaitOnAjaxRequest();
     foreach ($address as $property => $value) {
       $page->fillField($address_prefix . '[' . $property . ']', $value);
     }
@@ -896,7 +897,7 @@ class CheckoutPaneTest extends CommerceWebDriverTestBase {
    * @return array
    *   A list of testShippingMethodOptionChanges function arguments.
    */
-  public function shippingMethodOptionChangeProvider() {
+  public static function shippingMethodOptionChangeProvider() {
     return [
       [FALSE],
       [TRUE],
@@ -1087,7 +1088,6 @@ class CheckoutPaneTest extends CommerceWebDriverTestBase {
     $this->clickLink('Go back');
     $page->selectFieldOption('shipping_information[shipments][0][shipping_method][0]', '1--default');
     $this->assertSession()->pageTextNotContains('Cash on delivery');
-    $this->submitForm([], 'Continue to review');
   }
 
   /**

@@ -11,6 +11,8 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
  * Controller for admin routes for commerce license non-entity bundles.
+ *
+ * @phpstan-consistent-constructor
  */
 class LicenseTypesAdminController extends ControllerBase {
 

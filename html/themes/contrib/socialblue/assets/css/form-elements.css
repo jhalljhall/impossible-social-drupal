@@ -438,6 +438,10 @@ fieldset strong {
   max-width: 375px;
 }
 
+.field--type-address fieldset.card {
+  margin-top: 0;
+}
+
 .field--name-field-enroll-method {
   width: auto;
   max-width: none;

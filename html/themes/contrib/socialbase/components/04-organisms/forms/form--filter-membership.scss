@@ -1,6 +1,6 @@
 @import 'settings';
 
-.view-group-manage-members, 
+.view-group-manage-members,
 .view-event-manage-enrollments {
   .row {
     @include for-tablet-portrait-up {
@@ -28,6 +28,14 @@
     @include for-tablet-portrait-up {
       display: flex;
       flex-wrap: wrap;
+    }
+
+    > .list-inline,
+    > ul {
+      &,
+      > li {
+        margin-bottom: 0;
+      }
     }
   }
 

@@ -90,10 +90,11 @@ class Oauth2ScopeProviderTestBase extends KernelTestBase {
     $this->assertArrayHasKey($expected_first_two_scope_ids[0], $scopes);
     $this->assertArrayHasKey($expected_first_two_scope_ids[1], $scopes);
 
-    // Test retrieving flatten permission tree.
+    // Check if scope has permission.
     foreach ($all_scopes as $scope_id => $scope) {
-      $permissions = $scope_provider->getFlattenPermissionTree($scope);
-      $this->assertEquals($expected_scopes[$scope_id]['permissions'], $permissions);
+      foreach ($expected_scopes[$scope_id]['permissions'] as $permission) {
+        $this->assertTrue($scope_provider->scopeHasPermission($permission, $scope));
+      }
     }
   }
 

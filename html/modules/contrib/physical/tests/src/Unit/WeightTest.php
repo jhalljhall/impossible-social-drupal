@@ -47,6 +47,7 @@ class WeightTest extends UnitTestCase {
     $this->assertEquals(new Weight('5000', 'g'), $this->weight->convert('g')->round());
     $this->assertEquals(new Weight('176.370', 'oz'), $this->weight->convert('oz')->round(3));
     $this->assertEquals(new Weight('11.023', 'lb'), $this->weight->convert('lb')->round(3));
+    $this->assertEquals(new Weight('25000', 'ct'), $this->weight->convert('ct')->round());
   }
 
 }

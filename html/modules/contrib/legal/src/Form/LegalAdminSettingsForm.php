@@ -4,6 +4,7 @@ namespace Drupal\legal\Form;
 
 use Drupal\Core\Form\ConfigFormBase;
 use Drupal\Core\Form\FormStateInterface;
+use \Drupal\user\Entity\Role;
 
 /**
  * Class LegalAdminSettingsForm.
@@ -47,15 +48,23 @@ class LegalAdminSettingsForm extends ConfigFormBase {
       '#collapsed'   => TRUE,
     ];
 
-    $role_options = user_role_names(TRUE);
-    unset($role_options['authenticated']);
+    $role_options = [];
+    $roles = Role::loadMultiple();
+    unset($roles['authenticated']);
+
+    foreach ($roles as $role_id => $role) {
+      $role_options[$role_id] = $role->label();
+    }
+
+    $description = $this->t('Do not display Terms and Conditions check box for
+    the selected user roles.');
 
     $form['except_legal']['except_roles'] = [
       '#type' => 'checkboxes',
       '#title' => $this->t('Exempt user roles'),
       '#options' => $role_options,
       '#default_value' => $config->get('except_roles'),
-      '#description' => $this->t('Do not display Terms and Conditions check box for the selected user roles.'),
+      '#description' => $description,
     ];
 
     $form['user_profile_display'] = [
@@ -68,6 +77,17 @@ class LegalAdminSettingsForm extends ConfigFormBase {
       '#type'          => 'checkbox',
       '#title'         => $this->t('Ask to accept T&Cs on every login'),
       '#default_value' => $config->get('accept_every_login'),
+    ];
+
+    $description = $this->t("The default URL to redirect the user to after
+    login. This should be an internal path starting with a slash, or an
+    absolute URL. Defaults to the logged-in user's account page.");
+
+    $form['login_redirect_url'] = [
+      '#type' => 'textfield',
+      '#title' => $this->t('Login redirect URL'),
+      '#description' => $description,
+      '#default_value' => $config->get('login_redirect_url'),
     ];
 
     return parent::buildForm($form, $form_state);
@@ -84,6 +104,7 @@ class LegalAdminSettingsForm extends ConfigFormBase {
       ->set('except_roles', $values['except_roles'])
       ->set('user_profile_display', $values['user_profile_display'])
       ->set('accept_every_login', $values['accept_every_login'])
+      ->set('login_redirect_url', trim($values['login_redirect_url']))
       ->save();
 
     $this->messenger()->addMessage($this->t('Configuration changes have been saved.'));

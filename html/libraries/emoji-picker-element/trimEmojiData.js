@@ -3,7 +3,6 @@ const requiredKeys = [
   'emoji',
   'group',
   'order',
-  'tags',
   'version'
 ];
 
@@ -17,7 +16,7 @@ function assertEmojiData (emojiData) {
   }
 }
 
-const optionalKeys = ['skins', 'emoticon', 'shortcodes'];
+const optionalKeys = ['skins', 'emoticon', 'shortcodes', 'tags'];
 const allKeys = [...requiredKeys, ...optionalKeys];
 
 const allSkinsKeys = ['tone', 'emoji', 'version'];

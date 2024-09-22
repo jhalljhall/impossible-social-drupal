@@ -14,7 +14,7 @@ use Drupal\physical\Length;
  *   id = "physical_dimensions",
  *   label = @Translation("Dimensions"),
  *   description = @Translation("This field stores the length, width, height numbers and a unit of measure."),
- *   category = @Translation("Physical"),
+ *   category = "physical",
  *   default_widget = "physical_dimensions_default",
  *   default_formatter = "physical_dimensions_default"
  * )

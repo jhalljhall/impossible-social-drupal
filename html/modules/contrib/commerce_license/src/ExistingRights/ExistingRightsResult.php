@@ -9,6 +9,8 @@ use Drupal\Core\StringTranslation\TranslatableMarkup;
  *
  * This is used when checking whether a user already has the rights a license
  * would grant.
+ *
+ * @phpstan-consistent-constructor
  */
 class ExistingRightsResult {
 

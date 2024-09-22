@@ -2,11 +2,7 @@
 
 namespace Drupal\commerce_shipping\Form;
 
-use Drupal\commerce_shipping\Mail\ShipmentConfirmationMailInterface;
-use Drupal\Component\Datetime\TimeInterface;
 use Drupal\Core\Entity\ContentEntityConfirmFormBase;
-use Drupal\Core\Entity\EntityRepositoryInterface;
-use Drupal\Core\Entity\EntityTypeBundleInfoInterface;
 use Drupal\Core\Form\FormStateInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
@@ -23,33 +19,20 @@ class ShipmentConfirmationResendForm extends ContentEntityConfirmFormBase {
   protected $shipmentConfirmationMail;
 
   /**
-   * Constructs a new ShipmentConfirmationResendForm object.
+   * The email validator.
    *
-   * @param \Drupal\Core\Entity\EntityRepositoryInterface $entity_repository
-   *   The entity repository service.
-   * @param \Drupal\Core\Entity\EntityTypeBundleInfoInterface $entity_type_bundle_info
-   *   The entity type bundle service.
-   * @param \Drupal\Component\Datetime\TimeInterface $time
-   *   The time service.
-   * @param \Drupal\commerce_shipping\Mail\ShipmentConfirmationMailInterface $shipment_confirmation_mail
-   *   The shipment confirmation mail service.
+   * @var \Drupal\Component\Utility\EmailValidatorInterface
    */
-  public function __construct(EntityRepositoryInterface $entity_repository, EntityTypeBundleInfoInterface $entity_type_bundle_info, TimeInterface $time, ShipmentConfirmationMailInterface $shipment_confirmation_mail) {
-    parent::__construct($entity_repository, $entity_type_bundle_info, $time);
-
-    $this->shipmentConfirmationMail = $shipment_confirmation_mail;
-  }
+  protected $emailValidator;
 
   /**
    * {@inheritdoc}
    */
   public static function create(ContainerInterface $container) {
-    return new static(
-      $container->get('entity.repository'),
-      $container->get('entity_type.bundle.info'),
-      $container->get('datetime.time'),
-      $container->get('commerce_shipping.shipment_confirmation_mail')
-    );
+    $instance = parent::create($container);
+    $instance->shipmentConfirmationMail = $container->get('commerce_shipping.shipment_confirmation_mail');
+    $instance->emailValidator = $container->get('email.validator');
+    return $instance;
   }
 
   /**
@@ -60,6 +43,36 @@ class ShipmentConfirmationResendForm extends ContentEntityConfirmFormBase {
       '%shipment' => $this->entity->label(),
       '%order' => $this->entity->getOrder()->label(),
     ]);
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function buildForm(array $form, FormStateInterface $form_state) {
+    $form = parent::buildForm($form, $form_state);
+
+    /** @var \Drupal\commerce_shipping\Entity\ShipmentInterface $shipment */
+    $shipment = $this->entity;
+    $form['send_to'] = [
+      '#type' => 'email',
+      '#title' => $this->t('Send to'),
+      '#default_value' => $shipment->getOrder()->getEmail(),
+      '#required' => TRUE,
+    ];
+
+    return $form;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function validateForm(array &$form, FormStateInterface $form_state) {
+    $send_to = $form_state->getValue('send_to');
+    if (!$this->emailValidator->isValid($send_to)) {
+      $form_state->setErrorByName('send_to', $this->t('The entered email is not valid.'));
+    }
+
+    return parent::validateForm($form, $form_state);
   }
 
   /**
@@ -82,7 +95,8 @@ class ShipmentConfirmationResendForm extends ContentEntityConfirmFormBase {
   public function submitForm(array &$form, FormStateInterface $form_state) {
     /** @var \Drupal\commerce_shipping\Entity\ShipmentInterface $shipment */
     $shipment = $this->entity;
-    $result = $this->shipmentConfirmationMail->send($shipment);
+    $send_to = $form_state->getValue('send_to');
+    $result = $this->shipmentConfirmationMail->send($shipment, trim($send_to));
     // Drupal's MailManager sets an error message itself, if the sending failed.
     if ($result) {
       $this->messenger()->addMessage($this->t('Shipment confirmation resent.'));

@@ -241,7 +241,7 @@ abstract class Measurement {
   }
 
   /**
-   * Gets whether the current measurement is greater than or equal to the given one.
+   * Gets whether the current measurement is greater than or equal to the given.
    *
    * @param \Drupal\physical\Measurement $measurement
    *   The measurement.
@@ -269,13 +269,15 @@ abstract class Measurement {
   }
 
   /**
-   * Gets whether the current measurement is lesser than or equal to the given measurement.
+   * Gets whether the current measurement is lesser than
+   * Or equal to the given measurement.
    *
    * @param \Drupal\physical\Measurement $measurement
    *   The measurement.
    *
    * @return bool
-   *   TRUE if the current measurement is lesser than or equal to the given measurement,
+   *   TRUE if the current measurement is lesser than or
+   *   equal to the given measurement,
    *   FALSE otherwise.
    */
   public function lessThanOrEqual(Measurement $measurement) {

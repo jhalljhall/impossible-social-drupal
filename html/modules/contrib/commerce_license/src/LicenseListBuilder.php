@@ -12,6 +12,8 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
  * Defines a class to build a listing of License entities.
  *
  * @ingroup commerce_license
+ *
+ * @phpstan-consistent-constructor
  */
 class LicenseListBuilder extends EntityListBuilder {
 

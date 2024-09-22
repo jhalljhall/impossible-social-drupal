@@ -34,6 +34,7 @@ class RulesComponentTest extends RulesIntegrationTestBase {
 
     // Ensure the provided context is returned.
     $this->assertArrayHasKey('concatenated', $result);
+    // cspell:ignore foofoo
     $this->assertEquals('foofoo', $result['concatenated']);
   }
 

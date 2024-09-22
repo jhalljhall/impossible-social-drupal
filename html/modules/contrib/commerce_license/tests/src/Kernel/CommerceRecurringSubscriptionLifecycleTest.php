@@ -27,11 +27,39 @@ use Drupal\Tests\commerce_order\Kernel\OrderKernelTestBase;
 class CommerceRecurringSubscriptionLifecycleTest extends OrderKernelTestBase {
 
   /**
+   * A test billing schedule.
+   *
+   * @var \Drupal\commerce_recurring\Entity\BillingScheduleInterface
+   */
+  protected $billingSchedule;
+
+  /**
    * The license storage.
    *
    * @var \Drupal\Core\Entity\EntityStorageInterface
    */
   protected $licenseStorage;
+
+  /**
+   * A test payment method.
+   *
+   * @var \Drupal\commerce_payment\Entity\PaymentMethodInterface
+   */
+  protected $paymentMethod;
+
+  /**
+   * A sample user.
+   *
+   * @var \Drupal\user\UserInterface
+   */
+  protected $user;
+
+  /**
+   * The variation to test against.
+   *
+   * @var \Drupal\commerce_product\Entity\ProductVariationInterface
+   */
+  protected $variation;
 
   /**
    * Modules to enable.
@@ -126,12 +154,12 @@ class CommerceRecurringSubscriptionLifecycleTest extends OrderKernelTestBase {
       'plugin' => 'example_onsite',
     ]);
     $payment_gateway->save();
-    $this->paymentGateway = $this->reloadEntity($payment_gateway);
+    $payment_gateway = $this->reloadEntity($payment_gateway);
 
     /** @var \Drupal\commerce_payment\Entity\PaymentMethodInterface $payment_method */
     $payment_method = PaymentMethod::create([
       'type' => 'credit_card',
-      'payment_gateway' => $this->paymentGateway,
+      'payment_gateway' => $payment_gateway,
       'uid' => $this->user->id(),
     ]);
     $payment_method->save();
@@ -202,7 +230,7 @@ class CommerceRecurringSubscriptionLifecycleTest extends OrderKernelTestBase {
     $this->assertCount(0, $subscriptions);
 
     $order->set('total_paid', $order->getTotalPrice());
-    $order->getState()->applyTransitionByid('place');
+    $order->getState()->applyTransitionById('place');
     $order->save();
 
     $subscriptions = Subscription::loadMultiple();

@@ -117,12 +117,13 @@ class Measurement extends FormElement {
       $last_visible_element = 'number';
       $unit_keys = array_keys($units);
       $unit = reset($unit_keys);
+      $unit_label = $units[$unit];
       $element['unit'] = [
         '#type' => 'value',
         '#value' => $unit,
       ];
       // Display the unit as a text element after the textfield.
-      $element['number']['#field_suffix'] = $unit;
+      $element['number']['#field_suffix'] = $unit_label;
     }
     else {
       $last_visible_element = 'unit';

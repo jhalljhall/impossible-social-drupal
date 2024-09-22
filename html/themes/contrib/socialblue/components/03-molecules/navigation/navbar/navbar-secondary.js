@@ -6,25 +6,25 @@
    */
   Drupal.behaviors.navbarSecondaryScrollable = {
     attach: function (context) {
-      const navbarSecondary = (context.classList && context.classList.contains('block--banner-auto-generated')) ? [context] : context.querySelectorAll('.navbar-secondary .navbar-scrollable');
+      var navbarSecondary = (context.classList && context.classList.contains('navbar-scrollable')) ? [context] : context.querySelectorAll('.navbar-scrollable');
       if (!navbarSecondary.length) { return; }
-        // Sometimes after reload page, we can not find elements on the
+      // Sometimes after reload page, we can not find elements on the
         // secondary navigation. Promise function fixed it.
       navbarSecondary.forEach(function (navScrollElem) {
-        const navScroll = $(navScrollElem);
-        const navSecondary = navScroll.find('.nav', context);
-        const items = navSecondary.find('li', context);
-        const navScrollWidth = navScroll.width();
-        const navSecondaryWidth = navSecondary.width();
-        const regionContent = $('.region--content');
+        var navScroll = $(navScrollElem);
+        var navSecondary = navScroll.find('.nav', context);
+        var items = navSecondary.find('li', context);
+        var navScrollWidth = navScroll.width();
+        var navSecondaryWidth = navSecondary.width();
+        var regionContent = $('.region--content');
 
         // Secondary navigation behaviour,
         function secondaryNavBehaviour() {
           if($(window).width() >= 900) {
             if (navSecondaryWidth > navScrollWidth) {
               navSecondary.each(function () {
-                const $this = $(this);
-                let total = 0;
+                var $this = $(this);
+                var total = 0;
 
                 // Add `visible-item` class to the list items which displayed in the current secondary
                 // navigation width
@@ -35,7 +35,7 @@
                   items.unwrap();
                 }
 
-                for(let i = 0; i < items.length; ++i) {
+                for(var i = 0; i < items.length; ++i) {
                   total += $(items[i]).width();
 
                   if((navScroll.width() - 50) <= total) {
@@ -56,8 +56,8 @@
                 // Add caret.
                 $this.append('<span class="caret"></span>');
 
-                const hiddenList = $this.find('.hidden-list');
-                const cart = $this.find('.caret');
+                var hiddenList = $this.find('.hidden-list');
+                var cart = $this.find('.caret');
 
                 cart.on('click', function () {
                   if (hiddenList.is(":hidden")) {
@@ -88,7 +88,7 @@
           }
           else {
             navSecondary.each(function () {
-              const $this = $(this);
+              var $this = $(this);
 
               // Unwrap list items.
               // Remove extra classes/elements.
@@ -103,7 +103,7 @@
         }
         secondaryNavBehaviour();
 
-        const returnedFunction = debounce(function() {
+        var returnedFunction = debounce(function() {
           secondaryNavBehaviour();
         }, 250);
 

@@ -66,6 +66,7 @@ class LicenseCheckoutForm extends ContentEntityForm {
         ]));
     }
     $form_state->setRedirect('entity.commerce_license.canonical', ['commerce_license' => $entity->id()]);
+    return $status;
   }
 
 }

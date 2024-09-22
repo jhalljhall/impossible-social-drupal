@@ -33,7 +33,7 @@ class SerializationTest extends ShippingKernelTestBase {
    * @dataProvider formatProvider
    */
   public function testSerialization($format) {
-    $user = $this->createUser(['mail' => $this->randomString() . '@example.com']);
+    $user = $this->createUser();
     /** @var \Drupal\commerce_order\Entity\OrderInterface $order */
     $order = Order::create([
       'type' => 'default',
@@ -121,7 +121,7 @@ class SerializationTest extends ShippingKernelTestBase {
    * @return \Generator
    *   The test data.
    */
-  public function formatProvider(): \Generator {
+  public static function formatProvider(): \Generator {
     yield ['json'];
     yield ['api_json'];
   }

@@ -29,7 +29,7 @@ class InvalidIntervalException extends \InvalidArgumentException {
    * @param int $code
    *   Error code.
    * @param \Exception $previous
-   *   The previous exception
+   *   The previous exception.
    * @param \DateTime $date
    *   The date that caused the exception.
    * @param \Drupal\interval\IntervalItemInterface $item

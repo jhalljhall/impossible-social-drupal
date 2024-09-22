@@ -32,3 +32,8 @@ dependencies:
 provider:
   - legal
   - migrate_drupal
+migration_dependencies:
+  required:
+    - d7_filter_format
+  optional:
+    - language

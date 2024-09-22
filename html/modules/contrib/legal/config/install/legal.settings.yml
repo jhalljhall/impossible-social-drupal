@@ -7,3 +7,4 @@ accept_every_login: FALSE
 except_roles: []
 registration_modal_terms: TRUE
 login_modal_terms: TRUE
+login_redirect_url: ''

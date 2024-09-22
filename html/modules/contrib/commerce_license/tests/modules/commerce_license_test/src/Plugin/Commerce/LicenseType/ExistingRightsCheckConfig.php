@@ -2,9 +2,9 @@
 
 namespace Drupal\commerce_license_test\Plugin\Commerce\LicenseType;
 
-use Drupal\user\UserInterface;
 use Drupal\commerce_license\ExistingRights\ExistingRightsResult;
 use Drupal\commerce_license\Plugin\Commerce\LicenseType\ExistingRightsFromConfigurationCheckingInterface;
+use Drupal\user\UserInterface;
 
 /**
  * Test license type which reports the user has existing rights.
@@ -21,11 +21,11 @@ class ExistingRightsCheckConfig extends TestLicenseBase implements ExistingRight
    */
   public function checkUserHasExistingRights(UserInterface $user) {
     // Mark that we've been called.
-    \Drupal::state()->set('commerce_license_test.called.checkUserHasExistingRights', TRUE);
+    $this->state->set('commerce_license_test.called.checkUserHasExistingRights', TRUE);
 
     // The state tells us whether to say rights exist or not.
     return ExistingRightsResult::rightsExistIf(
-      \Drupal::state()->get('commerce_license_test.existing_rights_check_config'),
+      $this->state->get('commerce_license_test.existing_rights_check_config'),
       $this->t('You already have the rights.'),
       $this->t('The user already has the rights.')
     );

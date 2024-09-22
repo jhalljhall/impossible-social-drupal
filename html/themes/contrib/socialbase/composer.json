@@ -5,7 +5,7 @@
     "type": "drupal-theme",
     "minimum-stability": "dev",
     "require": {
-        "drupal/bootstrap": "3.29"
+        "drupal/bootstrap": "3.32"
     },
     "extra": {
         "patches": {

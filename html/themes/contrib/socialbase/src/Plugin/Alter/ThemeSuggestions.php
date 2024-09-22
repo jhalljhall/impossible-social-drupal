@@ -189,6 +189,23 @@ class ThemeSuggestions extends BaseThemeSuggestions implements ContainerFactoryP
 
         break;
 
+      case 'big_pipe_interface_preview':
+
+        if (is_array($context1['arguments'])) {
+          $arguments = preg_replace('/[^a-zA-Z0-9]/', '_', $context1['arguments']);
+          foreach ($arguments as $argument) {
+            // These stream blocks can be added on landing pages.
+            if (str_contains($argument, 'block_stream_landing_with_post') || str_contains($argument, 'block_stream_landing') || str_contains($argument, 'block_stream_homepage_without_post') || str_contains($argument, 'block_stream_homepage') || str_contains($argument, 'block_stream_explore')) {
+              $suggestions[] = 'big_pipe_interface_preview' . '__' . $argument;
+            }
+            // This is the main stream activity block.
+            if (str_contains($argument, 'views_block__activity_stream')) {
+              $suggestions[] = 'big_pipe_interface_preview__views_block__activity_stream';
+            }
+          }
+        }
+        break;
+
       case 'confirm_form':
 
         if (isset($variables['form']['#form_id']) && $variables['form']['#form_id'] == 'data_policy_data_policy_revision_revert_confirm') {
@@ -220,6 +237,16 @@ class ThemeSuggestions extends BaseThemeSuggestions implements ContainerFactoryP
         // Template suggestion for upload attachments in comments.
         if (isset($variables['element']['#attributes']['class']) && in_array('social-collapsible-fieldset', $variables['element']['#attributes']['class'])) {
           $suggestions[] = 'details__collapsible';
+        }
+
+        // Template suggestion for FieldGroupFormatter "details_card".
+        if (($variables['element']['#card'] ?? FALSE)) {
+          $suggestions[] = 'details__card';
+        }
+
+        // Template suggestion for FieldGroupFormatter "details_header_card".
+        if (($variables['element']['#header_card'] ?? FALSE)) {
+          $suggestions[] = 'details__header_card';
         }
 
         break;

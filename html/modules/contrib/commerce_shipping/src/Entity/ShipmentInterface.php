@@ -360,6 +360,16 @@ interface ShipmentInterface extends ContentEntityInterface, EntityAdjustableInte
   public function setData($key, $value);
 
   /**
+   * Unsets an shipment data value with the given key.
+   *
+   * @param string $key
+   *   The key.
+   *
+   * @return $this
+   */
+  public function unsetData($key);
+
+  /**
    * Gets the shipment creation timestamp.
    *
    * @return int

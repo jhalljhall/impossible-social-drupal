@@ -2,6 +2,9 @@
 
 namespace Drupal\interval;
 
+/**
+ * Interface for defining an interval item.
+ */
 interface IntervalItemInterface {
 
   /**
@@ -32,7 +35,7 @@ interface IntervalItemInterface {
    * Applies an interval to a date object.
    *
    * @param \DateTime $date
-   *   A DateTime object to which the interval needs to be applied
+   *   A DateTime object to which the interval needs to be applied.
    * @param bool $limit
    *   When calling the interval apply function with months or a month
    *   multiplier, keep the date in the last day of the month if this was

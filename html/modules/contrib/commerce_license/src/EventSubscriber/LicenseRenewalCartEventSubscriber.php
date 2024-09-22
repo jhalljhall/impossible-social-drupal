@@ -61,9 +61,9 @@ class LicenseRenewalCartEventSubscriber implements EventSubscriberInterface {
    * @throws \Drupal\Component\Plugin\Exception\PluginNotFoundException
    */
   public function __construct(
-      EntityTypeManagerInterface $entity_type_manager,
-      MessengerInterface $messenger,
-      DateFormatterInterface $date_formatter
+    EntityTypeManagerInterface $entity_type_manager,
+    MessengerInterface $messenger,
+    DateFormatterInterface $date_formatter,
   ) {
     $this->licenseStorage = $entity_type_manager->getStorage('commerce_license');
     $this->entityTypeManager = $entity_type_manager;

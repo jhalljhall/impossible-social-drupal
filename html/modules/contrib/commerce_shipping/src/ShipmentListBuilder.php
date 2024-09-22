@@ -112,7 +112,9 @@ class ShipmentListBuilder extends EntityListBuilder {
     $row['label']['data'] = [
       '#type' => 'link',
       '#title' => $entity->label(),
-    ] + $entity->toUrl()->toRenderArray();
+      '#url' => $entity->toUrl(),
+      '#options' => $entity->toUrl()->getOptions(),
+    ];
     $row['tracking'] = $entity->getTrackingCode();
     $row['amount'] = !empty($amount) ? $this->currencyFormatter->format($amount->getNumber(), $amount->getCurrencyCode()) : '';
     $row['state'] = $entity->getState()->getLabel();

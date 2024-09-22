@@ -36,7 +36,7 @@ class BasicAuthSwap implements HttpKernelInterface {
    * Basic Auth credentials from the request so that core authentication is
    * not performed later.
    */
-  public function handle(Request $request, $type = self::MASTER_REQUEST, $catch = TRUE): Response {
+  public function handle(Request $request, $type = self::MAIN_REQUEST, $catch = TRUE): Response {
     if (
       strpos($request->getPathInfo(), '/oauth/token') !== FALSE &&
       $request->headers->has('PHP_AUTH_USER') &&

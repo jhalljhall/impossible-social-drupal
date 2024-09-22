@@ -58,7 +58,6 @@ class ComputedFieldTypeSettingsKernelTest extends KernelTestBase implements Serv
   protected function setUp(): void {
     parent::setUp();
 
-    $this->installSchema('system', ['sequences']);
     $this->installEntitySchema('user');
     $this->installEntitySchema('entity_test');
 
@@ -129,6 +128,26 @@ class ComputedFieldTypeSettingsKernelTest extends KernelTestBase implements Serv
     $this->assertEquals('default', $field_definition->getSetting('handler'));
     $this->assertEquals([], $field_settings['handler_settings']);
     $this->assertEquals([], $field_definition->getSetting('handler_settings'));
+
+    // Test cardinality with a field defined in code.
+    $this->assertArrayHasKey('automatic_test_string_multiple', $this->entityFieldManager->getFieldDefinitions('entity_test', 'entity_test'));
+    $field_definition = $this->entityFieldManager->getFieldDefinitions('entity_test', 'entity_test')['automatic_test_string_multiple'];
+    $this->assertEquals(2, $field_definition->getFieldStorageDefinition()->getCardinality());
+
+
+    // Test cardinality with a field defined in config.
+    $computed_field = $computed_field_storage->create([
+      'field_name' => 'test_string_multiple',
+      'label' => 'Test',
+      'plugin_id' => 'test_string_multiple',
+      'entity_type' => 'entity_test',
+      'bundle' => 'entity_test',
+    ]);
+    $computed_field->save();
+
+    $this->assertArrayHasKey('test_string_multiple', $this->entityFieldManager->getFieldDefinitions('entity_test', 'entity_test'));
+    $field_definition = $this->entityFieldManager->getFieldDefinitions('entity_test', 'entity_test')['test_string_multiple'];
+    $this->assertEquals(2, $field_definition->getFieldStorageDefinition()->getCardinality());
   }
 
 }
@@ -167,6 +186,18 @@ class TestComputedFieldManager extends ComputedFieldManager {
       ],
     ]
     + $definitions['reverse_entity_reference'];
+
+    $definitions['automatic_test_string_multiple'] = [
+      'id' => 'automatic_test_string_multiple',
+      'attach' => [
+        'scope' => 'base',
+        'field_name' =>'automatic_test_string_multiple',
+        'entity_types' => [
+          'entity_test' => [],
+        ],
+      ],
+    ]
+    + $definitions['test_string_multiple'];
   }
 
 }

@@ -60,6 +60,7 @@ class DefaultPackerTest extends UnitTestCase {
     $order_items = [];
     $first_order_item = $this->prophesize(OrderItemInterface::class);
     $first_order_item->id()->willReturn(2001);
+    $first_order_item->getUnitPrice()->willReturn(NULL);
     $first_order_item->getPurchasedEntity()->willReturn(NULL);
     $first_order_item->getQuantity()->willReturn(1);
     $order_items[] = $first_order_item->reveal(1);
@@ -88,8 +89,8 @@ class DefaultPackerTest extends UnitTestCase {
     $third_order_item = $this->prophesize(OrderItemInterface::class);
     $third_order_item->id()->willReturn(2003);
     $third_order_item->getTitle()->willReturn('T-shirt (black, small)');
-    $third_order_item->getPurchasedEntity()->willReturn($purchased_entity);
     $third_order_item->getUnitPrice()->willReturn(new Price('15', 'USD'));
+    $third_order_item->getPurchasedEntity()->willReturn(NULL);
     $third_order_item->getQuantity()->willReturn(0);
     $order_items[] = $third_order_item->reveal();
 

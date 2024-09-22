@@ -27,6 +27,8 @@ use Drupal\Tests\UnitTestCase;
 use Drupal\Tests\rules\Unit\TestMessenger;
 use Prophecy\Argument;
 
+// cspell:ignore hardwiring
+
 /**
  * Base class for Rules integration tests.
  *
@@ -56,6 +58,13 @@ abstract class RulesIntegrationTestBase extends UnitTestCase {
    * @var \Drupal\Core\TypedData\TypedDataManagerInterface
    */
   protected $typedDataManager;
+
+  /**
+   * The field type category info plugin manager.
+   *
+   * @var \Drupal\Core\Field\FieldTypeCategoryManagerInterface
+   */
+  protected $fieldTypeCategoryManager;
 
   /**
    * @var \Drupal\rules\Core\RulesActionManagerInterface
@@ -201,6 +210,16 @@ abstract class RulesIntegrationTestBase extends UnitTestCase {
       $this->moduleHandler->reveal(),
       $this->classResolver->reveal()
     );
+
+    if (version_compare(\Drupal::VERSION, '10.2') >= 0) {
+      // @phpcs:ignore Drupal.Classes.FullyQualifiedNamespace.UseStatementMissing
+      $this->fieldTypeCategoryManager = new \Drupal\Core\Field\FieldTypeCategoryManager(
+        $this->root,
+        $this->moduleHandler->reveal(),
+        $this->cacheBackend,
+      );
+    }
+
     $this->rulesDataProcessorManager = new DataProcessorManager($this->namespaces, $this->moduleHandler->reveal());
 
     $this->entityTypeManager = $this->prophesize(EntityTypeManagerInterface::class);
@@ -236,6 +255,9 @@ abstract class RulesIntegrationTestBase extends UnitTestCase {
     $container->set('plugin.manager.rules_expression', $this->rulesExpressionManager);
     $container->set('plugin.manager.rules_data_processor', $this->rulesDataProcessorManager);
     $container->set('messenger', $this->messenger);
+    if (version_compare(\Drupal::VERSION, '10.2') >= 0) {
+      $container->set('plugin.manager.field.field_type_category', $this->fieldTypeCategoryManager);
+    }
     $container->set('typed_data_manager', $this->typedDataManager);
     $container->set('string_translation', $this->getStringTranslationStub());
     $container->set('uuid', $uuid_service);

@@ -36,7 +36,7 @@ class IntervalItemTest extends FieldKernelTestBase {
   protected static $modules = ['interval'];
 
   /**
-   * @inheritDoc
+   * {@inheritDoc}
    */
   protected function setUp(): void {
     parent::setUp();
@@ -70,7 +70,7 @@ class IntervalItemTest extends FieldKernelTestBase {
     $entity->name->value = $this->randomMachineName();
     $this->entityValidateAndSave($entity);
 
-    // Verify initial field value
+    // Verify initial field value.
     $this->assertEquals($entity->field_interval->interval, $value['interval']);
     $this->assertEquals($entity->field_interval->period, $value['period']);
     $this->assertEquals($entity->get('field_interval')->first()->buildPHPString(), '30 minutes');

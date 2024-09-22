@@ -2,11 +2,14 @@
 
 namespace Drupal\physical_test\Form;
 
-use Drupal\physical\Length;
 use Drupal\Core\Form\FormBase;
 use Drupal\Core\Form\FormStateInterface;
+use Drupal\physical\Length;
 use Drupal\physical\LengthUnit;
 
+/**
+ * Measurement test form class.
+ */
 class MeasurementTestForm extends FormBase {
 
   /**

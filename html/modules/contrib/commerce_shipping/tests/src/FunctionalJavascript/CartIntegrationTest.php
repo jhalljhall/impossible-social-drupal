@@ -61,7 +61,7 @@ class CartIntegrationTest extends CommerceWebDriverTestBase {
       'plugin' => 'example_onsite',
     ]);
     $gateway->getPlugin()->setConfiguration([
-      'api_key' => '2342fewfsfs',
+      'api_key' => '2342',
       'payment_method_types' => ['credit_card'],
     ]);
     $gateway->save();

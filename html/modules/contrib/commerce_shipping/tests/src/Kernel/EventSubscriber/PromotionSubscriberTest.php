@@ -61,7 +61,7 @@ class PromotionSubscriberTest extends ShippingKernelTestBase implements ServiceM
 
     $this->installEntitySchema('commerce_promotion');
 
-    $user = $this->createUser(['mail' => strtolower($this->randomString()) . '@example.com']);
+    $user = $this->createUser();
     $this->user = $this->reloadEntity($user);
 
     $this->order = Order::create([

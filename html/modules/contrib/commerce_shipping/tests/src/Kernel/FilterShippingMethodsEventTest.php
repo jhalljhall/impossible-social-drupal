@@ -58,7 +58,7 @@ class FilterShippingMethodsEventTest extends ShippingKernelTestBase {
     ]);
     $shipping_method_filtered->save();
 
-    $user = $this->createUser(['mail' => $this->randomString() . '@example.com']);
+    $user = $this->createUser();
     $order = Order::create([
       'type' => 'default',
       'state' => 'draft',

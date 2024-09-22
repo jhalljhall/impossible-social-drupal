@@ -113,6 +113,7 @@ class CommerceOrderSyncTest extends CartKernelTestBase {
     // Create a product variation which grants a license.
     $this->variation = $this->createEntity('commerce_product_variation', [
       'type' => 'license_pv_type',
+      'title' => $this->randomString(),
       'sku' => $this->randomMachineName(),
       'price' => [
         'number' => 999,

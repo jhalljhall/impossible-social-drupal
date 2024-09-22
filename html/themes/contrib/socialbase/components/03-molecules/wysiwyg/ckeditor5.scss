@@ -79,3 +79,15 @@
     display: inherit;
   }
 }
+
+.ck.ck-toolbar.ck-toolbar_grouping {
+  > .ck-toolbar__items {
+    flex-wrap: wrap !important;
+  }
+}
+
+.ck-source-editing-area {
+  &:after {
+    word-break: break-word;
+  }
+}

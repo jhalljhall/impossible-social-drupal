@@ -97,7 +97,11 @@ const getTextFeature = (text, color) => {
   const canvas = document.createElement('canvas');
   canvas.width = canvas.height = 1;
 
-  const ctx = canvas.getContext('2d');
+  const ctx = canvas.getContext('2d', {
+    // Improves the performance of `getImageData()`
+    // https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D/getContextAttributes#willreadfrequently
+    willReadFrequently: true
+  });
   ctx.textBaseline = 'top';
   ctx.font = `100px ${FONT_FAMILY}`;
   ctx.fillStyle = color;
@@ -251,24 +255,19 @@ function summarizeEmojisForUI (emojis, emojiSupportLevel) {
 // import rAF from one place so that the bundle size is a bit smaller
 const rAF = requestAnimationFrame;
 
-// Svelte action to calculate the width of an element and auto-update
-// using ResizeObserver. If ResizeObserver is unsupported, we just use rAF once
-// and don't bother to update.
+// "Svelte action"-like utility to detect layout changes via ResizeObserver.
+// If ResizeObserver is unsupported, we just use rAF once and don't bother to update.
 
 
 let resizeObserverSupported = typeof ResizeObserver === 'function';
 
-function calculateWidth (node, abortSignal, onUpdate) {
+function resizeObserverAction (node, abortSignal, onUpdate) {
   let resizeObserver;
   if (resizeObserverSupported) {
-    resizeObserver = new ResizeObserver(entries => (
-      onUpdate(entries[0].contentRect.width)
-    ));
+    resizeObserver = new ResizeObserver(onUpdate);
     resizeObserver.observe(node);
-  } else { // just set the width once, don't bother trying to track it
-    rAF(() => (
-      onUpdate(node.getBoundingClientRect().width)
-    ));
+  } else { // just run once, don't bother trying to track it
+    rAF(onUpdate);
   }
 
   // cleanup function (called on destroy)
@@ -281,6 +280,7 @@ function calculateWidth (node, abortSignal, onUpdate) {
 
 // get the width of the text inside of a DOM node, via https://stackoverflow.com/a/59525891/680742
 function calculateTextWidth (node) {
+  // skip running this in jest/vitest because we don't need to check for emoji support in that environment
   /* istanbul ignore else */
   {
     const range = document.createRange();
@@ -291,7 +291,15 @@ function calculateTextWidth (node) {
 
 let baselineEmojiWidth;
 
+/**
+ * Check if the given emojis containing ZWJ characters are supported by the current browser (don't render
+ * as double characters) and return true if all are supported.
+ * @param zwjEmojisToCheck
+ * @param baselineEmoji
+ * @param emojiToDomNode
+ */
 function checkZwjSupport (zwjEmojisToCheck, baselineEmoji, emojiToDomNode) {
+  let allSupported = true;
   for (const emoji of zwjEmojisToCheck) {
     const domNode = emojiToDomNode(emoji);
     const emojiWidth = calculateTextWidth(domNode);
@@ -304,7 +312,12 @@ function checkZwjSupport (zwjEmojisToCheck, baselineEmoji, emojiToDomNode) {
     // So here we set the threshold at 1.8 times the size of the baseline emoji.
     const supported = emojiWidth / 1.8 < baselineEmojiWidth;
     supportedZwjEmojis.set(emoji.unicode, supported);
+
+    if (!supported) {
+      allSupported = false;
+    }
   }
+  return allSupported
 }
 
 // like lodash's uniq
@@ -346,6 +359,7 @@ function parseTemplate (htmlString) {
 
 const parseCache = new WeakMap();
 const domInstancesCache = new WeakMap();
+// This needs to be a symbol because it needs to be different from any possible output of a key function
 const unkeyedSymbol = Symbol('un-keyed');
 
 // Not supported in Safari <=13
@@ -387,7 +401,7 @@ function patchChildren (newChildren, instanceBinding) {
     needsRerender = doChildrenNeedRerender(targetParentNode, newChildren);
   } else { // first render of list
     needsRerender = true;
-    instanceBinding.targetNode = undefined; // placeholder comment not needed anymore, free memory
+    instanceBinding.targetNode = undefined; // placeholder node not needed anymore, free memory
     instanceBinding.targetParentNode = targetParentNode = targetNode.parentNode;
   }
   // avoid re-rendering list if the dom nodes are exactly the same before and after
@@ -428,13 +442,9 @@ function patch (expressions, instanceBindings) {
         newNode = expression;
         targetNode.replaceWith(newNode);
       } else { // primitive - string, number, etc
-        if (targetNode.nodeType === Node.TEXT_NODE) { // already transformed into a text node
-          // nodeValue is faster than textContent supposedly https://www.youtube.com/watch?v=LY6y3HbDVmg
-          targetNode.nodeValue = toString(expression);
-        } else { // replace comment or whatever was there before with a text node
-          newNode = document.createTextNode(toString(expression));
-          targetNode.replaceWith(newNode);
-        }
+        // nodeValue is faster than textContent supposedly https://www.youtube.com/watch?v=LY6y3HbDVmg
+        // note we may be replacing the value in a placeholder text node
+        targetNode.nodeValue = toString(expression);
       }
       if (newNode) {
         instanceBinding.targetNode = newNode;
@@ -510,8 +520,10 @@ function parse (tokens) {
 
     bindings.push(binding);
 
-    // add a placeholder comment that we can find later
-    htmlString += (!withinTag && !withinAttribute) ? `<!--${bindings.length - 1}-->` : '';
+    if (!withinTag && !withinAttribute) {
+      // Add a placeholder text node, so we can find it later. Note we only support one dynamic child text node
+      htmlString += ' ';
+    }
   }
 
   const template = parseTemplate(htmlString);
@@ -519,21 +531,6 @@ function parse (tokens) {
   return {
     template,
     elementsToBindings
-  }
-}
-
-function findPlaceholderComment (element, bindingId) {
-  // If we had a lot of placeholder comments to find, it would make more sense to build up a map once
-  // rather than search the DOM every time. But it turns out that we always only have one child,
-  // and it's the comment node, so searching every time is actually faster.
-  let childNode = element.firstChild;
-  while (childNode) {
-    // Note that minify-html-literals has already removed all non-framework comments
-    // So we just need to look for comments that have exactly the bindingId as its text content
-    if (childNode.nodeType === Node.COMMENT_NODE && childNode.nodeValue === toString(bindingId)) {
-      return childNode
-    }
-    childNode = childNode.nextSibling;
   }
 }
 
@@ -552,7 +549,7 @@ function traverseAndSetupBindings (dom, elementsToBindings) {
 
         const targetNode = binding.attributeName
           ? element // attribute binding, just use the element itself
-          : findPlaceholderComment(element, i); // not an attribute binding, so has a placeholder comment
+          : element.firstChild; // not an attribute binding, so has a placeholder text node
 
         const instanceBinding = {
           binding,
@@ -611,16 +608,20 @@ function createFramework (state) {
   return { map, html }
 }
 
-function render (container, state, helpers, events, actions, refs, abortSignal, firstRender) {
+function render (container, state, helpers, events, actions, refs, abortSignal, actionContext, firstRender) {
   const { labelWithSkin, titleForEmoji, unicodeWithSkin } = helpers;
   const { html, map } = createFramework(state);
 
   function emojiList (emojis, searchMode, prefix) {
     return map(emojis, (emoji, i) => {
-      return html`<button role="${searchMode ? 'option' : 'menuitem'}" aria-selected="${state.searchMode ? i === state.activeSearchItem : ''}" aria-label="${labelWithSkin(emoji, state.currentSkinTone)}" title="${titleForEmoji(emoji)}" class="emoji ${searchMode && i === state.activeSearchItem ? 'active' : ''}" id="${`${prefix}-${emoji.id}`}">${
+      return html`<button role="${searchMode ? 'option' : 'menuitem'}" aria-selected="${searchMode ? i === state.activeSearchItem : ''}" aria-label="${labelWithSkin(emoji, state.currentSkinTone)}" title="${titleForEmoji(emoji)}" class="${
+                'emoji' +
+                (searchMode && i === state.activeSearchItem ? ' active' : '') +
+                (emoji.unicode ? '' : ' custom-emoji')
+              }" id="${`${prefix}-${emoji.id}`}" style="${emoji.unicode ? '' : `--custom-emoji-background: url(${JSON.stringify(emoji.url)})`}">${
         emoji.unicode
           ? unicodeWithSkin(emoji, state.currentSkinTone)
-          : html`<img class="custom-emoji" src="${emoji.url}" alt="" loading="lazy">`
+          : ''
       }</button>`
       // It's important for the cache key to be unique based on the prefix, because the framework caches based on the
       // unique tokens + cache key, and the same emoji may be used in the tab as well as in the fav bar
@@ -650,28 +651,28 @@ function render (container, state, helpers, events, actions, refs, abortSignal, 
                             : state.i18n.categories[state.currentGroup.name]
                         )
                     )
-                }</div><div class="emoji-menu" role="${state.searchMode ? 'listbox' : 'menu'}" aria-labelledby="menu-label-${i}" id="${state.searchMode ? 'search-results' : ''}">${
+                }</div><div class="emoji-menu ${i !== 0 && !state.searchMode && state.currentGroup.id === -1 ? 'visibility-auto' : ''}" style="${`--num-rows: ${Math.ceil(emojiWithCategory.emojis.length / state.numColumns)}`}" data-action="updateOnIntersection" role="${state.searchMode ? 'listbox' : 'menu'}" aria-labelledby="menu-label-${i}" id="${state.searchMode ? 'search-results' : ''}">${
               emojiList(emojiWithCategory.emojis, state.searchMode, /* prefix */ 'emo')
             }</div></div>`
               }, emojiWithCategory => emojiWithCategory.category)
-            }</div></div><div class="favorites emoji-menu ${state.message ? 'gone' : ''}" role="menu" aria-label="${state.i18n.favoritesLabel}" style="padding-inline-end:${`${state.scrollbarWidth}px`}" data-on-click="onEmojiClick">${
+            }</div></div><div class="favorites onscreen emoji-menu ${state.message ? 'gone' : ''}" role="menu" aria-label="${state.i18n.favoritesLabel}" data-on-click="onEmojiClick">${
             emojiList(state.currentFavorites, /* searchMode */ false, /* prefix */ 'fav')
           }</div><button data-ref="baselineEmoji" aria-hidden="true" tabindex="-1" class="abs-pos hidden emoji baseline-emoji">😀</button></section>`
   };
 
   const rootDom = section();
 
+  // helper for traversing the dom, finding elements by an attribute, and getting the attribute value
+  const forElementWithAttribute = (attributeName, callback) => {
+    for (const element of container.querySelectorAll(`[${attributeName}]`)) {
+      callback(element, element.getAttribute(attributeName));
+    }
+  };
+
   if (firstRender) { // not a re-render
     container.appendChild(rootDom);
 
-    // we only bind events/refs/actions once - there is no need to find them again given this component structure
-
-    // helper for traversing the dom, finding elements by an attribute, and getting the attribute value
-    const forElementWithAttribute = (attributeName, callback) => {
-      for (const element of container.querySelectorAll(`[${attributeName}]`)) {
-        callback(element, element.getAttribute(attributeName));
-      }
-    };
+    // we only bind events/refs once - there is no need to find them again given this component structure
 
     // bind events
     for (const eventName of ['click', 'focusout', 'input', 'keydown', 'keyup']) {
@@ -685,16 +686,25 @@ function render (container, state, helpers, events, actions, refs, abortSignal, 
       refs[ref] = element;
     });
 
-    // set up actions
-    forElementWithAttribute('data-action', (element, action) => {
-      actions[action](element);
-    });
-
     // destroy/abort logic
     abortSignal.addEventListener('abort', () => {
       container.removeChild(rootDom);
     });
   }
+
+  // set up actions - these are re-bound on every render
+  forElementWithAttribute('data-action', (element, action) => {
+    let boundActions = actionContext.get(action);
+    if (!boundActions) {
+      actionContext.set(action, (boundActions = new WeakSet()));
+    }
+
+    // avoid applying the same action to the same element multiple times
+    if (!boundActions.has(element)) {
+      boundActions.add(element);
+      actions[action](element);
+    }
+  });
 }
 
 /* istanbul ignore next */
@@ -730,7 +740,6 @@ function createState (abortSignal) {
 
   const state = new Proxy({}, {
     get (target, prop) {
-      // console.log('reactivity: get', prop)
       if (currentObserver) {
         let observers = propsToObservers.get(prop);
         if (!observers) {
@@ -742,16 +751,17 @@ function createState (abortSignal) {
       return target[prop]
     },
     set (target, prop, newValue) {
-      // console.log('reactivity: set', prop, newValue)
-      target[prop] = newValue;
-      const observers = propsToObservers.get(prop);
-      if (observers) {
-        for (const observer of observers) {
-          dirtyObservers.add(observer);
-        }
-        if (!queued) {
-          queued = true;
-          qM(flush);
+      if (target[prop] !== newValue) {
+        target[prop] = newValue;
+        const observers = propsToObservers.get(prop);
+        if (observers) {
+          for (const observer of observers) {
+            dirtyObservers.add(observer);
+          }
+          if (!queued) {
+            queued = true;
+            qM(flush);
+          }
         }
       }
       return true
@@ -795,6 +805,40 @@ function arraysAreEqualByFunction (left, right, areEqualFunc) {
   return true
 }
 
+const intersectionObserverCache = new WeakMap();
+
+function intersectionObserverAction (node, abortSignal, listener) {
+  /* istanbul ignore else */
+  {
+    // The scroll root is always `.tabpanel`
+    const root = node.closest('.tabpanel');
+
+    let observer = intersectionObserverCache.get(root);
+    if (!observer) {
+      // TODO: replace this with the contentvisibilityautostatechange event when all supported browsers support it.
+      // For now we use IntersectionObserver because it has better cross-browser support, and it would be bad for
+      // old Safari versions if they eagerly downloaded all custom emoji all at once.
+      observer = new IntersectionObserver(listener, {
+        root,
+        // trigger if we are 1/2 scroll container height away so that the images load a bit quicker while scrolling
+        rootMargin: '50% 0px 50% 0px',
+        // trigger if any part of the emoji grid is intersecting
+        threshold: 0
+      });
+
+      // avoid creating a new IntersectionObserver for every category; just use one for the whole root
+      intersectionObserverCache.set(root, observer);
+
+      // assume that the abortSignal is always the same for this root node; just add one event listener
+      abortSignal.addEventListener('abort', () => {
+        observer.disconnect();
+      });
+    }
+
+    observer.observe(node);
+  }
+}
+
 /* eslint-disable prefer-const,no-labels,no-inner-declarations */
 
 // constants
@@ -807,6 +851,7 @@ function createRoot (shadowRoot, props) {
   const abortController = new AbortController();
   const abortSignal = abortController.signal;
   const { state, createEffect } = createState(abortSignal);
+  const actionContext = new Map();
 
   // initial state
   assign(state, {
@@ -843,7 +888,6 @@ function createRoot (shadowRoot, props) {
     defaultFavoriteEmojis: undefined,
     numColumns: DEFAULT_NUM_COLUMNS,
     isRtl: false,
-    scrollbarWidth: 0,
     currentGroupIndex: 0,
     groups: groups,
     databaseLoaded: false,
@@ -954,12 +998,13 @@ function createRoot (shadowRoot, props) {
     onSearchInput
   };
   const actions = {
-    calculateEmojiGridStyle
+    calculateEmojiGridStyle,
+    updateOnIntersection
   };
 
   let firstRender = true;
   createEffect(() => {
-    render(shadowRoot, state, helpers, events, actions, refs, abortSignal, firstRender);
+    render(shadowRoot, state, helpers, events, actions, refs, abortSignal, actionContext, firstRender);
     firstRender = false;
   });
 
@@ -970,7 +1015,7 @@ function createRoot (shadowRoot, props) {
   // mount logic
   if (!state.emojiVersion) {
     detectEmojiSupportLevel().then(level => {
-      // Can't actually test emoji support in Jest/JSDom, emoji never render in color in Cairo
+      // Can't actually test emoji support in Jest/Vitest/JSDom, emoji never render in color in Cairo
       /* istanbul ignore next */
       if (!level) {
         state.message = state.i18n.emojiUnsupportedMessage;
@@ -1082,7 +1127,7 @@ function createRoot (shadowRoot, props) {
       const { database } = state;
       const favs = (await Promise.all(MOST_COMMONLY_USED_EMOJI.map(unicode => (
         database.getEmojiByUnicodeOrName(unicode)
-      )))).filter(Boolean); // filter because in Jest tests we don't have all the emoji in the DB
+      )))).filter(Boolean); // filter because in Jest/Vitest tests we don't have all the emoji in the DB
       state.defaultFavoriteEmojis = favs;
     }
 
@@ -1094,8 +1139,13 @@ function createRoot (shadowRoot, props) {
   function updateCustomEmoji () {
     // Certain effects have an implicit dependency on customEmoji since it affects the database
     // Getting it here on the state ensures this effect re-runs when customEmoji change.
-    // Setting it on the database is pointless but prevents this code from being removed by a minifier.
-    state.database.customEmoji = state.customEmoji || EMPTY_ARRAY;
+    const { customEmoji, database } = state;
+    const databaseCustomEmoji = customEmoji || EMPTY_ARRAY;
+    if (database.customEmoji !== databaseCustomEmoji) {
+      // Avoid setting this if the customEmoji have _not_ changed, because the setter triggers a re-computation of the
+      // `customEmojiIndex`. Note we don't bother with deep object changes.
+      database.customEmoji = databaseCustomEmoji;
+    }
   }
 
   createEffect(() => {
@@ -1116,33 +1166,38 @@ function createRoot (shadowRoot, props) {
   });
 
   //
-  // Calculate the width of the emoji grid. This serves two purposes:
+  // Re-run whenever the emoji grid changes size, and re-calc style/layout-related state variables:
   // 1) Re-calculate the --num-columns var because it may have changed
-  // 2) Re-calculate the scrollbar width because it may have changed
-  //   (i.e. because the number of items changed)
-  // 3) Re-calculate whether we're in RTL mode or not.
+  // 2) Re-calculate whether we're in RTL mode or not.
   //
   // The benefit of doing this in one place is to align with rAF/ResizeObserver
-  // and do all the calculations in one go. RTL vs LTR is not strictly width-related,
+  // and do all the calculations in one go. RTL vs LTR is not strictly layout-related,
   // but since we're already reading the style here, and since it's already aligned with
   // the rAF loop, this is the most appropriate place to do it perf-wise.
   //
 
   function calculateEmojiGridStyle (node) {
-    calculateWidth(node, abortSignal, width => {
+    resizeObserverAction(node, abortSignal, () => {
       /* istanbul ignore next */
       { // jsdom throws errors for this kind of fancy stuff
         // read all the style/layout calculations we need to make
         const style = getComputedStyle(refs.rootElement);
         const newNumColumns = parseInt(style.getPropertyValue('--num-columns'), 10);
         const newIsRtl = style.getPropertyValue('direction') === 'rtl';
-        const parentWidth = node.parentElement.getBoundingClientRect().width;
-        const newScrollbarWidth = parentWidth - width;
 
         // write to state variables
         state.numColumns = newNumColumns;
-        state.scrollbarWidth = newScrollbarWidth; // eslint-disable-line no-unused-vars
-        state.isRtl = newIsRtl; // eslint-disable-line no-unused-vars
+        state.isRtl = newIsRtl;
+      }
+    });
+  }
+
+  // Re-run whenever the custom emoji in a category are shown/hidden. This is an optimization that simulates
+  // what we'd get from `<img loading=lazy>` but without rendering an `<img>`.
+  function updateOnIntersection (node) {
+    intersectionObserverAction(node, abortSignal, (entries) => {
+      for (const { target, isIntersecting } of entries) {
+        target.classList.toggle('onscreen', isIntersecting);
       }
     });
   }
@@ -1180,6 +1235,10 @@ function createRoot (shadowRoot, props) {
     /* no await */ updateEmojis();
   });
 
+  const resetScrollTopInRaf = () => {
+    rAF(() => resetScrollTopIfPossible(refs.tabpanelElement));
+  };
+
   // Some emojis have their ligatures rendered as two or more consecutive emojis
   // We want to treat these the same as unsupported emojis, so we compare their
   // widths against the baseline widths and remove them as necessary
@@ -1196,15 +1255,20 @@ function createRoot (shadowRoot, props) {
       const newEmojis = emojiVersion ? currentEmojis : currentEmojis.filter(isZwjSupported);
       updateCurrentEmojis(newEmojis);
       // Reset scroll top to 0 when emojis change
-      rAF(() => resetScrollTopIfPossible(refs.tabpanelElement));
+      resetScrollTopInRaf();
     }
   });
 
   function checkZwjSupportAndUpdate (zwjEmojisToCheck) {
-    checkZwjSupport(zwjEmojisToCheck, refs.baselineEmoji, emojiToDomNode);
-    // force update
-    // eslint-disable-next-line no-self-assign
-    state.currentEmojis = state.currentEmojis;
+    const allSupported = checkZwjSupport(zwjEmojisToCheck, refs.baselineEmoji, emojiToDomNode);
+    if (allSupported) {
+      // Even if all emoji are supported, we still need to reset the scroll top to 0 when emojis change
+      resetScrollTopInRaf();
+    } else {
+      // Force update. We only do this if there are any unsupported ZWJ characters since otherwise,
+      // for browsers that support all emoji, it would be an unnecessary extra re-render.
+      state.currentEmojis = [...state.currentEmojis];
+    }
   }
 
   function isZwjSupported (emoji) {
@@ -1543,6 +1607,8 @@ var enI18n = {
   }
 };
 
+var baseStyles = ":host{--emoji-size:1.375rem;--emoji-padding:0.5rem;--category-emoji-size:var(--emoji-size);--category-emoji-padding:var(--emoji-padding);--indicator-height:3px;--input-border-radius:0.5rem;--input-border-size:1px;--input-font-size:1rem;--input-line-height:1.5;--input-padding:0.25rem;--num-columns:8;--outline-size:2px;--border-size:1px;--border-radius:0;--skintone-border-radius:1rem;--category-font-size:1rem;display:flex;width:min-content;height:400px}:host,:host(.light){color-scheme:light;--background:#fff;--border-color:#e0e0e0;--indicator-color:#385ac1;--input-border-color:#999;--input-font-color:#111;--input-placeholder-color:#999;--outline-color:#999;--category-font-color:#111;--button-active-background:#e6e6e6;--button-hover-background:#d9d9d9}:host(.dark){color-scheme:dark;--background:#222;--border-color:#444;--indicator-color:#5373ec;--input-border-color:#ccc;--input-font-color:#efefef;--input-placeholder-color:#ccc;--outline-color:#fff;--category-font-color:#efefef;--button-active-background:#555555;--button-hover-background:#484848}@media (prefers-color-scheme:dark){:host{color-scheme:dark;--background:#222;--border-color:#444;--indicator-color:#5373ec;--input-border-color:#ccc;--input-font-color:#efefef;--input-placeholder-color:#ccc;--outline-color:#fff;--category-font-color:#efefef;--button-active-background:#555555;--button-hover-background:#484848}}:host([hidden]){display:none}button{margin:0;padding:0;border:0;background:0 0;box-shadow:none;-webkit-tap-highlight-color:transparent}button::-moz-focus-inner{border:0}input{padding:0;margin:0;line-height:1.15;font-family:inherit}input[type=search]{-webkit-appearance:none}:focus{outline:var(--outline-color) solid var(--outline-size);outline-offset:calc(-1*var(--outline-size))}:host([data-js-focus-visible]) :focus:not([data-focus-visible-added]){outline:0}:focus:not(:focus-visible){outline:0}.hide-focus{outline:0}*{box-sizing:border-box}.picker{contain:content;display:flex;flex-direction:column;background:var(--background);border:var(--border-size) solid var(--border-color);border-radius:var(--border-radius);width:100%;height:100%;overflow:hidden;--total-emoji-size:calc(var(--emoji-size) + (2 * var(--emoji-padding)));--total-category-emoji-size:calc(var(--category-emoji-size) + (2 * var(--category-emoji-padding)))}.sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);border:0}.hidden{opacity:0;pointer-events:none}.abs-pos{position:absolute;left:0;top:0}.gone{display:none!important}.skintone-button-wrapper,.skintone-list{background:var(--background);z-index:3}.skintone-button-wrapper.expanded{z-index:1}.skintone-list{position:absolute;inset-inline-end:0;top:0;z-index:2;overflow:visible;border-bottom:var(--border-size) solid var(--border-color);border-radius:0 0 var(--skintone-border-radius) var(--skintone-border-radius);will-change:transform;transition:transform .2s ease-in-out;transform-origin:center 0}@media (prefers-reduced-motion:reduce){.skintone-list{transition-duration:.001s}}@supports not (inset-inline-end:0){.skintone-list{right:0}}.skintone-list.no-animate{transition:none}.tabpanel{overflow-y:auto;scrollbar-gutter:stable;-webkit-overflow-scrolling:touch;will-change:transform;min-height:0;flex:1;contain:content}.emoji-menu{display:grid;grid-template-columns:repeat(var(--num-columns),var(--total-emoji-size));justify-content:space-around;align-items:flex-start;width:100%}.emoji-menu.visibility-auto{content-visibility:auto;contain-intrinsic-size:calc(var(--num-columns)*var(--total-emoji-size)) calc(var(--num-rows)*var(--total-emoji-size))}.category{padding:var(--emoji-padding);font-size:var(--category-font-size);color:var(--category-font-color)}.emoji,button.emoji{font-size:var(--emoji-size);display:flex;align-items:center;justify-content:center;border-radius:100%;height:var(--total-emoji-size);width:var(--total-emoji-size);line-height:1;overflow:hidden;font-family:var(--emoji-font-family);cursor:pointer}@media (hover:hover) and (pointer:fine){.emoji:hover,button.emoji:hover{background:var(--button-hover-background)}}.emoji.active,.emoji:active,button.emoji.active,button.emoji:active{background:var(--button-active-background)}.custom-emoji::after{content:\"\";width:var(--emoji-size);height:var(--emoji-size);background-repeat:no-repeat;background-position:center center;background-size:contain;background-image:none}.onscreen .custom-emoji::after{background-image:var(--custom-emoji-background)}.nav,.nav-button{align-items:center}.nav{display:grid;justify-content:space-between;contain:content}.nav-button{display:flex;justify-content:center}.nav-emoji{font-size:var(--category-emoji-size);width:var(--total-category-emoji-size);height:var(--total-category-emoji-size)}.indicator-wrapper{display:flex;border-bottom:1px solid var(--border-color)}.indicator{width:calc(100%/var(--num-groups));height:var(--indicator-height);opacity:var(--indicator-opacity);background-color:var(--indicator-color);will-change:transform,opacity;transition:opacity .1s linear,transform .25s ease-in-out}@media (prefers-reduced-motion:reduce){.indicator{will-change:opacity;transition:opacity .1s linear}}.pad-top,input.search{background:var(--background);width:100%}.pad-top{height:var(--emoji-padding);z-index:3}.search-row{display:flex;align-items:center;position:relative;padding-inline-start:var(--emoji-padding);padding-bottom:var(--emoji-padding)}.search-wrapper{flex:1;min-width:0}input.search{padding:var(--input-padding);border-radius:var(--input-border-radius);border:var(--input-border-size) solid var(--input-border-color);color:var(--input-font-color);font-size:var(--input-font-size);line-height:var(--input-line-height)}input.search::placeholder{color:var(--input-placeholder-color)}.favorites{overflow-y:auto;scrollbar-gutter:stable;display:flex;flex-direction:row;border-top:var(--border-size) solid var(--border-color);contain:content}.message{padding:var(--emoji-padding)}";
+
 const PROPS = [
   'customEmoji',
   'customCategorySorting',
@@ -1562,7 +1628,7 @@ class PickerElement extends HTMLElement {
     super();
     this.attachShadow({ mode: 'open' });
     const style = document.createElement('style');
-    style.textContent = ":host{--emoji-size:1.375rem;--emoji-padding:0.5rem;--category-emoji-size:var(--emoji-size);--category-emoji-padding:var(--emoji-padding);--indicator-height:3px;--input-border-radius:0.5rem;--input-border-size:1px;--input-font-size:1rem;--input-line-height:1.5;--input-padding:0.25rem;--num-columns:8;--outline-size:2px;--border-size:1px;--skintone-border-radius:1rem;--category-font-size:1rem;display:flex;width:min-content;height:400px}:host,:host(.light){color-scheme:light;--background:#fff;--border-color:#e0e0e0;--indicator-color:#385ac1;--input-border-color:#999;--input-font-color:#111;--input-placeholder-color:#999;--outline-color:#999;--category-font-color:#111;--button-active-background:#e6e6e6;--button-hover-background:#d9d9d9}:host(.dark){color-scheme:dark;--background:#222;--border-color:#444;--indicator-color:#5373ec;--input-border-color:#ccc;--input-font-color:#efefef;--input-placeholder-color:#ccc;--outline-color:#fff;--category-font-color:#efefef;--button-active-background:#555555;--button-hover-background:#484848}@media (prefers-color-scheme:dark){:host{color-scheme:dark;--background:#222;--border-color:#444;--indicator-color:#5373ec;--input-border-color:#ccc;--input-font-color:#efefef;--input-placeholder-color:#ccc;--outline-color:#fff;--category-font-color:#efefef;--button-active-background:#555555;--button-hover-background:#484848}}:host([hidden]){display:none}button{margin:0;padding:0;border:0;background:0 0;box-shadow:none;-webkit-tap-highlight-color:transparent}button::-moz-focus-inner{border:0}input{padding:0;margin:0;line-height:1.15;font-family:inherit}input[type=search]{-webkit-appearance:none}:focus{outline:var(--outline-color) solid var(--outline-size);outline-offset:calc(-1*var(--outline-size))}:host([data-js-focus-visible]) :focus:not([data-focus-visible-added]){outline:0}:focus:not(:focus-visible){outline:0}.hide-focus{outline:0}*{box-sizing:border-box}.picker{contain:content;display:flex;flex-direction:column;background:var(--background);border:var(--border-size) solid var(--border-color);width:100%;height:100%;overflow:hidden;--total-emoji-size:calc(var(--emoji-size) + (2 * var(--emoji-padding)));--total-category-emoji-size:calc(var(--category-emoji-size) + (2 * var(--category-emoji-padding)))}.sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);border:0}.hidden{opacity:0;pointer-events:none}.abs-pos{position:absolute;left:0;top:0}.gone{display:none!important}.skintone-button-wrapper,.skintone-list{background:var(--background);z-index:3}.skintone-button-wrapper.expanded{z-index:1}.skintone-list{position:absolute;inset-inline-end:0;top:0;z-index:2;overflow:visible;border-bottom:var(--border-size) solid var(--border-color);border-radius:0 0 var(--skintone-border-radius) var(--skintone-border-radius);will-change:transform;transition:transform .2s ease-in-out;transform-origin:center 0}@media (prefers-reduced-motion:reduce){.skintone-list{transition-duration:.001s}}@supports not (inset-inline-end:0){.skintone-list{right:0}}.skintone-list.no-animate{transition:none}.tabpanel{overflow-y:auto;-webkit-overflow-scrolling:touch;will-change:transform;min-height:0;flex:1;contain:content}.emoji-menu{display:grid;grid-template-columns:repeat(var(--num-columns),var(--total-emoji-size));justify-content:space-around;align-items:flex-start;width:100%}.category{padding:var(--emoji-padding);font-size:var(--category-font-size);color:var(--category-font-color)}.custom-emoji,.emoji,button.emoji{height:var(--total-emoji-size);width:var(--total-emoji-size)}.emoji,button.emoji{font-size:var(--emoji-size);display:flex;align-items:center;justify-content:center;border-radius:100%;line-height:1;overflow:hidden;font-family:var(--emoji-font-family);cursor:pointer}@media (hover:hover) and (pointer:fine){.emoji:hover,button.emoji:hover{background:var(--button-hover-background)}}.emoji.active,.emoji:active,button.emoji.active,button.emoji:active{background:var(--button-active-background)}.custom-emoji{padding:var(--emoji-padding);object-fit:contain;pointer-events:none;background-repeat:no-repeat;background-position:center center;background-size:var(--emoji-size) var(--emoji-size)}.nav,.nav-button{align-items:center}.nav{display:grid;justify-content:space-between;contain:content}.nav-button{display:flex;justify-content:center}.nav-emoji{font-size:var(--category-emoji-size);width:var(--total-category-emoji-size);height:var(--total-category-emoji-size)}.indicator-wrapper{display:flex;border-bottom:1px solid var(--border-color)}.indicator{width:calc(100%/var(--num-groups));height:var(--indicator-height);opacity:var(--indicator-opacity);background-color:var(--indicator-color);will-change:transform,opacity;transition:opacity .1s linear,transform .25s ease-in-out}@media (prefers-reduced-motion:reduce){.indicator{will-change:opacity;transition:opacity .1s linear}}.pad-top,input.search{background:var(--background);width:100%}.pad-top{height:var(--emoji-padding);z-index:3}.search-row{display:flex;align-items:center;position:relative;padding-inline-start:var(--emoji-padding);padding-bottom:var(--emoji-padding)}.search-wrapper{flex:1;min-width:0}input.search{padding:var(--input-padding);border-radius:var(--input-border-radius);border:var(--input-border-size) solid var(--input-border-color);color:var(--input-font-color);font-size:var(--input-font-size);line-height:var(--input-line-height)}input.search::placeholder{color:var(--input-placeholder-color)}.favorites{display:flex;flex-direction:row;border-top:var(--border-size) solid var(--border-color);contain:content}.message{padding:var(--emoji-padding)}" + EXTRA_STYLES;
+    style.textContent = baseStyles + EXTRA_STYLES;
     this.shadowRoot.appendChild(style);
     this._ctx = {
       // Set defaults

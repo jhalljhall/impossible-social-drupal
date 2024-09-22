@@ -411,6 +411,14 @@
   }
 }
 
+@media (max-width: 767px) {
+  .ui-dialog:not(.ui-dialog-off-canvas)[role='dialog'] {
+    width: auto !important;
+    min-width: 92%;
+    max-width: 92%;
+  }
+}
+
 @media (max-width: 599px) {
   .ui-dialog-content {
     max-height: 60vh !important;

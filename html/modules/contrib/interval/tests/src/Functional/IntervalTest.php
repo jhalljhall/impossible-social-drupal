@@ -2,10 +2,11 @@
 
 namespace Drupal\Tests\interval\Functional;
 
-use Drupal\Core\Field\FieldStorageDefinitionInterface;
 use Drupal\Core\Entity\Entity\EntityFormDisplay;
 use Drupal\Core\Entity\Entity\EntityViewDisplay;
+use Drupal\Core\Field\FieldStorageDefinitionInterface;
 use Drupal\Tests\BrowserTestBase;
+use Drupal\Tests\field_ui\Traits\FieldUiTestTrait;
 
 /**
  * Ensures that the interval field works correctly.
@@ -14,13 +15,19 @@ use Drupal\Tests\BrowserTestBase;
  */
 class IntervalTest extends BrowserTestBase {
 
+  use FieldUiTestTrait;
+
   /**
    * Profile to use.
+   *
+   * @var string
    */
   protected $profile = 'testing';
 
   /**
    * Theme to use.
+   *
+   * @var string
    */
   protected $defaultTheme = 'stark';
 
@@ -67,20 +74,12 @@ class IntervalTest extends BrowserTestBase {
    */
   public function testInterval() {
     $this->drupalLogin($this->adminUser);
-    // Add a new interval field.
-    $this->drupalGet('entity_test/structure/entity_test/fields/add-field');
-    $edit = [
-      'label' => 'Foobar',
-      'field_name' => 'foobar',
-      'new_storage_type' => 'interval',
-    ];
-    $this->submitForm($edit, t('Save and continue'));
-    $this->submitForm([
-      'cardinality' => FieldStorageDefinitionInterface::CARDINALITY_UNLIMITED,
-    ], t('Save field settings'));
 
-    $this->submitForm([], t('Save settings'));
-    $this->assertSession()->responseContains(t('Saved %name configuration', ['%name' => 'Foobar']));
+    // Add a new interval field.
+    $field_edit = [
+      "field_storage[subform][cardinality]" => FieldStorageDefinitionInterface::CARDINALITY_UNLIMITED,
+    ];
+    $this->fieldUIAddNewField('entity_test/structure/entity_test', 'foobar', 'Foobar', 'interval', [], $field_edit);
 
     // Setup widget and formatters.
     EntityFormDisplay::load('entity_test.entity_test.default')
@@ -119,7 +118,7 @@ class IntervalTest extends BrowserTestBase {
       'user_id[0][target_id]' => 'foo (' . $this->adminUser->id() . ')',
     ];
 
-    $this->submitForm($edit, t('Save'));
+    $this->submitForm($edit, 'Save');
     $this->resetAll();
     $entities = \Drupal::entityTypeManager()->getStorage('entity_test')->loadByProperties([
       'name' => 'Barfoo',
@@ -164,7 +163,7 @@ class IntervalTest extends BrowserTestBase {
       // Remove one child.
       'field_foobar[2][interval]' => '',
     ];
-    $this->submitForm($edit, t('Save'));
+    $this->submitForm($edit, 'Save');
     $this->drupalGet('entity_test/' . $entity->id());
     $this->assertSession()->pageTextContains('Bazbar');
     // Reload entity.

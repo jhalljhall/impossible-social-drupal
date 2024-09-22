@@ -1,4 +1,4 @@
-# Twig VarDumper for Drupal 9
+# Twig VarDumper for Drupal 11
 
 Provides a way to display Twig PHP variables in a pretty way.
 
@@ -31,7 +31,7 @@ the Symfony project.
 There easiest way to install this module is with composer. Here are the
 commands to run:
 
-* `composer config repositories.drupal composer https://packages.drupal.org/9`
+* `composer config repositories.drupal composer https://packages.drupal.org/11`
 * `composer require drupal/twig_vardumper`
 * `drush en twig_vardumper -y`
 * Once the module and/or the submodules are enabled, don't forget to check

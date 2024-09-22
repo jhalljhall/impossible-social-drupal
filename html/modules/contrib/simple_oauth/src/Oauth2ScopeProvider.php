@@ -2,7 +2,7 @@
 
 namespace Drupal\simple_oauth;
 
-use Drupal\user\Entity\Role;
+use Drupal\Core\Entity\EntityTypeManagerInterface;
 
 /**
  * OAuth2 scope provider.
@@ -17,13 +17,23 @@ class Oauth2ScopeProvider implements Oauth2ScopeProviderInterface {
   protected Oauth2ScopeAdapterInterface $adapter;
 
   /**
+   * The entity type manager.
+   *
+   * @var \Drupal\Core\Entity\EntityTypeManagerInterface
+   */
+  protected EntityTypeManagerInterface $entityTypeManager;
+
+  /**
    * Constructs Oauth2ScopeProvider.
    *
    * @param \Drupal\simple_oauth\Oauth2ScopeAdapterInterface $adapter
    *   The OAuth2 scope adapter.
+   * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
+   *   The entity type manager.
    */
-  public function __construct(Oauth2ScopeAdapterInterface $adapter) {
+  public function __construct(Oauth2ScopeAdapterInterface $adapter, EntityTypeManagerInterface $entity_type_manager) {
     $this->adapter = $adapter;
+    $this->entityTypeManager = $entity_type_manager;
   }
 
   /**
@@ -64,32 +74,30 @@ class Oauth2ScopeProvider implements Oauth2ScopeProviderInterface {
   /**
    * {@inheritdoc}
    */
-  public function getFlattenPermissionTree(Oauth2ScopeInterface $scope, array &$permissions = []): array {
+  public function scopeHasPermission(string $permission, Oauth2ScopeInterface $scope): bool {
     if (!$scope->isUmbrella()) {
       if ($scope->getGranularity() === Oauth2ScopeInterface::GRANULARITY_ROLE) {
-        $user_role = Role::load($scope->getRole());
-        if ($user_role) {
-          foreach ($user_role->getPermissions() as $permission) {
-            $permissions = $this->addPermission($permission, $permissions);
-          }
+        /** @var \Drupal\user\RoleStorageInterface $storage */
+        $storage = $this->entityTypeManager->getStorage('user_role');
+        if ($storage->isPermissionInRoles($permission, [$scope->getRole()])) {
+          return TRUE;
         }
       }
       elseif ($scope->getGranularity() === Oauth2ScopeInterface::GRANULARITY_PERMISSION) {
-        $permission = $scope->getPermission();
-        if ($permission) {
-          $permissions = $this->addPermission($permission, $permissions);
+        if ($scope->getPermission() === $permission) {
+          return TRUE;
         }
       }
     }
 
     $children = $this->loadChildren($scope->id());
-
     foreach ($children as $child) {
-      $this->getFlattenPermissionTree($child, $permissions);
+      if ($this->scopeHasPermission($permission, $child)) {
+        return TRUE;
+      }
     }
 
-    sort($permissions);
-    return $permissions;
+    return FALSE;
   }
 
   /**

@@ -3,12 +3,23 @@
   margin-top: 0;
 }
 
-.view-group-manage-members .filter-block, 
+.view-group-manage-members .filter-block,
 .view-event-manage-enrollments .filter-block {
   margin-bottom: 8px;
 }
 
-.view-group-manage-members .infinity-filter, 
+.view-group-manage-members .filter-block > .list-inline,
+.view-group-manage-members .filter-block > .list-inline > li,
+.view-group-manage-members .filter-block > ul,
+.view-group-manage-members .filter-block > ul > li,
+.view-event-manage-enrollments .filter-block > .list-inline,
+.view-event-manage-enrollments .filter-block > .list-inline > li,
+.view-event-manage-enrollments .filter-block > ul,
+.view-event-manage-enrollments .filter-block > ul > li {
+  margin-bottom: 0;
+}
+
+.view-group-manage-members .infinity-filter,
 .view-event-manage-enrollments .infinity-filter {
   display: -webkit-box;
   display: -ms-flexbox;

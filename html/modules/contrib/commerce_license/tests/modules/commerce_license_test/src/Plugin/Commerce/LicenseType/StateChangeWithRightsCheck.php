@@ -21,24 +21,21 @@ class StateChangeWithRightsCheck extends TestLicenseBase implements ExistingRigh
    * {@inheritdoc}
    */
   public function grantLicense(LicenseInterface $license) {
-    $state = \Drupal::state();
-    $state->set('commerce_license_state_change_test', 'grantLicense');
+    $this->state->set('commerce_license_state_change_test', 'grantLicense');
   }
 
   /**
    * {@inheritdoc}
    */
   public function revokeLicense(LicenseInterface $license) {
-    $state = \Drupal::state();
-    $state->set('commerce_license_state_change_test', 'revokeLicense');
+    $this->state->set('commerce_license_state_change_test', 'revokeLicense');
   }
 
   /**
    * {@inheritdoc}
    */
   public function checkUserHasExistingRights(UserInterface $user) {
-    $state = \Drupal::state();
-    $license_status = $state->get('commerce_license_state_change_test');
+    $license_status = $this->state->get('commerce_license_state_change_test');
 
     // If the license has been granted, report that the user has existing
     // rights.

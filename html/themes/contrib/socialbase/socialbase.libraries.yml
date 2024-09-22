@@ -31,6 +31,11 @@ badge:
     component:
       assets/css/badge.css: {}
 
+big-pipe-skeleton:
+  css:
+    theme:
+      assets/css/big-pipe-skeleton.css: {}
+
 button:
   css:
     component:

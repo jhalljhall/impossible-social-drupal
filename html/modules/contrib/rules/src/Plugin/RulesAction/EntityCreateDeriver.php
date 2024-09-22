@@ -78,7 +78,7 @@ class EntityCreateDeriver extends DeriverBase implements ContainerDeriverInterfa
         ]),
         'category' => $entity_type->getLabel(),
         'entity_type_id' => $entity_type_id,
-        'context_defintions' => [],
+        'context_definitions' => [],
         'provides' => [
           $entity_type->id() . '_created' => ContextDefinition::create("entity:$entity_type_id")
             ->setLabel($this->t('Created @entity_type entity', ['@entity_type' => $entity_type->getSingularLabel()]))
