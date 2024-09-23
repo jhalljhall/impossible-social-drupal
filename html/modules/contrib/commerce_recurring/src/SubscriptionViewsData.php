@@ -3,8 +3,8 @@
 namespace Drupal\commerce_recurring;
 
 use Drupal\commerce\CommerceEntityViewsData;
-use Symfony\Component\DependencyInjection\ContainerInterface;
 use Drupal\Core\Entity\EntityTypeInterface;
+use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
  * Provides views data for subscription.

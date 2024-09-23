@@ -53,9 +53,14 @@ class DefaultPacker implements PackerInterface {
   public function pack(OrderInterface $order, ProfileInterface $shipping_profile) {
     $items = [];
     foreach ($order->getItems() as $order_item) {
+      // Skip malformed order items.
+      if (!$order_item->getUnitPrice()) {
+        continue;
+      }
       $purchased_entity = $order_item->getPurchasedEntity();
       // Ship only shippable purchasable entity types.
-      if (!$purchased_entity || !$purchased_entity->hasField('weight')) {
+      if (!$purchased_entity ||
+        !$purchased_entity->hasField('weight')) {
         continue;
       }
       // The weight will be empty if the shippable trait was added but the

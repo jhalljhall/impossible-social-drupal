@@ -10,6 +10,8 @@ use Symfony\Component\Validator\ConstraintValidator;
 
 /**
  * Validates the LicenseExpirationTypeWithSubscription constraint.
+ *
+ * @phpstan-consistent-constructor
  */
 class LicenseExpirationTypeWithSubscriptionConstraintValidator extends ConstraintValidator implements ContainerInjectionInterface {
 

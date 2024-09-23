@@ -35,6 +35,8 @@ class ScheduledChangeItemList extends FieldItemList implements ScheduledChangeIt
         $this->removeItem($key);
       }
     }
+
+    return $this;
   }
 
 }

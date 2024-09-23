@@ -26,11 +26,12 @@ class SubscriptionStorage extends CommerceContentEntityStorage implements Subscr
       // affecting existing subscriptions.
       'unit_price' => $order_item->getUnitPrice(),
     ];
-    if ($order = $order_item->getOrder()) {
+    $order = $values['initial_order'] ?? $order_item->getOrder();
+    if ($order) {
       $values += [
         'store_id' => $order->getStoreId(),
         'uid' => $order->getCustomerId(),
-        'initial_order' => $order->id(),
+        'initial_order' => $order,
       ];
     }
     /** @var \Drupal\commerce_recurring\Entity\SubscriptionInterface $subscription */

@@ -87,35 +87,23 @@ class Oauth2ScopeProviderTest extends KernelTestBase {
     // Test retrieving flatten permission tree.
     $scopes_indexed = array_values($all_scopes);
 
-    // The first scope is an umbrella scope.
-    $permissions = $scope_provider->getFlattenPermissionTree($scopes_indexed[0]);
-    $this->assertCount(2, $permissions);
-    $expected_permissions = [
-      'access content',
-      'debug simple_oauth tokens',
-    ];
-    $this->assertEquals($expected_permissions, $permissions);
-
-    // Second scope gives back its own permission.
-    $permissions = $scope_provider->getFlattenPermissionTree($scopes_indexed[1]);
-    $this->assertCount(2, $permissions);
-    $this->assertEquals($expected_permissions, $permissions);
+    foreach (['access content', 'debug simple_oauth tokens'] as $expected_permission) {
+      // The first scope is an umbrella scope.
+      $this->assertTrue($scope_provider->scopeHasPermission($expected_permission, $scopes_indexed[0]));
+      // Second scope gives back its own permission.
+      $this->assertTrue($scope_provider->scopeHasPermission($expected_permission, $scopes_indexed[1]));
+      // Fourth scope gives back permissions referenced by the associated role
+      // and underlying child permission.
+      $this->assertTrue($scope_provider->scopeHasPermission($expected_permission, $scopes_indexed[3]));
+    }
 
     // Third scope gives back its own permission.
-    $permissions = $scope_provider->getFlattenPermissionTree($scopes_indexed[2]);
-    $this->assertCount(1, $permissions);
-    $this->assertEquals(['access content'], $permissions);
-
-    // Fourth scope gives back permissions referenced by the associated role and
-    // underlying child permission.
-    $permissions = $scope_provider->getFlattenPermissionTree($scopes_indexed[3]);
-    $this->assertCount(2, $permissions);
-    $this->assertEquals($permissions, $permissions);
+    $this->assertTrue($scope_provider->scopeHasPermission('access content', $scopes_indexed[2]));
+    $this->assertFalse($scope_provider->scopeHasPermission('debug simple_oauth tokens', $scopes_indexed[2]));
 
     // Fifth scope gives back its own permission.
-    $permissions = $scope_provider->getFlattenPermissionTree($scopes_indexed[4]);
-    $this->assertCount(1, $permissions);
-    $this->assertEquals(['debug simple_oauth tokens'], $permissions);
+    $this->assertTrue($scope_provider->scopeHasPermission('debug simple_oauth tokens', $scopes_indexed[4]));
+    $this->assertFalse($scope_provider->scopeHasPermission('access content', $scopes_indexed[4]));
   }
 
 }

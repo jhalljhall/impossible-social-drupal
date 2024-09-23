@@ -97,7 +97,7 @@ class AutoEntityLabelForm extends ConfigFormBase {
     EntityTypeManagerInterface $entity_type_manager,
     RouteMatchInterface $route_match,
     ModuleHandlerInterface $moduleHandler,
-    AccountInterface $user
+    AccountInterface $user,
   ) {
     parent::__construct($config_factory);
     $this->entityTypeManager = $entity_type_manager;

@@ -27,7 +27,7 @@ class TestNodeAction extends RulesActionBase {
   /**
    * Sets the node title.
    *
-   * @param \Drupa\node\NodeInterface $node
+   * @param \Drupal\node\NodeInterface $node
    *   The node.
    * @param string $title
    *   The title.

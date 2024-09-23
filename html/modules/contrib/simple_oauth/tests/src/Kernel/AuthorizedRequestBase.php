@@ -3,14 +3,14 @@
 namespace Drupal\Tests\simple_oauth\Kernel;
 
 use Drupal\Component\Serialization\Json;
-use Drupal\consumers\Entity\Consumer;
 use Drupal\Core\Url;
 use Drupal\KernelTests\Core\Entity\EntityKernelTestBase;
+use Drupal\Tests\simple_oauth\Functional\SimpleOauthTestTrait;
+use Drupal\consumers\Entity\Consumer;
 use Drupal\simple_oauth\Entity\Oauth2Scope;
 use Drupal\simple_oauth\Oauth2ScopeInterface;
-use Drupal\Tests\simple_oauth\Functional\SimpleOauthTestTrait;
-use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\Response;
 
 /**
  * Class RequestBase.

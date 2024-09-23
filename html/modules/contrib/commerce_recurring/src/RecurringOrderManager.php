@@ -105,7 +105,7 @@ class RecurringOrderManager implements RecurringOrderManagerInterface {
     $billing_period = $billing_period_item->toBillingPeriod();
     $subscriptions = $this->collectSubscriptions($order);
     $payment_method = $this->selectPaymentMethod($subscriptions);
-    $billing_profile = $payment_method ? $payment_method->getBillingProfile() : NULL;
+    $billing_profile = $payment_method ? $payment_method->getBillingProfile() : $order->getBillingProfile();
     $payment_gateway_id = $payment_method ? $payment_method->getPaymentGatewayId() : NULL;
 
     $order->set('billing_profile', $billing_profile);
@@ -201,13 +201,14 @@ class RecurringOrderManager implements RecurringOrderManagerInterface {
 
       $next_order = $this->findOrCreateOrder($subscription, $next_billing_period);
       $this->applyCharges($next_order, $subscription, $next_billing_period);
-      // Allow the subscription type to modify the order before it is saved.
+      // Allow the subscription type to modify the order before it is saved
+      // and use the updated subscription attributes.
+      $subscription->setRenewedTime($this->time->getCurrentTime());
+      $subscription->setNextRenewalTime($next_billing_period->getEndDate()->getTimestamp());
       $subscription->getType()->onSubscriptionRenew($subscription, $order, $next_order);
       $next_order->save();
       // Update the subscription with the new order and renewal timestamp.
       $subscription->addOrder($next_order);
-      $subscription->setRenewedTime($this->time->getCurrentTime());
-      $subscription->setNextRenewalTime($next_billing_period->getEndDate()->getTimestamp());
       $subscription->save();
     }
     return $next_order;

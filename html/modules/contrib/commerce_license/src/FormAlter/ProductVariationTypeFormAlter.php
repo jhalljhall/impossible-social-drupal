@@ -75,7 +75,7 @@ class ProductVariationTypeFormAlter implements FormAlterInterface {
     $our_form['license']['activate_on_place'] = [
       '#type' => 'checkbox',
       '#title' => $this->t('Activate license when order is placed'),
-      '#description' => $this->t('Activates the license as soon as the customer completes checkout, rather than waiting for payment to be taken. If payment subsequently fails, canceling the order will cancel the license. This only has an effect with order types that use validation or fulfilment states and payment gateways that are asynchronous.'),
+      '#description' => $this->t('Activates the license as soon as the customer completes checkout, rather than waiting for payment to be taken. If payment subsequently fails, canceling the order will cancel the license. This only has an effect with order types that use validation or fulfillment states and payment gateways that are asynchronous.'),
       '#default_value' => $product_variation_type->getThirdPartySetting('commerce_license', 'activate_on_place', FALSE),
     ];
 

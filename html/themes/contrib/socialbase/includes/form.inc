@@ -371,6 +371,11 @@ function socialbase_form_alter(&$form, FormStateInterface $form_state, $form_id)
     }
   }
 
+  if ($form_id ==='user_pass_reset') {
+    $form['message']['#prefix'] = '<div class="card"><div class="card__block">';
+    $form['help']['#suffix'] = '</div></div>';
+  }
+
   // Here we list all the forms that need to be wrapped in cards.
   $add_card_to_forms = array_merge(
     $group_add_card_to_forms,

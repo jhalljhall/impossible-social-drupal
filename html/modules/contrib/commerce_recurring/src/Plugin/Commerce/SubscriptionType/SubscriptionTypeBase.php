@@ -76,6 +76,8 @@ abstract class SubscriptionTypeBase extends PluginBase implements SubscriptionTy
     if (!empty($this->pluginDefinition['purchasable_entity_type'])) {
       return $this->pluginDefinition['purchasable_entity_type'];
     }
+
+    return NULL;
   }
 
   /**

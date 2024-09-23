@@ -127,9 +127,16 @@ abstract class RulesEntityIntegrationTestBase extends RulesIntegrationTestBase {
     $this->entityTypeBundleInfo->getBundleInfo(Argument::any())
       ->willReturn(['test' => ['label' => 'Test']]);
 
-    $this->fieldTypeManager = new FieldTypePluginManager(
-      $this->namespaces, $this->cacheBackend, $this->moduleHandler->reveal(), $this->typedDataManager
-    );
+    if (version_compare(\Drupal::VERSION, '10.2') >= 0) {
+      $this->fieldTypeManager = new FieldTypePluginManager(
+        $this->namespaces, $this->cacheBackend, $this->moduleHandler->reveal(), $this->typedDataManager
+      );
+    }
+    else {
+      $this->fieldTypeManager = new FieldTypePluginManager(
+        $this->namespaces, $this->cacheBackend, $this->moduleHandler->reveal(), $this->typedDataManager, $this->fieldTypeCategoryManager
+      );
+    }
     $this->container->set('plugin.manager.field.field_type', $this->fieldTypeManager);
 
     // The new ReverseContainer service needs to be present to prevent massive

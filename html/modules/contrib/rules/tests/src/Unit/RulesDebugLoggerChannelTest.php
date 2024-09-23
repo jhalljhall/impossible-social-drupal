@@ -12,6 +12,8 @@ use Prophecy\Argument;
 use Psr\Log\LoggerInterface;
 use Psr\Log\LogLevel;
 
+// cspell:ignore dragonfruit
+
 /**
  * @coversDefaultClass \Drupal\rules\Logger\RulesDebugLoggerChannel
  * @group Rules

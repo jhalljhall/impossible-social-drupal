@@ -2,14 +2,22 @@
 
 namespace Drupal\legal\Form;
 
+use Drupal\Component\Datetime\TimeInterface;
+use Drupal\Component\Utility\Crypt;
+use Drupal\Core\Access\AccessResult;
+use Drupal\Core\Cache\CacheBackendInterface;
+use Drupal\Core\Database\Connection;
+use Drupal\Core\Extension\ModuleHandlerInterface;
 use Drupal\Core\Form\FormBase;
 use Drupal\Core\Form\FormStateInterface;
-use Drupal\Core\Url;
-use Drupal\Core\Access\AccessResult;
+use Drupal\Core\Language\LanguageManagerInterface;
 use Drupal\Core\Session\AccountInterface;
+use Drupal\Core\Url;
 use Drupal\legal\Entity\Accepted;
 use Drupal\user\Entity\User;
-use Drupal\Component\Utility\Crypt;
+use Drupal\user\UserInterface;
+use Symfony\Component\DependencyInjection\ContainerInterface;
+use Symfony\Component\HttpFoundation\RequestStack;
 
 /**
  * After login display new T&Cs to user and require that they are agreed to.
@@ -46,6 +54,22 @@ class LegalLogin extends FormBase {
    * @var \Drupal\user\UserInterface
    */
   protected $user;
+  protected $requestStack;
+
+  /**
+   * The time service.
+   *
+   * @var \Drupal\Component\Datetime\TimeInterface
+   */
+  protected $time;
+
+  /**
+   * The cache backend.
+   *
+   * @var \Drupal\Core\Cache\CacheBackendInterface
+   */
+  protected $cache;
+
 
   /**
    * {@inheritdoc}
@@ -55,16 +79,66 @@ class LegalLogin extends FormBase {
   }
 
   /**
+   * Constructs a new LegalLogin object.
+   *
+   * @param \Drupal\Core\Database\Connection $database
+   *   The database connection.
+   * @param \Drupal\Core\Language\LanguageManagerInterface $language_manager
+   *   The language manager.
+   * @param \Drupal\Core\Extension\ModuleHandlerInterface $module_handler
+   *   The module handler.
+   * @param \Symfony\Component\HttpFoundation\RequestStack $request_stack
+   *   The request stack service.
+   * @param \Drupal\Component\Datetime\TimeInterface $time
+   *   The time service.
+   * @param \Drupal\Core\Cache\CacheBackendInterface $cache
+   *   The cache backend.
+   */
+  public function __construct(Connection $database, LanguageManagerInterface $language_manager, ModuleHandlerInterface $module_handler, RequestStack $request_stack, TimeInterface $time = NULL, CacheBackendInterface $cache) {
+    $this->database = $database;
+    $this->languageManager = $language_manager;
+    $this->moduleHandler = $module_handler;
+    $this->requestStack = $request_stack;
+    $this->time = $time;
+    $this->cache = $cache;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public static function create(ContainerInterface $container) {
+    return new static(
+      $container->get('database'),
+      $container->get('language_manager'),
+      $container->get('module_handler'),
+      $container->get('request_stack'),
+      $container->get('datetime.time'),
+      $container->get('cache.menu'),
+    );
+  }
+
+  /**
    * {@inheritdoc}
    */
   public function buildForm(array $form, FormStateInterface $form_state) {
 
     $config   = $this->config('legal.settings');
-    $language = \Drupal::languageManager()->getCurrentLanguage();
+    $language = $this->languageManager->getCurrentLanguage();
 
     $id_hash = $_COOKIE['Drupal_visitor_legal_hash'];
     $uid     = $_COOKIE['Drupal_visitor_legal_id'];
     $token   = $_GET['token'];
+
+    if (!is_numeric($uid)) {
+      $this->setValidationError($form_state);
+    }
+
+    // Assert that the user ID is valid.
+    $user = User::load($uid);
+
+    if (!$user instanceof UserInterface) {
+      return;
+    }
 
     // Get last accepted version for this account.
     $legal_account = legal_get_accept($uid);
@@ -93,7 +167,7 @@ class LegalLogin extends FormBase {
           return;
         }
         else {
-          $request        = \Drupal::request();
+          $request        = $this->requestStack->getCurrentRequest();
           $session        = $request->getSession();
           $newly_accepted = $session->get('legal_login', FALSE);
 
@@ -163,8 +237,18 @@ class LegalLogin extends FormBase {
 
     $token = $form_state->getValue('token');
 
-    $uid        = $form_state->getValue('uid');
-    $account    = User::load($uid);
+    $uid = $form_state->getValue('uid');
+
+    if (!is_numeric($uid)) {
+      $this->setValidationError($form_state);
+    }
+
+    $account = User::load($uid);
+
+    if (!$account instanceof UserInterface) {
+      $this->setValidationError($form_state);
+    }
+
     $this->user = $account;
 
     $last_login = $account->get('login')->value;
@@ -174,9 +258,19 @@ class LegalLogin extends FormBase {
     $hash = Crypt::hmacBase64($data, $token);
 
     if ($hash != $form_state->getValue('hash')) {
-      $form_state->setErrorByName('legal_accept', $this->t('User ID cannot be identified.'));
-      legal_deny_with_redirect();
+      $this->setValidationError($form_state);
     }
+  }
+
+  /**
+   * Triggers a validation error and calls exit().
+   *
+   * @param \Drupal\Core\Form\FormStateInterface $form_state
+   *   The form state.
+   */
+  protected function setValidationError(FormStateInterface $form_state): void {
+    $form_state->setErrorByName('legal_accept', $this->t('User ID cannot be identified.'));
+    legal_deny_with_redirect();
   }
 
   /**
@@ -189,20 +283,55 @@ class LegalLogin extends FormBase {
 
     $values   = $form_state->getValues();
     $user     = $this->user;
-    $redirect = '/user/' . $values['uid'];
     $config   = $this->config('legal.settings');
 
+    // Set redirect action for form submission.
     if (!empty($_GET['destination'])) {
-      $redirect = $_GET['destination'];
+
+      $destination_path = $_GET['destination'];
+
+      // Make sure redirect destination starts with a slash.
+      if (strpos($destination_path, '/') !== 0) {
+        $destination_path = '/' . $destination_path;
+      }
+
+      // Use an existing destination if set.
+      $redirect = Url::fromUserInput($destination_path);
+
+      // Password reset actions.
+      if (!empty($_GET['pass-reset-token'])) {
+        // Store password reset token in session for \Drupal\user\AccountForm::form.
+        $name = 'pass_reset_' . $user->id();
+        $value = $_GET['pass-reset-token'];
+        \Drupal::request()->getSession()->set($name, $value);
+
+        // Clear any flood events for this user.
+        \Drupal::service('flood')->clear('user.password_request_user', $user->id());
+
+        // Set message reminding user to reset password.
+        $message = t('You have just used your one-time login link. It is no
+        longer necessary to use this link to log in. It is recommended that you
+        set your password.');
+        \Drupal::messenger()->addMessage($message);
+      }
+    }
+    elseif ($config->get('login_redirect_url')) {
+      // Redirect set in Legal configuration.
+      $redirect = Url::fromUserInput($config->get('login_redirect_url'));
+    }
+    else {
+      // Default redirect to the user's account page.
+      $params   = ['user' => $values['uid']];
+      $redirect = Url::fromRoute('entity.user.canonical', $params);
     }
 
-    $form_state->setRedirectUrl(Url::fromUserInput($redirect));
+    $form_state->setRedirectUrl($redirect);
 
     // Option to require user to accept T&Cs on every login.
     if ($config->get('accept_every_login') == '1') {
 
       // Set flag that user has accepted T&Cs again.
-      $request = \Drupal::request();
+      $request = $this->requestStack->getCurrentRequest();
       $session = $request->getSession();
       $session->set('legal_login', TRUE);
 
@@ -231,7 +360,7 @@ class LegalLogin extends FormBase {
       ]);
 
     // User has new permissions, so we clear their menu cache.
-    \Drupal::cache('menu')->delete($values['uid']);
+    $this->cache->delete($values['uid']);
 
     // Log user in.
     user_login_finalize($user);
@@ -252,7 +381,13 @@ class LegalLogin extends FormBase {
       return AccessResult::forbidden();
     }
 
-    $visitor    = User::load($_COOKIE['Drupal_visitor_legal_id']);
+    $uid     = $_COOKIE['Drupal_visitor_legal_id'];
+    $visitor = User::load($uid);
+
+    if (!$visitor instanceof UserInterface) {
+      return AccessResult::forbidden();
+    }
+
     $last_login = $visitor->get('login')->value;
 
     if (empty($last_login)) {
@@ -261,7 +396,7 @@ class LegalLogin extends FormBase {
 
     // Limit how long $id_hash can be used to 1 hour.
     // Timestamp and $id_hash are used to generate the authentication token.
-    if ((\Drupal::time()->getRequestTime() - $last_login) > 3600) {
+    if (($this->time->getRequestTime() - $last_login) > 3600) {
       return AccessResult::forbidden();
     }
 

@@ -29,7 +29,7 @@ class OrderItemSubscriber implements EventSubscriberInterface {
   /**
    * {@inheritdoc}
    */
-  public static function getSubscribedEvents() {
+  public static function getSubscribedEvents(): array {
     return [
       'commerce_order.commerce_order_item.update' => ['onOrderItemUpdate'],
       'commerce_order.commerce_order_item.delete' => ['onOrderItemDelete'],

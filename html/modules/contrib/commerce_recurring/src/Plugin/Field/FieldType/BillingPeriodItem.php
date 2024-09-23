@@ -2,10 +2,10 @@
 
 namespace Drupal\commerce_recurring\Plugin\Field\FieldType;
 
+use Drupal\commerce_recurring\BillingPeriod;
 use Drupal\Core\Datetime\DrupalDateTime;
 use Drupal\Core\Field\FieldItemBase;
 use Drupal\Core\Field\FieldStorageDefinitionInterface;
-use Drupal\commerce_recurring\BillingPeriod;
 use Drupal\Core\TypedData\DataDefinition;
 
 /**
@@ -15,7 +15,7 @@ use Drupal\Core\TypedData\DataDefinition;
  *   id = "commerce_billing_period",
  *   label = @Translation("Billing period"),
  *   description = @Translation("Stores a a billing period"),
- *   category = @Translation("Commerce"),
+ *   category = "commerce",
  *   default_widget = "commerce_billing_period_default",
  *   default_formatter = "commerce_billing_period_default",
  * )

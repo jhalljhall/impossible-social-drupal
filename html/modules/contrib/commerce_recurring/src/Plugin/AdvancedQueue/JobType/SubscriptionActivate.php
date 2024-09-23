@@ -11,6 +11,7 @@ use Drupal\advancedqueue\JobResult;
  * @AdvancedQueueJobType(
  *   id = "commerce_subscription_activate",
  *   label = @Translation("Activate subscription"),
+ *   allow_duplicates = FALSE,
  * )
  */
 class SubscriptionActivate extends RecurringJobTypeBase {

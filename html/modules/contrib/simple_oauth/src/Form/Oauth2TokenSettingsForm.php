@@ -8,8 +8,8 @@ use Drupal\Core\Form\ConfigFormBase;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Messenger\MessengerInterface;
 use Drupal\Core\Url;
-use Drupal\simple_oauth\Service\Filesystem\FileSystemCheckerInterface;
 use Drupal\simple_oauth\Plugin\ScopeProviderManagerInterface;
+use Drupal\simple_oauth\Service\Filesystem\FileSystemCheckerInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**

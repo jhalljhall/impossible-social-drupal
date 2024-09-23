@@ -2,10 +2,10 @@
 
 namespace Drupal\Tests\commerce_recurring\Kernel\Plugin\Commerce\Prorater;
 
-use Drupal\Core\Datetime\DrupalDateTime;
 use Drupal\commerce_order\Entity\OrderItem;
 use Drupal\commerce_price\Price;
 use Drupal\commerce_recurring\BillingPeriod;
+use Drupal\Core\Datetime\DrupalDateTime;
 use Drupal\Tests\commerce_recurring\Kernel\RecurringKernelTestBase;
 
 /**
@@ -34,7 +34,7 @@ class ProportionalTest extends RecurringKernelTestBase {
 
   /**
    * @covers ::prorateOrderItem
-   * @dataProvider testProratingProvider
+   * @dataProvider proratingProvider
    */
   public function testProrating($expected_price, $billing_period_start_time) {
     /** @var \Drupal\commerce_recurring\Plugin\Commerce\Prorater\ProraterInterface $plugin */
@@ -62,7 +62,7 @@ class ProportionalTest extends RecurringKernelTestBase {
   /**
    * Data provider for testProrating().
    */
-  public function testProratingProvider() {
+  public static function proratingProvider() {
     return [
       'full hour, full price' => [
         new Price('30', 'USD'),

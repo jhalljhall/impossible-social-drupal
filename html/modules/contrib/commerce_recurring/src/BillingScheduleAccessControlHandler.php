@@ -3,10 +3,10 @@
 namespace Drupal\commerce_recurring;
 
 use Drupal\Core\Access\AccessResult;
+use Drupal\Core\Entity\EntityHandlerInterface;
 use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Entity\EntityTypeInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
-use Drupal\Core\Entity\EntityHandlerInterface;
 use Drupal\Core\Session\AccountInterface;
 use Drupal\entity\EntityAccessControlHandler;
 use Symfony\Component\DependencyInjection\ContainerInterface;

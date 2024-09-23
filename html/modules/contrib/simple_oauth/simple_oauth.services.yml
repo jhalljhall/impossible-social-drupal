@@ -11,6 +11,9 @@ parameters:
     - updated_at
     - zoneinfo
 services:
+  logger.channel.simple_oauth:
+    parent: logger.channel_base
+    arguments: [ 'simple_oauth' ]
   simple_oauth.authentication.simple_oauth:
     class: Drupal\simple_oauth\Authentication\Provider\SimpleOauthAuthenticationProvider
     arguments:
@@ -19,6 +22,7 @@ services:
       - '@simple_oauth.page_cache_request_policy.disallow_oauth2_token_requests'
       - '@psr7.http_message_factory'
       - '@psr7.http_foundation_factory'
+      - '@logger.channel.simple_oauth'
     tags:
       - { name: authentication_provider, provider_id: oauth2, global: TRUE, priority: 35 }
   simple_oauth.page_cache_request_policy.disallow_oauth2_token_requests:
@@ -75,7 +79,7 @@ services:
       - '@OpenIDConnectServer\ClaimExtractor'
   simple_oauth.oauth2_scope.provider.factory:
     class: Drupal\simple_oauth\Oauth2ScopeProviderFactory
-    arguments: [ '@config.factory', '@plugin.manager.scope_provider' ]
+    arguments: [ '@config.factory', '@plugin.manager.scope_provider', '@entity_type.manager' ]
   simple_oauth.oauth2_scope.provider:
     class: Drupal\simple_oauth\Oauth2ScopeProvider
     factory: [ '@simple_oauth.oauth2_scope.provider.factory', 'get' ]
@@ -105,7 +109,7 @@ services:
 
   # Services for OpenID Connect.
   Drupal\simple_oauth\OpenIdConnect\UserIdentityProvider:
-    arguments: [ '@entity_type.manager' ]
+    arguments: [ '@entity_type.manager', '@serializer' ]
   OpenIDConnectServer\Entities\ClaimSetEntity:
     arguments: [ '%simple_oauth.openid.scope%', '%simple_oauth.openid.claims%' ]
     private: true

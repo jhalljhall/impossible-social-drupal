@@ -2,8 +2,8 @@
 
 namespace Drupal\Tests\legal\Functional;
 
-use Drupal\user\Entity\User;
 use Drupal\Core\StringTranslation\StringTranslationTrait;
+use Drupal\user\Entity\User;
 
 /**
  * Tests a user loging into an account and accepting new T&C.
@@ -13,6 +13,7 @@ use Drupal\Core\StringTranslation\StringTranslationTrait;
 class LoginTest extends LegalTestBase {
 
   use StringTranslationTrait;
+
   /**
    * Test loging in with default Legal seetings.
    */
@@ -21,11 +22,15 @@ class LoginTest extends LegalTestBase {
     $this->drupalGet('user/login');
     // Test with default Legal settings.
     // Log user in.
-    $this->submitForm($this->loginDetails, 'Log in');
+    $this->submitForm(
+      [
+        'name' => $this->legalNotAcceptedUser->getAccountName(),
+        'pass' => $this->legalNotAcceptedUser->pass_raw,
+      ], 'Log in');
 
     // Check user is redirected to T&C acceptance page.
     $current_url = $this->getUrl();
-    $expected_url = substr($current_url, strlen($this->baseUrl), 20);
+    $expected_url = substr($current_url, mb_strlen($this->baseUrl), 20);
     $this->assertEquals($expected_url, '/legal_accept?token=');
     $this->assertSession()->statusCodeEquals(200);
 
@@ -34,12 +39,12 @@ class LoginTest extends LegalTestBase {
     $this->submitForm($edit, 'Confirm', 'legal-login');
 
     // Check user is logged in.
-    $account = User::load($this->uid);
+    $account = User::load($this->legalNotAcceptedUser->id());
     $this->drupalUserIsLoggedIn($account);
 
     // Check user is redirected to their user page.
     $current_url = $this->getUrl();
-    $expected_url = $this->baseUrl . '/user/' . $this->uid . '?check_logged_in=1';
+    $expected_url = $this->baseUrl . '/user/' . $this->legalNotAcceptedUser->id() . '?check_logged_in=1';
     $this->assertEquals($expected_url, $current_url);
   }
 
@@ -56,7 +61,11 @@ class LoginTest extends LegalTestBase {
     $this->drupalGet('user/login');
 
     // Log user in.
-    $this->submitForm($this->loginDetails, 'Log in');
+    $this->submitForm(
+      [
+        'name' => $this->legalNotAcceptedUser->getAccountName(),
+        'pass' => $this->legalNotAcceptedUser->pass_raw,
+      ], 'Log in');
 
     // Check T&Cs displayed as textarea.
     $readonly = $this->assertSession()
@@ -84,7 +93,11 @@ class LoginTest extends LegalTestBase {
     $this->drupalGet('user/login');
 
     // Log user in.
-    $this->submitForm($this->loginDetails, 'Log in');
+    $this->submitForm(
+      [
+        'name' => $this->legalNotAcceptedUser->getAccountName(),
+        'pass' => $this->legalNotAcceptedUser->pass_raw,
+      ], 'Log in');
 
     // Check T&Cs displayed as a div with class JS will target as a scroll box.
     $this->assertSession()
@@ -107,7 +120,11 @@ class LoginTest extends LegalTestBase {
       ->save();
     $this->drupalGet('user/login');
 
-    $this->submitForm($this->loginDetails, 'Log in');
+    $this->submitForm(
+      [
+        'name' => $this->legalNotAcceptedUser->getAccountName(),
+        'pass' => $this->legalNotAcceptedUser->pass_raw,
+      ], 'Log in');
 
     // Check T&Cs displayed as HTML.
     $this->assertSession()
@@ -126,7 +143,11 @@ class LoginTest extends LegalTestBase {
       ->save();
     $this->drupalGet('user/login');
 
-    $this->submitForm($this->loginDetails, $this->t('Log in'));
+    $this->submitForm(
+      [
+        'name' => $this->legalNotAcceptedUser->getAccountName(),
+        'pass' => $this->legalNotAcceptedUser->pass_raw,
+      ], 'Log in');
 
     // Check link display.
     $this->assertSession()

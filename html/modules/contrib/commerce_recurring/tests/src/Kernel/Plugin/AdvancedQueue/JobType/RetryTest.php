@@ -6,9 +6,9 @@ use Drupal\advancedqueue\Job;
 use Drupal\commerce_price\Price;
 use Drupal\commerce_recurring\Entity\Subscription;
 use Drupal\commerce_recurring_test\Entity\ExceptionPaymentMethod;
-use Drupal\Tests\commerce_recurring\Kernel\RecurringKernelTestBase;
 use Drupal\Core\Test\AssertMailTrait;
 use Drupal\Core\Url;
+use Drupal\Tests\commerce_recurring\Kernel\RecurringKernelTestBase;
 
 /**
  * @coversDefaultClass \Drupal\commerce_recurring\Plugin\AdvancedQueue\JobType\RecurringJobTypeBase

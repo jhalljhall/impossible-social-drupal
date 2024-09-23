@@ -28,7 +28,7 @@ class OrderSubscriber implements EventSubscriberInterface {
   /**
    * {@inheritdoc}
    */
-  public static function getSubscribedEvents() {
+  public static function getSubscribedEvents(): array {
     return [
       'commerce_order.cancel.post_transition' => ['onCancel'],
       'commerce_order.place.post_transition' => ['onPlace'],

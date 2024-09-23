@@ -318,6 +318,11 @@
   margin-top: 0;
 }
 
+.teaser--medium {
+  width: 100%;
+  min-height: 254px;
+}
+
 .teaser--medium .teaser--wrapper {
   position: relative;
   height: 100%;
@@ -432,6 +437,7 @@
 }
 
 .teaser--medium .teaser--medium__title {
+  width: 100%;
   text-align: center;
 }
 
@@ -439,11 +445,13 @@
   font-weight: 600;
   line-height: 24px;
   color: #343434;
+  word-wrap: break-word;
+  -webkit-hyphens: auto;
+      -ms-hyphens: auto;
+          hyphens: auto;
   overflow: hidden;
-  text-overflow: ellipsis;
   display: -webkit-box;
   -webkit-line-clamp: 2;
-  line-clamp: 2;
   -webkit-box-orient: vertical;
 }
 

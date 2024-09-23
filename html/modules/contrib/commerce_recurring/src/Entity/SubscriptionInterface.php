@@ -7,13 +7,14 @@ use Drupal\commerce_order\Entity\OrderInterface;
 use Drupal\commerce_payment\Entity\PaymentMethodInterface;
 use Drupal\commerce_price\Price;
 use Drupal\Core\Entity\ContentEntityInterface;
+use Drupal\Core\Entity\EntityChangedInterface;
 use Drupal\user\EntityOwnerInterface;
 use Drupal\user\UserInterface;
 
 /**
  * Defines the interface for subscriptions.
  */
-interface SubscriptionInterface extends ContentEntityInterface, EntityOwnerInterface {
+interface SubscriptionInterface extends ContentEntityInterface, EntityOwnerInterface, EntityChangedInterface {
 
   /**
    * Gets the subscription type.
@@ -202,8 +203,8 @@ interface SubscriptionInterface extends ContentEntityInterface, EntityOwnerInter
   /**
    * Gets the subscription unit price.
    *
-   * @return \Drupal\commerce_price\Price
-   *   The subscription unit price.
+   * @return \Drupal\commerce_price\Price|null
+   *   The subscription unit price, NULL if not set.
    */
   public function getUnitPrice();
 

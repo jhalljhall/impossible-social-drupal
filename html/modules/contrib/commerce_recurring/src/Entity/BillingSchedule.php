@@ -183,8 +183,8 @@ class BillingSchedule extends ConfigEntityBase implements BillingScheduleInterfa
    * {@inheritdoc}
    */
   public function setBillingType($billing_type) {
-    if (!in_array($billing_type, [self::BILLING_TYPE_PREPAID, self::BILLING_TYPE_POSTPAID])) {
-      throw new \InvalidArgumentException(sprintf('Invalid billing type "%s" provided.'));
+    if (!in_array($billing_type, [self::BILLING_TYPE_PREPAID, self::BILLING_TYPE_POSTPAID], TRUE)) {
+      throw new \InvalidArgumentException(sprintf('Invalid billing type "%s" provided.', $billing_type));
     }
     $this->billingType = $billing_type;
 
@@ -192,17 +192,18 @@ class BillingSchedule extends ConfigEntityBase implements BillingScheduleInterfa
   }
 
   /**
-   * @inheritdoc
+   * {@inheritdoc}
    */
   public function getRetrySchedule() {
     return $this->retrySchedule;
   }
 
   /**
-   * @inheritdoc
+   * {@inheritdoc}
    */
   public function setRetrySchedule(array $schedule) {
     $this->retrySchedule = $schedule;
+    return $this;
   }
 
   /**
@@ -332,9 +333,11 @@ class BillingSchedule extends ConfigEntityBase implements BillingScheduleInterfa
     // Invoke the setters to clear related properties.
     if ($property_name === 'plugin') {
       $this->setPluginId($value);
+      return $this;
     }
     elseif ($property_name === 'configuration') {
       $this->setPluginConfiguration($value);
+      return $this;
     }
     else {
       return parent::set($property_name, $value);

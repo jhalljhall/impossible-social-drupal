@@ -29,7 +29,7 @@ class RecurringOrderClose extends RecurringJobTypeBase {
     }
 
     if ($order->getState()->getId() == 'canceled') {
-      return JobResult::failure('Order has been canceled.');
+      return JobResult::success('Order has been canceled.');
     }
 
     try {

@@ -54,12 +54,37 @@ class ShipmentWeightTest extends UnitTestCase {
   }
 
   /**
+   * ::covers evaluate for between condition.
+   *
+   * @dataProvider betweenWeightProvider
+   */
+  public function testEvaluateBetween($operator, $weight, $max_weight, $given_weight, $result) {
+    $condition = new ShipmentWeight([
+      'operator' => $operator,
+      'weight' => [
+        'number' => $weight,
+        'unit' => 'kg',
+      ],
+      'max_weight' => [
+        'number' => $max_weight,
+        'unit' => 'kg',
+      ],
+    ], 'shipment_weight', ['entity_type' => 'commerce_shipment']);
+    $shipment = $this->prophesize(ShipmentInterface::class);
+    $shipment->getEntityTypeId()->willReturn('commerce_shipment');
+    $shipment->getWeight()->willReturn(new Weight($given_weight, 'kg'));
+    $shipment = $shipment->reveal();
+
+    $this->assertEquals($result, $condition->evaluate($shipment));
+  }
+
+  /**
    * Data provider for ::testEvaluate.
    *
    * @return array
    *   A list of testEvaluate function arguments.
    */
-  public function totalWeightProvider() {
+  public static function totalWeightProvider() {
     return [
       ['>', 10, 5, FALSE],
       ['>', 10, 10, FALSE],
@@ -80,6 +105,28 @@ class ShipmentWeightTest extends UnitTestCase {
       ['==', 10, 5, FALSE],
       ['==', 10, 10, TRUE],
       ['==', 10, 11, FALSE],
+    ];
+  }
+
+  /**
+   * Data provider for ::testEvaluateBetween.
+   *
+   * @return array
+   *   A list of testEvaluateBetween function arguments.
+   */
+  public static function betweenWeightProvider(): array {
+    return [
+      ['> <', 5, 10, 7, TRUE],
+      ['> <', 5, 10, 12, FALSE],
+      ['> <', 5, 10, 10, FALSE],
+      ['> <', 5, 10, 3, FALSE],
+      ['> <', 5, 10, 5, FALSE],
+
+      ['>= <=', 5, 10, 7, TRUE],
+      ['>= <=', 5, 10, 12, FALSE],
+      ['>= <=', 5, 10, 10, TRUE],
+      ['>= <=', 5, 10, 3, FALSE],
+      ['>= <=', 5, 10, 5, TRUE],
     ];
   }
 

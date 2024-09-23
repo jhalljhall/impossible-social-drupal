@@ -5,7 +5,10 @@
  * Install, update and uninstall functions for the commerce_recurring module.
  */
 
+use Drupal\Core\Config\FileStorage;
 use Drupal\Core\Field\BaseFieldDefinition;
+use Drupal\field\Entity\FieldConfig;
+use Drupal\field\Entity\FieldStorageConfig;
 
 /**
  * Add the 'initial_order' field to 'commerce_subscription' entities.
@@ -143,4 +146,61 @@ function commerce_recurring_update_8106() {
     $view->set('display.default.display_options.fields.title.settings', ['link_to_entity' => TRUE]);
     $view->save(TRUE);
   }
+}
+
+/**
+ * Add 'changed' field to the subscription entity.
+ */
+function commerce_recurring_update_8107(&$sandbox): void {
+  $storage_definition = BaseFieldDefinition::create('changed')
+    ->setLabel(t('Changed'))
+    ->setDescription(t('The time when the subscription was last edited.'))
+    ->setDisplayOptions('view', [
+      'label' => 'hidden',
+      'type' => 'timestamp',
+      'weight' => 0,
+    ])
+    ->setDisplayConfigurable('view', TRUE);
+
+  $update_manager = \Drupal::entityDefinitionUpdateManager();
+  if (!$update_manager->getFieldStorageDefinition('changed', 'commerce_subscription')) {
+    $update_manager->installFieldStorageDefinition('changed', 'commerce_subscription', 'commerce_recurring', $storage_definition);
+  }
+}
+
+/**
+ * Add 'commerce_recurring_queued' field to the 'recurring' order type.
+ */
+function commerce_recurring_update_8108(&$sandbox): void {
+  /** @var \Drupal\Core\Extension\ModuleExtensionList $extension_list_module */
+  $extension_list_module = \Drupal::service('extension.list.module');
+  $config_path = $extension_list_module->getPath('commerce_recurring');
+  $file_storage = new FileStorage($config_path . '/config/install');
+
+  $config = $file_storage->read('field.storage.commerce_order.commerce_recurring_queued');
+  $storage = FieldStorageConfig::create($config);
+  $storage->save();
+
+  $config = $file_storage->read('field.field.commerce_order.recurring.commerce_recurring_queued');
+  $field = FieldConfig::create($config);
+  $field->save();
+}
+
+/**
+ * Update customer subscription list view and change default url rewrite pattern.
+ */
+function commerce_recurring_update_8109() {
+  $config_factory = \Drupal::configFactory();
+  $view = $config_factory->getEditable('views.view.commerce_user_subscriptions');
+  if ($view->get('display.default.display_options.fields.title.alter.path') === 'user/{{ raw_arguments.uid }}/subscriptions/{{ subscription_id }}') {
+    return "The view is already up-to-date.";
+  }
+
+  if ($view->get('display.default.display_options.fields.title.alter.path') === 'user/{{ arguments.uid }}/subscriptions/{{ subscription_id }}') {
+    $view->set('display.default.display_options.fields.title.alter.path', 'user/{{ raw_arguments.uid }}/subscriptions/{{ subscription_id }}');
+    $view->save(TRUE);
+    return "The views.view.commerce_user_subscriptions view was updated";
+  }
+
+  return "The views.view.commerce_user_subscriptions couldn't be updated as the default path for the title field has been overridden with custom value. Test if rewrite pattern is correct.";
 }

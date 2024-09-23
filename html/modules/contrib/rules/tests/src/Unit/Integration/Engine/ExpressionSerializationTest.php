@@ -6,6 +6,8 @@ use Drupal\rules\Context\ContextConfig;
 use Drupal\rules\Engine\RulesComponent;
 use Drupal\Tests\rules\Unit\Integration\RulesIntegrationTestBase;
 
+// cspell:ignore testtest
+
 /**
  * Tests serializing expression objects.
  *
@@ -22,6 +24,7 @@ class ExpressionSerializationTest extends RulesIntegrationTestBase {
         ->setValue('text', 'test')
       );
     $serialized_expression = serialize($action);
+    // @phpcs:ignore DrupalPractice.FunctionCalls.InsecureUnserialize.InsecureUnserialize
     $action = unserialize($serialized_expression);
     $result = RulesComponent::create($action)
       ->provideContext('concatenated')
@@ -36,6 +39,7 @@ class ExpressionSerializationTest extends RulesIntegrationTestBase {
     $condition = $this->rulesExpressionManager
       ->createCondition('rules_test_false');
     $serialized_expression = serialize($condition);
+    // @phpcs:ignore DrupalPractice.FunctionCalls.InsecureUnserialize.InsecureUnserialize
     $condition = unserialize($serialized_expression);
     $result = $condition->execute();
     $this->assertFalse($result);
@@ -49,6 +53,7 @@ class ExpressionSerializationTest extends RulesIntegrationTestBase {
       ->createAnd();
     $expression->addCondition('rules_test_false');
     $serialized_expression = serialize($expression);
+    // @phpcs:ignore DrupalPractice.FunctionCalls.InsecureUnserialize.InsecureUnserialize
     $expression = unserialize($serialized_expression);
     $result = $expression->execute();
     $this->assertFalse($result);
@@ -63,6 +68,7 @@ class ExpressionSerializationTest extends RulesIntegrationTestBase {
     $expression->addAction('rules_test_string', ContextConfig::create()
       ->setValue('text', 'test'));
     $serialized_expression = serialize($expression);
+    // @phpcs:ignore DrupalPractice.FunctionCalls.InsecureUnserialize.InsecureUnserialize
     $expression = unserialize($serialized_expression);
     $result = RulesComponent::create($expression)
       ->provideContext('concatenated')
@@ -84,6 +90,7 @@ class ExpressionSerializationTest extends RulesIntegrationTestBase {
     $expression->addExpressionObject($condition);
 
     $serialized_expression = serialize($expression);
+    // @phpcs:ignore DrupalPractice.FunctionCalls.InsecureUnserialize.InsecureUnserialize
     $expression = unserialize($serialized_expression);
     $result = RulesComponent::create($expression)
       ->provideContext('concatenated')

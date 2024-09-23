@@ -2,11 +2,11 @@
 
 namespace Drupal\commerce_recurring\Plugin\Commerce\SubscriptionType;
 
-use Drupal\entity\BundlePlugin\BundlePluginInterface;
 use Drupal\commerce_order\Entity\OrderInterface;
 use Drupal\commerce_order\Entity\OrderItemInterface;
 use Drupal\commerce_recurring\BillingPeriod;
 use Drupal\commerce_recurring\Entity\SubscriptionInterface;
+use Drupal\entity\BundlePlugin\BundlePluginInterface;
 
 /**
  * Defines the interface for subscription types.
@@ -31,7 +31,7 @@ interface SubscriptionTypeInterface extends BundlePluginInterface {
    * E.g, if subscriptions of this type are used for subscribing to
    * product variations, the ID will be 'commerce_product_variation'.
    *
-   * @return string
+   * @return string|null
    *   The purchasable entity type ID, or NULL if the subscription isn't
    *   backed by a purchasable entity.
    */

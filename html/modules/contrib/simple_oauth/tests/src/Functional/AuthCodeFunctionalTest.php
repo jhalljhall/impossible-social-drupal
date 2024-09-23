@@ -4,11 +4,11 @@ namespace Drupal\Tests\simple_oauth\Functional;
 
 use Drupal\Core\Url;
 use Drupal\simple_oauth\Entity\Oauth2Scope;
+use Drupal\simple_oauth\Oauth2ScopeInterface;
 use Drupal\user\Entity\Role;
 use Drupal\user\RoleInterface;
 use Drupal\user\UserInterface;
 use GuzzleHttp\Psr7\Query;
-use Drupal\simple_oauth\Oauth2ScopeInterface;
 use Psr\Http\Message\ResponseInterface;
 
 /**

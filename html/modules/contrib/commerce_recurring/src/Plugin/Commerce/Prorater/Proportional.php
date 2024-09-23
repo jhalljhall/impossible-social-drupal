@@ -2,11 +2,11 @@
 
 namespace Drupal\commerce_recurring\Plugin\Commerce\Prorater;
 
-use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
 use Drupal\commerce_order\Entity\OrderItemInterface;
-use Drupal\commerce_price\RounderInterface;
 use Drupal\commerce_price\Calculator;
+use Drupal\commerce_price\RounderInterface;
 use Drupal\commerce_recurring\BillingPeriod;
+use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**

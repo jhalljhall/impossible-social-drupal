@@ -54,6 +54,18 @@
 
 @font-face {
   font-family: 'montserrat';
+  src: url('../font/montserrat/montserrat-semibold.eot');
+  src: url('../font/montserrat/montserrat-semibold.eot') format('embedded-opentype'),
+  url('../font/montserrat/montserrat-semibold.woff2') format('woff2'),
+  url('../font/montserrat/montserrat-semibold.woff') format('woff'),
+  url('../font/montserrat/montserrat-semibold.ttf') format('truetype'),
+  url('../font/montserrat/montserrat-semibold.svg#montserrat-semibold') format('svg');
+  font-weight: 600;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: 'montserrat';
   src: url('../font/montserrat/montserrat-bold.eot');
   src: url('../font/montserrat/montserrat-bold.eot') format('embedded-opentype'),
        url('../font/montserrat/montserrat-bold.woff2') format('woff2'),

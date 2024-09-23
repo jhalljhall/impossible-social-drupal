@@ -3,16 +3,11 @@
 namespace Drupal\commerce_shipping\Plugin\Commerce\CheckoutPane;
 
 use Drupal\commerce\AjaxFormTrait;
-use Drupal\commerce\InlineFormManager;
 use Drupal\commerce_checkout\Plugin\Commerce\CheckoutFlow\CheckoutFlowInterface;
 use Drupal\commerce_checkout\Plugin\Commerce\CheckoutPane\CheckoutPaneBase;
 use Drupal\commerce_shipping\Entity\ShipmentInterface;
-use Drupal\commerce_shipping\OrderShipmentSummaryInterface;
-use Drupal\commerce_shipping\PackerManagerInterface;
 use Drupal\Component\Utility\NestedArray;
 use Drupal\Core\Entity\Entity\EntityFormDisplay;
-use Drupal\Core\Entity\EntityTypeBundleInfo;
-use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
 use Drupal\Core\Render\Element;
@@ -64,51 +59,16 @@ class ShippingInformation extends CheckoutPaneBase implements ContainerFactoryPl
   protected $orderShipmentSummary;
 
   /**
-   * Constructs a new ShippingInformation object.
-   *
-   * @param array $configuration
-   *   A configuration array containing information about the plugin instance.
-   * @param string $plugin_id
-   *   The plugin_id for the plugin instance.
-   * @param mixed $plugin_definition
-   *   The plugin implementation definition.
-   * @param \Drupal\commerce_checkout\Plugin\Commerce\CheckoutFlow\CheckoutFlowInterface $checkout_flow
-   *   The parent checkout flow.
-   * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
-   *   The entity type manager.
-   * @param \Drupal\Core\Entity\EntityTypeBundleInfo $entity_type_bundle_info
-   *   The entity type bundle info.
-   * @param \Drupal\commerce\InlineFormManager $inline_form_manager
-   *   The inline form manager.
-   * @param \Drupal\commerce_shipping\PackerManagerInterface $packer_manager
-   *   The packer manager.
-   * @param \Drupal\commerce_shipping\OrderShipmentSummaryInterface $order_shipment_summary
-   *   The order shipment summary.
-   */
-  public function __construct(array $configuration, $plugin_id, $plugin_definition, CheckoutFlowInterface $checkout_flow, EntityTypeManagerInterface $entity_type_manager, EntityTypeBundleInfo $entity_type_bundle_info, InlineFormManager $inline_form_manager, PackerManagerInterface $packer_manager, OrderShipmentSummaryInterface $order_shipment_summary) {
-    parent::__construct($configuration, $plugin_id, $plugin_definition, $checkout_flow, $entity_type_manager);
-
-    $this->entityTypeBundleInfo = $entity_type_bundle_info;
-    $this->inlineFormManager = $inline_form_manager;
-    $this->packerManager = $packer_manager;
-    $this->orderShipmentSummary = $order_shipment_summary;
-  }
-
-  /**
    * {@inheritdoc}
    */
   public static function create(ContainerInterface $container, array $configuration, $plugin_id, $plugin_definition, CheckoutFlowInterface $checkout_flow = NULL) {
-    return new static(
-      $configuration,
-      $plugin_id,
-      $plugin_definition,
-      $checkout_flow,
-      $container->get('entity_type.manager'),
-      $container->get('entity_type.bundle.info'),
-      $container->get('plugin.manager.commerce_inline_form'),
-      $container->get('commerce_shipping.packer_manager'),
-      $container->get('commerce_shipping.order_shipment_summary')
-    );
+    $instance = parent::create($container, $configuration, $plugin_id, $plugin_definition, $checkout_flow);
+    $instance->entityTypeBundleInfo = $container->get('entity_type.bundle.info');
+    $instance->inlineFormManager = $container->get('plugin.manager.commerce_inline_form');
+    $instance->packerManager = $container->get('commerce_shipping.packer_manager');
+    $instance->orderShipmentSummary = $container->get('commerce_shipping.order_shipment_summary');
+
+    return $instance;
   }
 
   /**
@@ -125,6 +85,7 @@ class ShippingInformation extends CheckoutPaneBase implements ContainerFactoryPl
    * {@inheritdoc}
    */
   public function buildConfigurationSummary() {
+    $parent_summary = parent::buildConfigurationSummary();
     if (!empty($this->configuration['require_shipping_profile'])) {
       $summary = $this->t('Hide shipping costs until an address is entered: Yes') . '<br>';
     }
@@ -138,7 +99,7 @@ class ShippingInformation extends CheckoutPaneBase implements ContainerFactoryPl
       $summary .= $this->t('Autorecalculate: No');
     }
 
-    return $summary;
+    return $parent_summary ? implode('<br>', [$parent_summary, $summary]) : $summary;
   }
 
   /**
@@ -585,7 +546,7 @@ class ShippingInformation extends CheckoutPaneBase implements ContainerFactoryPl
 
     // Loop over the shipments input to see if a shipping rate was selected.
     foreach ($user_input['shipments'] as $values) {
-      if (!empty(array_filter($values['shipping_method']))) {
+      if (!empty(array_filter((array) $values['shipping_method']))) {
         return TRUE;
       }
     }

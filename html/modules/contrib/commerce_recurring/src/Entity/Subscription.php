@@ -8,13 +8,14 @@ use Drupal\commerce_order\Entity\OrderInterface;
 use Drupal\commerce_payment\Entity\PaymentMethodInterface;
 use Drupal\commerce_price\Price;
 use Drupal\commerce_recurring\ScheduledChange;
+use Drupal\Component\Render\FormattableMarkup;
 use Drupal\Core\Datetime\DrupalDateTime;
 use Drupal\Core\Entity\ContentEntityBase;
+use Drupal\Core\Entity\EntityChangedTrait;
 use Drupal\Core\Entity\EntityMalformedException;
 use Drupal\Core\Entity\EntityStorageInterface;
 use Drupal\Core\Entity\EntityTypeInterface;
 use Drupal\Core\Field\BaseFieldDefinition;
-use Drupal\Component\Render\FormattableMarkup;
 use Drupal\user\UserInterface;
 
 /**
@@ -77,6 +78,7 @@ use Drupal\user\UserInterface;
 class Subscription extends ContentEntityBase implements SubscriptionInterface {
 
   use EntityOwnerTrait;
+  use EntityChangedTrait;
 
   /**
    * {@inheritdoc}
@@ -260,6 +262,8 @@ class Subscription extends ContentEntityBase implements SubscriptionInterface {
     if (!$this->get('unit_price')->isEmpty()) {
       return $this->get('unit_price')->first()->toPrice();
     }
+
+    return NULL;
   }
 
   /**
@@ -673,9 +677,11 @@ class Subscription extends ContentEntityBase implements SubscriptionInterface {
       $transition = $this->getState()->getWorkflow()->getTransition('cancel');
       $state_id = $transition->getToState()->getId();
       $this->addScheduledChange('state', $state_id);
+      $this->set('ends', $this->get('next_renewal')->value);
     }
     elseif ($this->getState()->isTransitionAllowed('cancel')) {
       $this->getState()->applyTransitionById('cancel');
+      $this->set('ends', time());
     }
     return $this;
   }
@@ -919,6 +925,16 @@ class Subscription extends ContentEntityBase implements SubscriptionInterface {
     $fields['created'] = BaseFieldDefinition::create('created')
       ->setLabel(t('Created'))
       ->setDescription(t('The time when the subscription was created.'))
+      ->setDisplayOptions('view', [
+        'label' => 'hidden',
+        'type' => 'timestamp',
+        'weight' => 0,
+      ])
+      ->setDisplayConfigurable('view', TRUE);
+
+    $fields['changed'] = BaseFieldDefinition::create('changed')
+      ->setLabel(t('Changed'))
+      ->setDescription(t('The time when the subscription was last edited.'))
       ->setDisplayOptions('view', [
         'label' => 'hidden',
         'type' => 'timestamp',

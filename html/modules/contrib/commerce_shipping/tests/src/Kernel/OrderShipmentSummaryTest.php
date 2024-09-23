@@ -50,7 +50,7 @@ class OrderShipmentSummaryTest extends ShippingKernelTestBase {
 
     $this->orderShipmentSummary = $this->container->get('commerce_shipping.order_shipment_summary');
 
-    $user = $this->createUser(['mail' => $this->randomString() . '@example.com']);
+    $user = $this->createUser();
 
     $product = Product::create([
       'type' => 'default',

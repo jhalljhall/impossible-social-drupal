@@ -31,7 +31,7 @@ class DimensionsDefaultFormatter extends PhysicalFormatterBase {
         $this->numberFormatter->format($item->width),
         $this->numberFormatter->format($item->height),
       ];
-      $unit = isset($unit_labels[$item->unit]) ? $unit_labels[$item->unit] : $item->unit;
+      $unit = $unit_labels[$item->unit] ?? $item->unit;
 
       $element[$delta] = [
         '#markup' => implode(' &times; ', $dimensions) . ' ' . $unit,

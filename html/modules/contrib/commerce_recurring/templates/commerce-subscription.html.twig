@@ -30,7 +30,7 @@
         <h3 class="entity-meta__title">
           {{ subscription.state }}
         </h3>
-        {% for key in ['created', 'trial_starts', 'trial_ends', 'starts', 'ends'] %}
+        {% for key in ['created', 'changed', 'trial_starts', 'trial_ends', 'starts', 'ends'] %}
           {% if subscription[key] is defined and not subscription_entity.get(key).isEmpty %}
             <div class="form-item">
               {{ subscription[key] }}

@@ -22,7 +22,7 @@
  * @see \Drupal\commerce_recurring\ProraterManager
  */
 function hook_commerce_prorater_info_alter(array &$plugins) {
-  $plugins['someplugin']['label'] = t('Better name');
+  $plugins['proportional']['label'] = t('Better name');
 }
 
 /**

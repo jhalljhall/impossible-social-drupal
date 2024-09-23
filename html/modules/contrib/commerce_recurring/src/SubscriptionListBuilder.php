@@ -20,11 +20,19 @@ class SubscriptionListBuilder extends EntityListBuilder {
   protected $currentUser;
 
   /**
+   * The entity type manager.
+   *
+   * @var \Drupal\Core\Entity\EntityTypeManagerInterface
+   */
+  protected $entityTypeManager;
+
+  /**
    * {@inheritdoc}
    */
   public static function createInstance(ContainerInterface $container, EntityTypeInterface $entity_type) {
     $instance = parent::createInstance($container, $entity_type);
     $instance->currentUser = $container->get('current_user');
+    $instance->entityTypeManager = $container->get('entity_type.manager');
     return $instance;
   }
 
@@ -77,7 +85,8 @@ class SubscriptionListBuilder extends EntityListBuilder {
     if (isset($operations['edit'])
         && $this->currentUser->hasPermission('update own commerce_subscription')
         && !$this->currentUser->hasPermission('update any commerce_subscription')) {
-      $customer_form_mode_exists = \Drupal::entityQuery('entity_form_display')
+      $customer_form_mode_exists = $this->entityTypeManager->getStorage('entity_form_display')
+        ->getQuery()
         ->condition('id', "{$entity->getEntityTypeId()}.{$entity->bundle()}.customer")
         ->condition('status', TRUE)
         ->accessCheck(FALSE)

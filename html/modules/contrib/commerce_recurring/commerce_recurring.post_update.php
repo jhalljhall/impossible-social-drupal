@@ -16,9 +16,8 @@ function commerce_recurring_post_update_1(&$sandbox = NULL) {
     $query = $subscription_storage->getQuery();
     $query
       ->condition('state', 'active')
-      ->accessCheck(FALSE)
       ->notExists('next_renewal');
-    $sandbox['total_count'] = $query->count()->execute();
+    $sandbox['total_count'] = $query->accessCheck(FALSE)->count()->execute();
     $sandbox['updated_subscriptions'] = [];
     $sandbox['current_count'] = 0;
 
@@ -30,7 +29,6 @@ function commerce_recurring_post_update_1(&$sandbox = NULL) {
   $query = $subscription_storage->getQuery();
   $query
     ->condition('state', 'active')
-    ->accessCheck(FALSE)
     ->notExists('next_renewal')
     ->range(0, 20);
 
@@ -39,7 +37,7 @@ function commerce_recurring_post_update_1(&$sandbox = NULL) {
     $query->condition('subscription_id', $sandbox['updated_subscriptions'], 'NOT IN');
   }
 
-  $subscription_ids = $query->execute();
+  $subscription_ids = $query->accessCheck(FALSE)->execute();
   if (empty($subscription_ids)) {
     $sandbox['#finished'] = 1;
     return;
@@ -117,7 +115,7 @@ function commerce_recurring_post_update_4() {
 }
 
 /**
- * Add the new 'Subscription orders (customer)' view and customer facing suscription
+ * Add the new 'Subscription orders (customer)' view and customer facing subscription
  * view displays.
  */
 function commerce_recurring_post_update_5() {
@@ -136,7 +134,7 @@ function commerce_recurring_post_update_5() {
 
 /**
  * Add the new 'Subscription orders (administrator)' view and administrator
- * facing suscription view displays.
+ * facing subscription view displays.
  */
 function commerce_recurring_post_update_6() {
   /** @var \Drupal\commerce\Config\ConfigUpdaterInterface $config_updater */
@@ -195,4 +193,14 @@ function commerce_recurring_post_update_8() {
   $message = implode('<br>', $result->getFailed());
 
   return $message;
+}
+
+/**
+ * Backfill the 'changed' field of 'commerce_subscription' entities.
+ */
+function commerce_recurring_post_update_9(): void {
+  $query = \Drupal::database()->update('commerce_subscription');
+  $query->expression('changed', 'CASE WHEN renewed is NULL THEN created ELSE GREATEST(created, renewed) END');
+  $query->isNull('changed');
+  $query->execute();
 }

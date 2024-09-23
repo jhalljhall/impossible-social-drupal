@@ -2,11 +2,11 @@
 
 namespace Drupal\commerce_recurring\Plugin\Commerce\Prorater;
 
+use Drupal\commerce_order\Entity\OrderItemInterface;
+use Drupal\commerce_recurring\BillingPeriod;
 use Drupal\Component\Plugin\PluginBase;
 use Drupal\Component\Utility\NestedArray;
 use Drupal\Core\Form\FormStateInterface;
-use Drupal\commerce_order\Entity\OrderItemInterface;
-use Drupal\commerce_recurring\BillingPeriod;
 
 /**
  * Defines the prorater class.

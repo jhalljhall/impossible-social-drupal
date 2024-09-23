@@ -2,6 +2,7 @@
 
 namespace Drupal\commerce_recurring\EventSubscriber;
 
+use Drupal\commerce_payment\Entity\PaymentMethodInterface;
 use Drupal\commerce_recurring\RecurringOrderManagerInterface;
 use Drupal\Component\Datetime\TimeInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
@@ -50,7 +51,7 @@ class OrderSubscriber implements EventSubscriberInterface {
   /**
    * {@inheritdoc}
    */
-  public static function getSubscribedEvents() {
+  public static function getSubscribedEvents(): array {
     $events['commerce_order.place.pre_transition'] = 'onPlace';
     $events['commerce_order.cancel.pre_transition'] = 'onCancel';
     return $events;
@@ -94,11 +95,15 @@ class OrderSubscriber implements EventSubscriberInterface {
       $subscription = $subscription_storage->createFromOrderItem($order_item, [
         'type' => $subscription_type_item->target_plugin_id,
         'billing_schedule' => $billing_schedule,
+        // The order is more up-to-date here than it is when collected from
+        // $order_item->getOrder(), so it's best to pass or updated order along.
+        'initial_order' => $order,
       ]);
 
       // Set the payment method if known, it's not required to start a free
-      // trial if it wasn't collected.
-      if (!empty($payment_method)) {
+      // trial if it wasn't collected. Only reusable payment methods are
+      // allowed.
+      if (($payment_method instanceof PaymentMethodInterface) && $payment_method->isReusable()) {
         $subscription->setPaymentMethod($payment_method);
       }
 
@@ -136,9 +141,8 @@ class OrderSubscriber implements EventSubscriberInterface {
     $query = $subscription_storage->getQuery();
     $query
       ->condition('initial_order', $order->id())
-      ->condition('state', ['trial', 'active'], 'IN')
-      ->accessCheck(FALSE);
-    $result = $query->execute();
+      ->condition('state', ['trial', 'active'], 'IN');
+    $result = $query->accessCheck(FALSE)->execute();
 
     // No subscriptions were found, stop here.
     if (!$result) {

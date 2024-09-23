@@ -2,11 +2,13 @@
 
 namespace Drupal\Tests\commerce_recurring\FunctionalJavascript;
 
+use Drupal\commerce_product\Entity\ProductVariation;
 use Drupal\commerce_recurring\Entity\BillingSchedule;
 use Drupal\commerce_recurring\Entity\BillingScheduleInterface;
 use Drupal\commerce_recurring\Entity\Subscription;
-use Drupal\commerce_product\Entity\ProductVariation;
 use Drupal\Tests\commerce\FunctionalJavascript\CommerceWebDriverTestBase;
+
+// cspell:ignore billingtype
 
 /**
  * Tests the billing schedule UI.

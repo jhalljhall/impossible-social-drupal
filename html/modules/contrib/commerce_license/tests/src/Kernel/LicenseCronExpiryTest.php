@@ -2,7 +2,6 @@
 
 namespace Drupal\Tests\commerce_license\Kernel\System;
 
-use DMS\PHPUnitExtensions\ArraySubset\ArraySubsetAsserts;
 use Drupal\advancedqueue\Entity\Queue;
 use Drupal\advancedqueue\Job;
 use Drupal\commerce_license\Cron;
@@ -17,7 +16,6 @@ use Drupal\Tests\commerce_order\Kernel\OrderKernelTestBase;
 class LicenseCronExpiryTest extends OrderKernelTestBase {
 
   use AssertMailTrait;
-  use ArraySubsetAsserts;
 
   /**
    * The number of seconds in one day.
@@ -264,7 +262,9 @@ class LicenseCronExpiryTest extends OrderKernelTestBase {
     $this->assertEquals([Job::STATE_QUEUED => 1], $counts);
 
     $job1 = $queue->getBackend()->claimJob();
-    self::assertArraySubset(['license_id' => $license->id()], $job1->getPayload());
+    $this->assertEquals([
+      'license_id' => $license->id(),
+    ], $job1->getPayload());
     $this->assertEquals('commerce_license_expire', $job1->getType());
   }
 

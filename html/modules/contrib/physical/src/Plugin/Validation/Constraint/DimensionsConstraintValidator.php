@@ -2,6 +2,7 @@
 
 namespace Drupal\physical\Plugin\Validation\Constraint;
 
+use Drupal\Core\StringTranslation\StringTranslationTrait;
 use Symfony\Component\Validator\Constraint;
 use Symfony\Component\Validator\ConstraintValidator;
 
@@ -9,15 +10,16 @@ use Symfony\Component\Validator\ConstraintValidator;
  * Validates the dimensions constraint.
  */
 class DimensionsConstraintValidator extends ConstraintValidator {
+  use StringTranslationTrait;
 
   /**
    * {@inheritdoc}
    */
   public function validate($value, Constraint $constraint) {
     $properties = [
-      'length' => t('Length'),
-      'width' => t('Width'),
-      'height' => t('Height'),
+      'length' => $this->t('Length'),
+      'width' => $this->t('Width'),
+      'height' => $this->t('Height'),
     ];
     // Drupal runs the validator only if !$value->isEmpty(), which means that
     // we can count on $value->unit and at least one number not being empty.

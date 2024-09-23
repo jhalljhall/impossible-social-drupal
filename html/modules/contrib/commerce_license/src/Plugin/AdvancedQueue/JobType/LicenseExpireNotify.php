@@ -20,6 +20,8 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
  *   id = "commerce_license_expire_notify",
  *   label = @Translation("Notify license owners of expiry"),
  * )
+ *
+ * @phpstan-consistent-constructor
  */
 class LicenseExpireNotify extends JobTypeBase implements ContainerFactoryPluginInterface {
 
@@ -68,6 +70,8 @@ class LicenseExpireNotify extends JobTypeBase implements ContainerFactoryPluginI
    *   The Mail Manager service.
    * @param \Drupal\Core\Config\ConfigFactoryInterface $config_factory
    *   The config factory.
+   *
+   * @phpstan-consistent-constructor
    */
   public function __construct(array $configuration, string $plugin_id, $plugin_definition, EntityTypeManagerInterface $entity_type_manager, RendererInterface $renderer, MailManagerInterface $plugin_manager_mail, ConfigFactoryInterface $config_factory) {
     parent::__construct($configuration, $plugin_id, $plugin_definition);
@@ -117,7 +121,7 @@ class LicenseExpireNotify extends JobTypeBase implements ContainerFactoryPluginI
     }
     else {
       $site_config = $this->configFactory->get('system.site');
-      $name = str_replace([',', ';'], '', $site_config->get('name'));
+      $name = str_replace([',', ';'], '', $site_config->get('name') ?? '');
       $mail = $site_config->get('mail');
       if (!empty($mail)) {
         $from = sprintf('%s <%s>', $name, $mail);

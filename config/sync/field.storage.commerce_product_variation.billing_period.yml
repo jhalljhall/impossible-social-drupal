@@ -1,0 +1,17 @@
+langcode: en
+status: true
+dependencies:
+  module:
+    - commerce_recurring
+id: commerce_product_variation.billing_period
+field_name: billing_period
+entity_type: commerce_product_variation
+type: commerce_plugin_item:commerce_billing_period
+settings: {  }
+module: commerce_recurring
+locked: false
+cardinality: 1
+translatable: false
+indexes: {  }
+persist_with_no_fields: false
+custom_storage: false

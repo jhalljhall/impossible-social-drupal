@@ -2,10 +2,10 @@
 
 namespace Drupal\commerce_recurring\Form;
 
-use Drupal\commerce_recurring\ProraterManager;
 use Drupal\commerce_recurring\BillingScheduleManager;
 use Drupal\commerce_recurring\Entity\BillingSchedule;
 use Drupal\commerce_recurring\Entity\BillingScheduleInterface;
+use Drupal\commerce_recurring\ProraterManager;
 use Drupal\Component\Utility\Html;
 use Drupal\Core\Entity\EntityForm;
 use Drupal\Core\Form\FormStateInterface;
@@ -58,7 +58,8 @@ class BillingScheduleForm extends EntityForm {
     $form = parent::form($form, $form_state);
     /** @var \Drupal\commerce_recurring\Entity\BillingScheduleInterface $billing_schedule */
     $billing_schedule = $this->entity;
-    $plugins = array_column($this->billingSchedulePluginManager->getDefinitions(), 'label', 'id');
+    $billing_schedule_definitions = $this->billingSchedulePluginManager->getDefinitions();
+    $plugins = array_column($billing_schedule_definitions, 'label', 'id');
     asort($plugins);
     $proraters = array_column($this->proraterPluginManager->getDefinitions(), 'label', 'id');
     asort($proraters);
@@ -124,6 +125,9 @@ class BillingScheduleForm extends EntityForm {
         'wrapper' => $wrapper_id,
       ],
     ];
+    foreach ($billing_schedule_definitions as $plugin_id => $definition) {
+      $form['plugin'][$plugin_id]['#description'] = $definition['description'] ?? '';
+    }
     $form['configuration'] = [
       '#type' => 'commerce_plugin_configuration',
       '#plugin_type' => 'commerce_billing_schedule',
@@ -186,7 +190,7 @@ class BillingScheduleForm extends EntityForm {
         '#type' => 'number',
         '#title' => $retry_labels[$i],
         '#field_suffix' => $this->t('days'),
-        '#default_value' => isset($retry_schedule[$i]) ? $retry_schedule[$i] : 2,
+        '#default_value' => $retry_schedule[$i] ?? 2,
         '#min' => 1,
       ];
     }
@@ -250,7 +254,7 @@ class BillingScheduleForm extends EntityForm {
       ->execute();
 
     if ($is_referenced) {
-      // Disable some fields when the billing shedule is already in use by subscriptions.
+      // Disable some fields when the billing schedule is already in use by subscriptions.
       $form['billingType']['#disabled'] = TRUE;
       $form['plugin']['#disabled'] = TRUE;
       $form['configuration']['#disabled'] = TRUE;
@@ -291,9 +295,11 @@ class BillingScheduleForm extends EntityForm {
    * {@inheritdoc}
    */
   public function save(array $form, FormStateInterface $form_state) {
-    $this->entity->save();
+    $save = $this->entity->save();
     $this->messenger()->addMessage($this->t('Saved the @label billing schedule.', ['@label' => $this->entity->label()]));
     $form_state->setRedirect('entity.commerce_billing_schedule.collection');
+
+    return $save;
   }
 
 }

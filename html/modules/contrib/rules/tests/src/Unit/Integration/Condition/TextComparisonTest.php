@@ -4,6 +4,8 @@ namespace Drupal\Tests\rules\Unit\Integration\Condition;
 
 use Drupal\Tests\rules\Unit\Integration\RulesIntegrationTestBase;
 
+// cspell:ignore texx
+
 /**
  * @coversDefaultClass \Drupal\rules\Plugin\Condition\TextComparison
  * @group RulesCondition
@@ -110,7 +112,7 @@ class TextComparisonTest extends RulesIntegrationTestBase {
     $this->assertTrue($this->condition->evaluate());
 
     // Test that when the operator is 'regex' and the regular expression in
-    // the match string does not matche the text string, TRUE is returned.
+    // the match string does not match the text string, TRUE is returned.
     $this->condition
       ->setContextValue('text', 'my-text')
       ->setContextValue('operator', 'regex')

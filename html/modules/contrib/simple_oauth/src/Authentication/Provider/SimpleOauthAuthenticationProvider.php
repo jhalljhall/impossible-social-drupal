@@ -5,10 +5,12 @@ namespace Drupal\simple_oauth\Authentication\Provider;
 use Drupal\Core\Authentication\AuthenticationProviderInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\StringTranslation\StringTranslationTrait;
+use Drupal\Core\Utility\Error;
 use Drupal\simple_oauth\Authentication\TokenAuthUser;
 use Drupal\simple_oauth\PageCache\SimpleOauthRequestPolicyInterface;
 use Drupal\simple_oauth\Server\ResourceServerFactoryInterface;
 use League\OAuth2\Server\Exception\OAuthServerException;
+use Psr\Log\LoggerInterface;
 use Symfony\Bridge\PsrHttpMessage\HttpFoundationFactoryInterface;
 use Symfony\Bridge\PsrHttpMessage\HttpMessageFactoryInterface;
 use Symfony\Component\HttpFoundation\Request;
@@ -59,6 +61,13 @@ class SimpleOauthAuthenticationProvider implements AuthenticationProviderInterfa
   protected HttpFoundationFactoryInterface $httpFoundationFactory;
 
   /**
+   * The simple_oauth logger channel.
+   *
+   * @var \Psr\Log\LoggerInterface
+   */
+  protected LoggerInterface $logger;
+
+  /**
    * Constructs an HTTP basic authentication provider object.
    *
    * @param \Drupal\simple_oauth\Server\ResourceServerFactoryInterface $resource_server_factory
@@ -71,19 +80,23 @@ class SimpleOauthAuthenticationProvider implements AuthenticationProviderInterfa
    *   The HTTP message factory.
    * @param \Symfony\Bridge\PsrHttpMessage\HttpFoundationFactoryInterface $http_foundation_factory
    *   The HTTP foundation factory.
+   * @param \Psr\Log\LoggerInterface $logger
+   *   The simple_oauth logger channel.
    */
   public function __construct(
     ResourceServerFactoryInterface $resource_server_factory,
     EntityTypeManagerInterface $entity_type_manager,
     SimpleOauthRequestPolicyInterface $page_cache_request_policy,
     HttpMessageFactoryInterface $http_message_factory,
-    HttpFoundationFactoryInterface $http_foundation_factory
+    HttpFoundationFactoryInterface $http_foundation_factory,
+    LoggerInterface $logger
   ) {
     $this->resourceServerFactory = $resource_server_factory;
     $this->entityTypeManager = $entity_type_manager;
     $this->oauthPageCacheRequestPolicy = $page_cache_request_policy;
     $this->httpMessageFactory = $http_message_factory;
     $this->httpFoundationFactory = $http_foundation_factory;
+    $this->logger = $logger;
   }
 
   /**
@@ -117,8 +130,7 @@ class SimpleOauthAuthenticationProvider implements AuthenticationProviderInterfa
       $auth_request = $this->httpFoundationFactory->createRequest($output_psr7_request);
     }
     catch (OAuthServerException $exception) {
-      // Procedural code here is hard to avoid.
-      watchdog_exception('simple_oauth', $exception);
+      Error::logException($this->logger, $exception);
 
       throw new HttpException(
         $exception->getHttpStatusCode(),
@@ -144,7 +156,7 @@ class SimpleOauthAuthenticationProvider implements AuthenticationProviderInterfa
           ['%name' => $account->getAccountName()]
         )
       );
-      watchdog_exception('simple_oauth', $exception);
+      Error::logException($this->logger, $exception);
       throw new HttpException(
         $exception->getHttpStatusCode(),
         $exception->getHint(),

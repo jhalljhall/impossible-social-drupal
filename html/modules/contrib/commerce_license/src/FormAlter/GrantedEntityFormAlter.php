@@ -2,6 +2,7 @@
 
 namespace Drupal\commerce_license\FormAlter;
 
+use Drupal\commerce_license\LicenseStorageInterface;
 use Drupal\commerce_license\Plugin\Commerce\LicenseType\GrantedEntityLockingInterface;
 use Drupal\Core\Entity\EntityFormInterface;
 use Drupal\Core\Entity\EntityInterface;
@@ -25,13 +26,23 @@ class GrantedEntityFormAlter {
   protected $entity;
 
   /**
+   * The license storage service.
+   *
+   * @var \Drupal\commerce_license\LicenseStorageInterface
+   */
+  protected $licenseStorage;
+
+  /**
    * Construct a GrantedEntityFormAlter object.
    *
    * @param \Drupal\Core\Entity\EntityInterface $entity
    *   The entity object.
+   * @param \Drupal\commerce_license\LicenseStorageInterface $license_storage
+   *   The license storage service.
    */
-  public function __construct(EntityInterface $entity) {
+  public function __construct(EntityInterface $entity, LicenseStorageInterface $license_storage) {
     $this->entity = $entity;
+    $this->licenseStorage = $license_storage;
   }
 
   /**
@@ -78,7 +89,8 @@ class GrantedEntityFormAlter {
     // type plugin for which entity types it might be interested in, and then
     // query only for those license types if there is a match with the form's
     // entity.
-    $licenses = \Drupal::service('entity_type.manager')->getStorage('commerce_license')->loadByProperties([
+    /** @var \Drupal\commerce_license\Entity\LicenseInterface[] $licenses */
+    $licenses = $this->licenseStorage->loadByProperties([
       'uid' => $user_id,
       'state' => ['active', 'renewal_in_progress'],
     ]);

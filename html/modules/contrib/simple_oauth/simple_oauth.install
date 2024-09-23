@@ -9,10 +9,10 @@ use Drupal\Core\Config\FileStorage;
 use Drupal\Core\Field\BaseFieldDefinition;
 use Drupal\Core\Field\FieldStorageDefinitionInterface;
 use Drupal\Core\StringTranslation\TranslatableMarkup;
-use Drupal\simple_oauth\Plugin\Oauth2GrantManager;
 use Drupal\simple_oauth\Entity\Oauth2Scope;
-use Drupal\simple_oauth\Oauth2ScopeInterface;
 use Drupal\simple_oauth\Entity\Oauth2TokenStorageSchema;
+use Drupal\simple_oauth\Oauth2ScopeInterface;
+use Drupal\simple_oauth\Plugin\Oauth2GrantManager;
 
 /**
  * Define the default batch size.
@@ -99,7 +99,8 @@ function simple_oauth_update_8404() {
   $entity_definition_update_manager = \Drupal::entityDefinitionUpdateManager();
   foreach ($field_names as $field_name) {
     $field_definition = $entity_definition_update_manager->getFieldStorageDefinition($field_name, 'consumer');
-    // If simple_oauth_extras was installed, we need at least to update field provider.
+    // If simple_oauth_extras was installed, we need at least to update
+    // field provider.
     if ($field_definition && $deleted) {
       $field_definition->setProvider('simple_oauth');
       $entity_definition_update_manager->updateFieldStorageDefinition($field_definition);
@@ -233,7 +234,15 @@ function simple_oauth_update_8603() {
   $insert_query = $database->insert('consumer__redirect')
     ->fields(['bundle', 'deleted', 'entity_id', 'revision_id', 'langcode', 'delta', 'redirect_value']);
   foreach ($redirect_values as $redirect_value) {
-    $insert_query->values(['consumer', 0, $redirect_value->id, $redirect_value->id, $redirect_value->langcode, 0, $redirect_value->redirect]);
+    $insert_query->values([
+      'consumer',
+      0,
+      $redirect_value->id,
+      $redirect_value->id,
+      $redirect_value->langcode,
+      0,
+      $redirect_value->redirect,
+    ]);
   }
   $insert_query->execute();
 }
@@ -275,16 +284,48 @@ function simple_oauth_update_8604() {
     }
 
     $insert_query = $database->insert('consumer__scopes')
-      ->fields(['bundle', 'deleted', 'entity_id', 'revision_id', 'langcode', 'delta', 'scopes_scope_id']);
-    $insert_query->values(['consumer', 0, $role_value->entity_id, $role_value->entity_id, $role_value->langcode, $role_value->delta, $role->id()]);
+      ->fields([
+        'bundle',
+        'deleted',
+        'entity_id',
+        'revision_id',
+        'langcode',
+        'delta',
+        'scopes_scope_id',
+      ]);
+    $insert_query->values([
+      'consumer',
+      0,
+      $role_value->entity_id,
+      $role_value->entity_id,
+      $role_value->langcode,
+      $role_value->delta,
+      $role->id(),
+    ]);
     $insert_query->execute();
   }
 
   foreach ($consumers as $consumer) {
     foreach ($grant_types as $delta => $grant_type) {
       $insert_query = $database->insert('consumer__grant_types')
-        ->fields(['bundle', 'deleted', 'entity_id', 'revision_id', 'langcode', 'delta', 'grant_types_value']);
-      $insert_query->values(['consumer', 0, $consumer->id(), $consumer->id(), $consumer->language()->getId(), $delta, $grant_type]);
+        ->fields([
+          'bundle',
+          'deleted',
+          'entity_id',
+          'revision_id',
+          'langcode',
+          'delta',
+          'grant_types_value',
+        ]);
+      $insert_query->values([
+        'consumer',
+        0,
+        $consumer->id(),
+        $consumer->id(),
+        $consumer->language()->getId(),
+        $delta,
+        $grant_type,
+      ]);
       $insert_query->execute();
     }
 

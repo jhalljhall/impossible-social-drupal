@@ -2,11 +2,10 @@
 
 namespace Drupal\legal\Entity;
 
-use Drupal\Core\Entity\EntityStorageInterface;
-use Drupal\Core\Field\BaseFieldDefinition;
 use Drupal\Core\Entity\ContentEntityBase;
+use Drupal\Core\Entity\EntityStorageInterface;
 use Drupal\Core\Entity\EntityTypeInterface;
-use Drupal\Core\Entity\EntityChangedTrait;
+use Drupal\Core\Field\BaseFieldDefinition;
 use Drupal\legal\AcceptedInterface;
 use Drupal\user\UserInterface;
 
@@ -28,19 +27,16 @@ use Drupal\user\UserInterface;
  */
 class Accepted extends ContentEntityBase implements AcceptedInterface {
 
-  // Implements methods defined by EntityChangedInterface.
-  use EntityChangedTrait;
-
   /**
    * {@inheritdoc}
    *
-   * When a new entity instance is added, set the user_id entity reference to
+   * When a new entity instance is added, set the uid entity reference to
    * the current user as the creator of the instance.
    */
   public static function preCreate(EntityStorageInterface $storage_controller, array &$values) {
     parent::preCreate($storage_controller, $values);
     $values += [
-      'user_id' => \Drupal::currentUser()->id(),
+      'uid' => \Drupal::currentUser()->id(),
     ];
   }
 
@@ -55,21 +51,21 @@ class Accepted extends ContentEntityBase implements AcceptedInterface {
    * {@inheritdoc}
    */
   public function getOwner() {
-    return $this->get('user_id')->entity;
+    return $this->get('uid')->entity;
   }
 
   /**
    * {@inheritdoc}
    */
   public function getOwnerId() {
-    return $this->get('user_id')->target_id;
+    return $this->get('uid')->target_id;
   }
 
   /**
    * {@inheritdoc}
    */
   public function setOwnerId($uid) {
-    $this->set('user_id', $uid);
+    $this->set('uid', $uid);
     return $this;
   }
 
@@ -77,7 +73,7 @@ class Accepted extends ContentEntityBase implements AcceptedInterface {
    * {@inheritdoc}
    */
   public function setOwner(UserInterface $account) {
-    $this->set('user_id', $account->id());
+    $this->set('uid', $account->id());
     return $this;
   }
 

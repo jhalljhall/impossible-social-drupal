@@ -13,7 +13,7 @@ class FilterConditionsEventSubscriber implements EventSubscriberInterface {
   /**
    * {@inheritdoc}
    */
-  public static function getSubscribedEvents() {
+  public static function getSubscribedEvents(): array {
     return [
       'commerce.filter_conditions' => 'onFilterConditions',
     ];

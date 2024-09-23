@@ -35,7 +35,7 @@ class BillingScheduleAccessTest extends RecurringKernelTestBase {
    * @covers ::checkAccess
    */
   public function testAccess() {
-    $account = $this->createUser([], ['access administration pages']);
+    $account = $this->createUser(['access administration pages']);
     $this->assertFalse($this->billingSchedule->access('view label', $account));
     $this->assertFalse($this->billingSchedule->access('view', $account));
     $this->assertFalse($this->billingSchedule->access('update', $account));
@@ -43,7 +43,7 @@ class BillingScheduleAccessTest extends RecurringKernelTestBase {
 
     // Check that the general 'administer commerce_billing_schedule' permission
     // allows access to every operation.
-    $account = $this->createUser([], ['administer commerce_billing_schedule']);
+    $account = $this->createUser(['administer commerce_billing_schedule']);
     $this->assertTrue($this->billingSchedule->access('view label', $account));
     $this->assertTrue($this->billingSchedule->access('view', $account));
     $this->assertTrue($this->billingSchedule->access('update', $account));
@@ -51,25 +51,25 @@ class BillingScheduleAccessTest extends RecurringKernelTestBase {
 
     // Check that certain 'commerce_subscription' permissions give access to
     // view the label of 'commerce_billing_schedule' entities.
-    $account = $this->createUser([], ['view own commerce_subscription']);
+    $account = $this->createUser(['view own commerce_subscription']);
     $this->assertTrue($this->billingSchedule->access('view label', $account));
     $this->assertFalse($this->billingSchedule->access('view', $account));
     $this->assertFalse($this->billingSchedule->access('update', $account));
     $this->assertFalse($this->billingSchedule->access('delete', $account));
 
-    $account = $this->createUser([], ['view any commerce_subscription']);
+    $account = $this->createUser(['view any commerce_subscription']);
     $this->assertTrue($this->billingSchedule->access('view label', $account));
     $this->assertFalse($this->billingSchedule->access('view', $account));
     $this->assertFalse($this->billingSchedule->access('update', $account));
     $this->assertFalse($this->billingSchedule->access('delete', $account));
 
-    $account = $this->createUser([], ['update any commerce_subscription']);
+    $account = $this->createUser(['update any commerce_subscription']);
     $this->assertTrue($this->billingSchedule->access('view label', $account));
     $this->assertFalse($this->billingSchedule->access('view', $account));
     $this->assertFalse($this->billingSchedule->access('update', $account));
     $this->assertFalse($this->billingSchedule->access('delete', $account));
 
-    $account = $this->createUser([], ['administer commerce_subscription']);
+    $account = $this->createUser(['administer commerce_subscription']);
     $this->assertTrue($this->billingSchedule->access('view label', $account));
     $this->assertFalse($this->billingSchedule->access('view', $account));
     $this->assertFalse($this->billingSchedule->access('update', $account));
@@ -89,7 +89,7 @@ class BillingScheduleAccessTest extends RecurringKernelTestBase {
       'state' => 'active',
     ]);
     $subscription->save();
-    $account = $this->createUser([], ['administer commerce_billing_schedule']);
+    $account = $this->createUser(['administer commerce_billing_schedule']);
     $this->assertFalse($this->billingSchedule->access('delete', $account));
   }
 

@@ -501,7 +501,7 @@ class ConfigureAndExecuteTest extends RulesBrowserTestBase {
     ];
     // Need to get the $rule again, as the existing $rule does not have the
     // changes added above and $rule->get('expression.actions...) is empty.
-    // @todo Is there a way to refersh $rule and not have to get it again?
+    // @todo Is there a way to refresh $rule and not have to get it again?
     $config_factory = $this->container->get('config.factory');
     $config_factory->clearStaticCache();
     $rule = $config_factory->get('rules.reaction.test_rule');

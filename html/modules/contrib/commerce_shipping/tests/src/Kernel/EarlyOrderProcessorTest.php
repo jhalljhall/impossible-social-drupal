@@ -89,7 +89,7 @@ class EarlyOrderProcessorTest extends ShippingKernelTestBase {
     /** @var \Drupal\commerce_order\Entity\OrderInterface $order */
     $order = Order::create([
       'type' => 'default',
-      'uid' => $this->createUser(['mail' => $this->randomString() . '@example.com']),
+      'uid' => $this->createUser(),
       'store_id' => $this->store->id(),
       'order_items' => [$first_order_item],
     ]);
@@ -109,6 +109,7 @@ class EarlyOrderProcessorTest extends ShippingKernelTestBase {
     /** @var \Drupal\commerce_shipping\Entity\ShipmentInterface $shipment */
     $shipment = reset($shipments);
     $shipment->setOriginalAmount(new Price('4', 'USD'));
+    $shipment->setData('pre_promotion_amount', new Price('4', 'USD'));
     $shipment->setAmount(new Price('6', 'USD'));
     $shipment->addAdjustment(new Adjustment([
       'type' => 'fee',

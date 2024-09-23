@@ -20,6 +20,7 @@ use Drupal\Core\Form\FormStateInterface;
  * @CommerceBillingSchedule(
  *   id = "fixed",
  *   label = @Translation("Fixed interval"),
+ *   description = @Translation("Billing periods start at a fixed time, meaning a user's first period will be shorter than subsequent ones."),
  * )
  */
 class Fixed extends IntervalBase {

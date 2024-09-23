@@ -6,6 +6,7 @@ use Drupal\Core\Field\FieldItemBase;
 use Drupal\Core\Field\FieldStorageDefinitionInterface;
 use Drupal\Core\Field\PreconfiguredFieldUiOptionsInterface;
 use Drupal\Core\Form\FormStateInterface;
+use Drupal\Core\StringTranslation\StringTranslationTrait;
 use Drupal\Core\TypedData\DataDefinition;
 use Drupal\physical\Measurement;
 use Drupal\physical\MeasurementType;
@@ -17,12 +18,13 @@ use Drupal\physical\MeasurementType;
  *   id = "physical_measurement",
  *   label = @Translation("Measurement"),
  *   description = @Translation("This field stores a number and a unit of measure."),
- *   category = @Translation("Physical"),
+ *   category = "physical",
  *   default_widget = "physical_measurement_default",
  *   default_formatter = "physical_measurement_default"
  * )
  */
 class MeasurementItem extends FieldItemBase implements PreconfiguredFieldUiOptionsInterface {
+  use StringTranslationTrait;
 
   /**
    * {@inheritdoc}
@@ -119,7 +121,7 @@ class MeasurementItem extends FieldItemBase implements PreconfiguredFieldUiOptio
   public function storageSettingsForm(array &$form, FormStateInterface $form_state, $has_data) {
     $element['measurement_type'] = [
       '#type' => 'radios',
-      '#title' => t('Measurement type'),
+      '#title' => $this->t('Measurement type'),
       '#options' => MeasurementType::getLabels(),
       '#default_value' => $this->getSetting('measurement_type'),
       '#required' => TRUE,

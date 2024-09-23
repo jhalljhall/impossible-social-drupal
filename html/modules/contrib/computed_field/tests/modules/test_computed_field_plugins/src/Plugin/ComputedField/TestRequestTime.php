@@ -2,7 +2,9 @@
 
 namespace Drupal\test_computed_field_plugins\Plugin\ComputedField;
 
+use Drupal\Core\StringTranslation\TranslatableMarkup;
 use Drupal\Component\Datetime\TimeInterface;
+use Drupal\computed_field\Attribute\ComputedField;
 use Drupal\computed_field\Field\ComputedFieldDefinitionWithValuePluginInterface;
 use Drupal\computed_field\Plugin\ComputedField\ComputedFieldBase;
 use Drupal\computed_field\Plugin\ComputedField\SingleValueTrait;
@@ -14,13 +16,12 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
  * Uncacheable computed field which shows the request time.
- *
- * @ComputedField(
- *   id = "test_request_time",
- *   label = @Translation("Test Request Time"),
- *   field_type = "datetime",
- * )
  */
+#[ComputedField(
+  id: 'test_request_time',
+  label: new TranslatableMarkup('Test Request Time'),
+  field_type: 'datetime',
+)]
 class TestRequestTime extends ComputedFieldBase implements ContainerFactoryPluginInterface {
 
   use SingleValueTrait;

@@ -4,6 +4,8 @@ namespace Drupal\Tests\rules\FunctionalJavascript;
 
 use Drupal\FunctionalJavascriptTests\WebDriverTestBase;
 
+// cspell:ignore notselected
+
 /**
  * Tests the Ajax behavior of the Add Reaction Rule UI.
  *
@@ -59,7 +61,7 @@ class EventBundleTest extends WebDriverTestBase {
     $page = $this->getSession()->getPage();
     $page->fillField('label', 'Test bundle selection Ajax rule');
     // The machine name field should be automatically filled via Ajax.
-    $assert->assertWaitOnAjaxRequest();
+    $assert->waitForElementVisible('css', '.machine-name-value');
 
     // Select the "After saving a new taxonomy term" event.
     $page->findField('events[0][event_name]')->selectOption('rules_entity_insert:taxonomy_term');
@@ -88,20 +90,17 @@ class EventBundleTest extends WebDriverTestBase {
     $field = $page->findField('events[0][event_name]');
     $this->assertNotEmpty($field);
     $this->assertEquals('rules_entity_insert:node', $field->getValue());
-    $assert->assertWaitOnAjaxRequest();
 
     // Don't try to set the bundle unless the event has bundles!
     if ($page->findField('bundle')) {
       // Check to see that our "page" content type is an option.
       $page->findField('bundle')->selectOption('page');
-      $assert->assertWaitOnAjaxRequest();
       $field = $page->findField('bundle');
       $this->assertNotEmpty($field);
       $this->assertEquals('page', $field->getValue());
 
       // Now check our "article" type, and leave it selected.
       $page->findField('bundle')->selectOption('article');
-      $assert->assertWaitOnAjaxRequest();
       $field = $page->findField('bundle');
       $this->assertNotEmpty($field);
       $this->assertEquals('article', $field->getValue());

@@ -112,6 +112,7 @@ $info = [
   ],
 
   'css' => [
+    'assets/css/hero.css',
     'assets/css/brand.css',
     'assets/css/brand--sky.css',
     'assets/css/tokens.css',

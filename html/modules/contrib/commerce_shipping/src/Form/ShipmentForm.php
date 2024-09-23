@@ -230,7 +230,7 @@ class ShipmentForm extends ContentEntityForm {
   }
 
   /**
-   * Clears user input of selected shipping rates if recalculation occured.
+   * Clears user input of selected shipping rates if recalculation occurred.
    *
    * This is required to prevent invalid options being selected is a shipping
    * rate is no longer available.

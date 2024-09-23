@@ -464,6 +464,18 @@ class Shipment extends ContentEntityBase implements ShipmentInterface {
   /**
    * {@inheritdoc}
    */
+  public function unsetData($key) {
+    if (!$this->get('data')->isEmpty()) {
+      $data = $this->get('data')->first()->getValue();
+      unset($data[$key]);
+      $this->set('data', $data);
+    }
+    return $this;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
   public function getCreatedTime() {
     return $this->get('created')->value;
   }
@@ -647,7 +659,7 @@ class Shipment extends ContentEntityBase implements ShipmentInterface {
       ->setDisplayConfigurable('view', TRUE);
 
     $fields['weight'] = BaseFieldDefinition::create('physical_measurement')
-      ->setLabel(t('Weight'))
+      ->setLabel(t('Weight', [], ['context' => 'physical']))
       ->setRequired(TRUE)
       ->setSetting('measurement_type', 'weight')
       ->setDisplayConfigurable('form', TRUE)

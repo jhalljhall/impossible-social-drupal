@@ -9,6 +9,8 @@ use Psr\Log\LoggerInterface;
 use Psr\Log\LoggerTrait;
 use Symfony\Component\HttpFoundation\Session\SessionInterface;
 
+// cspell:ignore thisline
+
 /**
  * Logger that stores Rules debug logs with the session service.
  *

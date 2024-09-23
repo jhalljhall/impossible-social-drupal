@@ -228,7 +228,7 @@ function transformEmojiData (emojiData) {
     const tokens = [...new Set(
       normalizeTokens([
         ...(shortcodes || []).map(extractTokens).flat(),
-        ...tags.map(extractTokens).flat(),
+        ...(tags || []).map(extractTokens).flat(),
         ...extractTokens(annotation),
         emoticon
       ])
@@ -328,7 +328,7 @@ async function doFullDatabaseScanForSingleResult (db, predicate) {
   //
   // Mini-benchmark for determining the best batch size:
   //
-  // PERF=1 yarn build:rollup && yarn test:adhoc
+  // PERF=1 pnpm build:rollup && pnpm test:adhoc
   //
   // (async () => {
   //   performance.mark('start')
@@ -631,9 +631,17 @@ function customEmojiIndex (customEmojis) {
   //
   // search()
   //
-  const emojiToTokens = emoji => (
-    [...new Set((emoji.shortcodes || []).map(shortcode => extractTokens(shortcode)).flat())]
-  );
+  const emojiToTokens = emoji => {
+    const set = new Set();
+    if (emoji.shortcodes) {
+      for (const shortcode of emoji.shortcodes) {
+        for (const token of extractTokens(shortcode)) {
+          set.add(token);
+        }
+      }
+    }
+    return set
+  };
   const searchTrie = trie(customEmojis, emojiToTokens);
   const searchByExactMatch = _ => searchTrie(_, true);
   const searchByPrefix = _ => searchTrie(_, false);
@@ -715,7 +723,6 @@ const requiredKeys = [
   'emoji',
   'group',
   'order',
-  'tags',
   'version'
 ];
 
@@ -802,7 +809,8 @@ function binaryStringToArrayBuffer(binary) {
 // generate a checksum based on the stringified JSON
 async function jsonChecksum (object) {
   const inString = JSON.stringify(object);
-  const inBuffer = binaryStringToArrayBuffer(inString);
+  let inBuffer = binaryStringToArrayBuffer(inString);
+
   // this does not need to be cryptographically secure, SHA-1 is fine
   const outBuffer = await crypto.subtle.digest('SHA-1', inBuffer);
   const outBinString = arrayBufferToBinaryString(outBuffer);

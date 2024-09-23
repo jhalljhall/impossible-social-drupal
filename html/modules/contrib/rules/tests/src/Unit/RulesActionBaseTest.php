@@ -13,7 +13,7 @@ use Drupal\rules\Core\RulesActionBase;
 class RulesActionBaseTest extends RulesUnitTestBase {
 
   /**
-   * Tests that a missing label throwa an exception.
+   * Tests that a missing label throws an exception.
    *
    * @covers ::summary
    */

@@ -3,7 +3,7 @@
   "type": "drupal-module",
   "description": "License entities and product behavior",
   "keywords": ["Drupal"],
-  "license": "GPL-2.0+",
+  "license": "GPL-2.0-or-later",
   "homepage": "https://www.drupal.org/project/commerce_license",
   "minimum-stability": "dev",
   "support": {
@@ -12,12 +12,11 @@
   },
   "require": {
     "drupal/advancedqueue": "^1.0",
-    "drupal/commerce": "^2.19 || ^3",
+    "drupal/commerce": "^2.32 || ^3",
     "drupal/interval": "^1.11"
   },
   "require-dev": {
-    "drupal/commerce_recurring": "^1.0@beta",
-    "dms/phpunit-arraysubset-asserts": "^0.3"
+    "drupal/commerce_recurring": "^1.0@RC"
   },
     "conflict": {
         "drupal/recurring_period": "1.*"

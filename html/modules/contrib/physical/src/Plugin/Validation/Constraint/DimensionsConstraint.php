@@ -15,7 +15,18 @@ use Symfony\Component\Validator\Constraint;
  */
 class DimensionsConstraint extends Constraint {
 
+  /**
+   * Empty Message variable.
+   *
+   * @var string
+   */
   public $emptyMessage = '@name field is required.';
+
+  /**
+   * Invalid Message variable.
+   *
+   * @var string
+   */
   public $invalidMessage = '@name field must be a number.';
 
 }

@@ -17,6 +17,8 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
  *   id = "commerce_license_expire",
  *   label = @Translation("Expire licenses"),
  * )
+ *
+ * @phpstan-consistent-constructor
  */
 class LicenseExpire extends JobTypeBase implements ContainerFactoryPluginInterface {
 

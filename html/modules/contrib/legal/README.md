@@ -4,9 +4,9 @@
 ********************************************************************
 DRUPAL MODULE
 ********************************************************************
-  Name: Legal Module   
-  Author: Robert Castelo  
-  Sponsor: Code Positive [www.codepositive.com]  
+  Name: Legal Module
+  Author: Robert Castelo
+  Sponsor: Code Positive [www.codepositive.com]
   Drupal: 8.0.x
 ********************************************************************
 DESCRIPTION:
@@ -18,15 +18,16 @@ is accepted.
 Note: No T&C will be displayed until the T&C text has been input by
       the administrator.
 
-Each time a new version of the T&C is created all users will be required to 
+Each time a new version of the T&C is created all users will be required to
 accept the new version.
 
-Note: T&C text should only be entered by administrators or other highly trusted users.
-          filter_xss_admin() is used to filter content for display, this is a very permissive 
-          XSS/HTML filter intended for admin-only use.
+Note:
+T&C text should only be entered by administrators or other highly trusted users.
+filter_xss_admin() is used to filter content for display, this is a very
+permissive XSS/HTML filter intended for admin-only use.
 
-Integrates with Views, and ships with 2 default views that display T&C history, and user 
-acceptance of T&Cs.
+Integrates with Views, and ships with 2 default views that display T&C history,
+and user acceptance of T&Cs.
 
 ********************************************************************
 INSTALLATION:
@@ -45,17 +46,17 @@ INSTALLATION:
 
   Click the 'Save configuration' button at the bottom to commit your
     changes.
-    
+
 
 
 ********************************************************************
 CONFIGURATION:
 
   1. Go to Administer > User management > Access control
-      
+
       Set which roles can "view Terms and Conditions"
       Set which roles can "administer Terms and Conditions"
-  
+
   2. Go to Administer > Configuration > Legal
 
      Input your terms & conditions text, set how you would like it
@@ -65,31 +66,33 @@ CONFIGURATION:
     and displayed as text only
 
   - Scroll Box (CSS) - Scrollable text box created in CSS Text should
-      be entered with HTML formatting. 
+      be entered with HTML formatting.
       (less accessible than a standard scroll box)
 
   - HTML Text - Terms & conditions displayed as HTML formatted text
        Text should be entered with HTML formatting
-       
+
   - Page Link - Label of Accept checkbox contains link to T&Cs.
 
-    Note: When displayed on the page /legal your T&Cs will be automatically 
-            reformatted to HTML Text if entered as a Scroll Box or Scroll Box (CSS)
-                
+    Note:
+    When displayed on the page /legal your T&Cs will be automatically
+    reformatted to HTML Text if entered as a Scroll Box or Scroll Box (CSS)
+
 ********************************************************************
 ADDITIONAL CONFIGURATION:
 
 ADDITIONAL CHECKBOXES
 
-Each field that contains text will be shown as a checkbox which the user must tick to register.
-For example, if you enter "I am at least 18 years of age" in the text area, this will display as an additional checkbox,
-which must be ticked in order to proceed.
+Each field that contains text will be shown as a checkbox which the user must
+tick to register. For example, if you enter "I am at least 18 years of age" in
+the text area, this will display as an additional checkbox, which must be ticked
+in order to proceed.
 
 EXPLAIN CHANGES
 
 Explain what changes were made to the T&C since the last version.
-This will only be shown to users who accepted a previous version (authenticated users).
-Each line will automatically be shown as a bullet point.
+This will only be shown to users who accepted a previous version (authenticated
+users). Each line will automatically be shown as a bullet point.
 
 FACEBOOK CONNECT
 
@@ -97,12 +100,15 @@ In facebook applications, click edit, click on Facebook User Settings.
 Click on "Do not create accounts Automatically". Then, when user DOES
 create account, it runs them through the Legal agreement.
 
-VARNISH
+COOKIES
 
-Add Legal module's cookies to the Varnish whitelist.
+The following cookies might need to be whitelisted in you Varnish configuration
+or GDPR solution:
+Drupal.visitor.legal_hash
+Drupal.visitor.legal_id
 
 ********************************************************************
- 
+
 INSERTING NEW TERMS AND CONDITIONS VIA INSTALL SCRIPT
 
 Conditions are content, so if you'd like to deploy conditions programatically,
@@ -152,16 +158,16 @@ you'll have to create an install function, as in this barebones example:
         'extras'     => serialize($extras),
         'changes'    => $changes,
       ))->save();
-    }   
-       
+    }
+
 ********************************************************************
 ACKNOWLEDGEMENTS
 
-  * Drupal 5 update sponsorship  
+  * Drupal 5 update sponsorship
   Lullabot (http://www.lullabot.com)
-  
-  * User data variables clean up  
+
+  * User data variables clean up
   Steven Wittens (Steven)
-  
-  * T&C Page formatting  
+
+  * T&C Page formatting
   Bryant Mairs (Susurrus)

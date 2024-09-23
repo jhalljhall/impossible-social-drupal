@@ -2,6 +2,8 @@
 
 namespace Drupal\legal\Form;
 
+use Drupal\Component\Render\PlainTextOutput;
+use Drupal\Component\Utility\Xss;
 use Drupal\Core\Config\ConfigFactoryInterface;
 use Drupal\Core\Datetime\DateFormatterInterface;
 use Drupal\Core\Extension\ModuleHandlerInterface;
@@ -9,10 +11,7 @@ use Drupal\Core\Form\ConfigFormBase;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Language\LanguageManagerInterface;
 use Drupal\legal\Entity\Conditions;
-use Drupal\Component\Render\PlainTextOutput;
 use Symfony\Component\DependencyInjection\ContainerInterface;
-use Drupal\Component\Utility\Xss;
-
 
 /**
  * Settings form for administering content of Terms & Conditions.
@@ -475,8 +474,8 @@ class LegalAdminTermsForm extends ConfigFormBase {
       '#value' => t('Registration'),
     ];
 
-    $style                                                         = $form_state->getValue('registration_terms_style');
-    $modal                                                         = $form_state->getValue('registration_modal_terms');
+    $style = $form_state->getValue('registration_terms_style');
+    $modal = $form_state->getValue('registration_modal_terms');
     $element['preview_section']['preview']['registration']['form'] = LegalAdminTermsForm::previewForm($style, $conditions, $extra_checkboxes, $modal);
 
     // Override accept checkbox requirement on preview.
@@ -489,8 +488,8 @@ class LegalAdminTermsForm extends ConfigFormBase {
       '#value' => t('Login'),
     ];
 
-    $style                                                  = $form_state->getValue('login_terms_style');
-    $modal                                                  = $form_state->getValue('login_modal_terms');
+    $style = $form_state->getValue('login_terms_style');
+    $modal = $form_state->getValue('login_modal_terms');
     $element['preview_section']['preview']['login']['form'] = LegalAdminTermsForm::previewForm($style, $conditions, $extra_checkboxes, $modal);
 
     // Override accept checkbox requirement on preview.

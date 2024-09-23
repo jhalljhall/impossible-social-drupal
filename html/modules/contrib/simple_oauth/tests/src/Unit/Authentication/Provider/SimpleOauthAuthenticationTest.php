@@ -4,6 +4,7 @@ namespace Drupal\Tests\simple_oauth\Unit\Authentication\Provider;
 
 use Drupal\Core\Authentication\AuthenticationProviderInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
+use Drupal\Core\Logger\LoggerChannelInterface;
 use Drupal\Core\PageCache\RequestPolicyInterface;
 use Drupal\simple_oauth\Authentication\Provider\SimpleOauthAuthenticationProvider;
 use Drupal\simple_oauth\PageCache\DisallowSimpleOauthRequests;
@@ -47,12 +48,14 @@ class SimpleOauthAuthenticationTest extends UnitTestCase {
     $this->oauthPageCacheRequestPolicy = new DisallowSimpleOauthRequests();
     $http_message_factory = $this->prophesize(HttpMessageFactoryInterface::class);
     $http_foundation_factory = $this->prophesize(HttpFoundationFactoryInterface::class);
+    $logger = $this->prophesize(LoggerChannelInterface::class);
     $this->provider = new SimpleOauthAuthenticationProvider(
       $resource_server_factory->reveal(),
       $entity_type_manager->reveal(),
       $this->oauthPageCacheRequestPolicy,
       $http_message_factory->reveal(),
-      $http_foundation_factory->reveal()
+      $http_foundation_factory->reveal(),
+      $logger->reveal()
     );
   }
 

@@ -75,7 +75,7 @@ display:
           hide_alter_empty: true
           action_title: 'With selection'
           include_exclude: exclude
-          selected_actions: {  }
+          selected_actions: {}
         license_id:
           id: license_id
           table: commerce_license
@@ -133,7 +133,7 @@ display:
             thousand_separator: ''
             prefix_suffix: true
           group_column: value
-          group_columns: {  }
+          group_columns: {}
           group_rows: true
           delta_limit: 0
           delta_offset: 0
@@ -249,7 +249,7 @@ display:
           settings:
             link_to_entity: false
           group_column: value
-          group_columns: {  }
+          group_columns: {}
           group_rows: true
           delta_limit: 0
           delta_offset: 0
@@ -315,7 +315,7 @@ display:
           settings:
             link: true
           group_column: target_id
-          group_columns: {  }
+          group_columns: {}
           group_rows: true
           delta_limit: 0
           delta_offset: 0
@@ -377,9 +377,9 @@ display:
           hide_alter_empty: true
           click_sort_column: value
           type: list_default
-          settings: {  }
+          settings: {}
           group_column: value
-          group_columns: {  }
+          group_columns: {}
           group_rows: true
           delta_limit: 0
           delta_offset: 0
@@ -446,7 +446,7 @@ display:
             custom_date_format: ''
             timezone: ''
           group_column: value
-          group_columns: {  }
+          group_columns: {}
           group_rows: true
           delta_limit: 0
           delta_offset: 0
@@ -513,7 +513,7 @@ display:
             custom_date_format: ''
             timezone: ''
           group_column: value
-          group_columns: {  }
+          group_columns: {}
           group_rows: true
           delta_limit: 0
           delta_offset: 0
@@ -580,7 +580,7 @@ display:
             custom_date_format: ''
             timezone: ''
           group_column: value
-          group_columns: {  }
+          group_columns: {}
           group_rows: true
           delta_limit: 0
           delta_offset: 0
@@ -696,7 +696,7 @@ display:
           settings:
             link_to_entity: true
           group_column: value
-          group_columns: {  }
+          group_columns: {}
           group_rows: true
           delta_limit: 0
           delta_offset: 0
@@ -758,9 +758,9 @@ display:
           hide_alter_empty: true
           click_sort_column: value
           type: basic_string
-          settings: {  }
+          settings: {}
           group_column: value
-          group_columns: {  }
+          group_columns: {}
           group_rows: true
           delta_limit: 0
           delta_offset: 0
@@ -806,8 +806,8 @@ display:
           perm: 'access commerce_license overview'
       cache:
         type: tag
-        options: {  }
-      empty: {  }
+        options: {}
+      empty: {}
       sorts:
         granted:
           id: granted
@@ -825,7 +825,7 @@ display:
             field_identifier: granted
           exposed: false
           granularity: second
-      arguments: {  }
+      arguments: {}
       filters:
         type:
           id: type
@@ -838,7 +838,7 @@ display:
           entity_field: type
           plugin_id: commerce_entity_bundle
           operator: in
-          value: {  }
+          value: {}
           group: 1
           exposed: true
           expose:
@@ -848,7 +848,7 @@ display:
             use_operator: false
             operator: type_op
             operator_limit_selection: false
-            operator_list: {  }
+            operator_list: {}
             identifier: type
             required: false
             remember: false
@@ -870,8 +870,8 @@ display:
             multiple: false
             remember: false
             default_group: All
-            default_group_multiple: {  }
-            group_items: {  }
+            default_group_multiple: {}
+            group_items: {}
         combine:
           id: combine
           table: views
@@ -891,7 +891,7 @@ display:
             use_operator: false
             operator: combine_op
             operator_limit_selection: false
-            operator_list: {  }
+            operator_list: {}
             identifier: user
             required: false
             remember: false
@@ -911,8 +911,8 @@ display:
             multiple: false
             remember: false
             default_group: All
-            default_group_multiple: {  }
-            group_items: {  }
+            default_group_multiple: {}
+            group_items: {}
           fields:
             name: name
             mail: mail
@@ -927,7 +927,7 @@ display:
           entity_field: state
           plugin_id: state_machine_state
           operator: in
-          value: {  }
+          value: {}
           group: 1
           exposed: true
           expose:
@@ -937,7 +937,7 @@ display:
             use_operator: false
             operator: state_op
             operator_limit_selection: false
-            operator_list: {  }
+            operator_list: {}
             identifier: state
             required: false
             remember: false
@@ -958,8 +958,8 @@ display:
             multiple: false
             remember: false
             default_group: All
-            default_group_multiple: {  }
-            group_items: {  }
+            default_group_multiple: {}
+            group_items: {}
       filter_groups:
         operator: AND
         groups:
@@ -967,7 +967,7 @@ display:
       style:
         type: table
         options:
-          grouping: {  }
+          grouping: {}
           row_class: ''
           default_row_class: true
           columns:
@@ -1074,7 +1074,7 @@ display:
           disable_sql_rewrite: false
           distinct: false
           replica: false
-          query_tags: {  }
+          query_tags: {}
       relationships:
         uid:
           id: uid
@@ -1087,9 +1087,9 @@ display:
           entity_field: uid
           plugin_id: standard
           required: true
-      header: {  }
-      footer: {  }
-      display_extenders: {  }
+      header: {}
+      footer: {}
+      display_extenders: {}
     cache_metadata:
       max-age: -1
       contexts:
@@ -1098,14 +1098,14 @@ display:
         - url
         - url.query_args
         - user.permissions
-      tags: {  }
+      tags: {}
   page_1:
     id: page_1
     display_title: Page
     display_plugin: page
     position: 1
     display_options:
-      display_extenders: {  }
+      display_extenders: {}
       path: admin/commerce/licenses
     cache_metadata:
       max-age: -1
@@ -1115,4 +1115,4 @@ display:
         - url
         - url.query_args
         - user.permissions
-      tags: {  }
+      tags: {}

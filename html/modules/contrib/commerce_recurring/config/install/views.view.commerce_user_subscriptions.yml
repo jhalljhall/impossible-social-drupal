@@ -216,7 +216,7 @@ display:
             alter_text: false
             text: ''
             make_link: true
-            path: 'user/{{ arguments.uid }}/subscriptions/{{ subscription_id }}'
+            path: 'user/{{ raw_arguments.uid }}/subscriptions/{{ subscription_id }}'
             absolute: false
             external: false
             replace_spaces: false
@@ -635,7 +635,6 @@ display:
           default_argument_type: fixed
           default_argument_options:
             argument: ''
-          default_argument_skip_url: false
           summary_options:
             base_path: ''
             count: true

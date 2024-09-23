@@ -6,7 +6,8 @@ use Drupal\Component\Plugin\Exception\InvalidPluginDefinitionException;
 use Drupal\Core\Cache\CacheBackendInterface;
 use Drupal\Core\Extension\ModuleHandlerInterface;
 use Drupal\Core\Plugin\DefaultPluginManager;
-use Drupal\computed_field\Annotation\ComputedField;
+use Drupal\computed_field\Annotation\ComputedField as ComputedFieldAnnotation;
+use Drupal\computed_field\Attribute\ComputedField;
 use Drupal\computed_field\Plugin\ComputedField\ComputedFieldPluginInterface;
 use Drupal\Core\Entity\EntityTypeInterface;
 
@@ -36,7 +37,8 @@ class ComputedFieldManager extends DefaultPluginManager {
       $namespaces,
       $module_handler,
       ComputedFieldPluginInterface::class,
-      ComputedField::class
+      ComputedField::class,
+      ComputedFieldAnnotation::class
     );
 
     $this->alterInfo('computed_field_info');

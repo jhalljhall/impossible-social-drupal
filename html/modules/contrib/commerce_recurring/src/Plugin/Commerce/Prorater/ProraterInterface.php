@@ -3,10 +3,10 @@
 namespace Drupal\commerce_recurring\Plugin\Commerce\Prorater;
 
 use Drupal\commerce_order\Entity\OrderItemInterface;
+use Drupal\commerce_recurring\BillingPeriod;
 use Drupal\Component\Plugin\ConfigurableInterface;
 use Drupal\Component\Plugin\DependentPluginInterface;
 use Drupal\Core\Plugin\PluginFormInterface;
-use Drupal\commerce_recurring\BillingPeriod;
 
 /**
  * Modifies unit prices to reflect partial billing periods.

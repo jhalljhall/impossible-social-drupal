@@ -81,9 +81,9 @@ final class Charge {
       throw new \InvalidArgumentException(sprintf('The "full_billing_period" property must be an instance of %s.', BillingPeriod::class));
     }
 
-    $this->purchasedEntity = isset($definition['purchased_entity']) ? $definition['purchased_entity'] : NULL;
+    $this->purchasedEntity = $definition['purchased_entity'] ?? NULL;
     $this->title = $definition['title'];
-    $this->quantity = isset($definition['quantity']) ? $definition['quantity'] : '1';
+    $this->quantity = $definition['quantity'] ?? '1';
     $this->unitPrice = $definition['unit_price'];
     $this->billingPeriod = $definition['billing_period'];
     $this->fullBillingPeriod = $definition['full_billing_period'];

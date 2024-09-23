@@ -3,11 +3,13 @@
 namespace Drupal\legal\Form;
 
 use Drupal\Component\Render\HtmlEscapedText;
+use Drupal\Core\Access\AccessResult;
 use Drupal\Core\Database\Connection;
+use Drupal\Core\Extension\ModuleHandlerInterface;
 use Drupal\Core\Form\FormBase;
 use Drupal\Core\Form\FormStateInterface;
+use Drupal\Core\Language\LanguageManagerInterface;
 use Drupal\Core\Session\AccountInterface;
-use Drupal\Core\Access\AccessResult;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
@@ -23,12 +25,25 @@ class LegalLanguageSettings extends FormBase {
    * @var \Drupal\Core\Database\Connection
    */
   protected $database;
+  /**
+   * The language manager.
+   *
+   * @var \Drupal\Core\Language\LanguageManagerInterface
+   */
+  protected $languageManager;
+
+  protected $moduleHandler;
 
   /**
    * {@inheritdoc}
+   *
+   *  @param \Drupal\Core\Language\LanguageManagerInterface $language_manager
+   *   The language manager.
    */
-  public function __construct(Connection $database) {
+  public function __construct(Connection $database, LanguageManagerInterface $language_manager, ModuleHandlerInterface $moduleHandler) {
     $this->database = $database;
+    $this->languageManager = $language_manager;
+    $this->moduleHandler = $moduleHandler;
   }
 
   /**
@@ -36,7 +51,9 @@ class LegalLanguageSettings extends FormBase {
    */
   public static function create(ContainerInterface $container) {
     return new static(
-      $container->get('database')
+      $container->get('database'),
+      $container->get('language_manager'),
+      $container->get('module_handler')
     );
   }
 
@@ -98,7 +115,7 @@ class LegalLanguageSettings extends FormBase {
 
     // Get latest version for each language.
     if (empty($language)) {
-      $languages = \Drupal::languageManager()->getLanguages();
+      $languages = $this->languageManager->getLanguages();
       foreach ($languages as $language_id => $language) {
         $result = $this->database->select('legal_conditions', 'lc')
           ->fields('lc')
@@ -163,7 +180,7 @@ class LegalLanguageSettings extends FormBase {
   public function access(AccountInterface $account) {
     // Check permissions and combine with any custom access checking needed.
     // Pass forward parameters from the route and/or request as needed.
-    if (!\Drupal::moduleHandler()->moduleExists('locale')) {
+    if (!$this->moduleHandler ->moduleExists('locale')) {
       return AccessResult::forbidden();
     }
 

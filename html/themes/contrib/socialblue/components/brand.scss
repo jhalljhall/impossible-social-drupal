@@ -1,5 +1,21 @@
 @import 'settings';
 
+:root {
+  --primary-color: #{$brand-primary};
+
+  --secondary-color: #{$brand-secondary};
+
+  --accent-color: #{$brand-accent};
+  --accent-color--text: #{$brand-accent-text};
+
+  //--link-color: #{$brand-link};
+  //--navbar-default-link-color: #{$navbar-default-link-color};
+  //--navbar-default-link-active-color: #{$navbar-default-link-active-color};
+  //--navbar-default-link-active-bg: #{$navbar-default-link-active-bg};
+  //
+  //--navbar-default-bg: #{$navbar-default-bg};
+}
+
 [type="radio"]:checked + label:before {
   border-color: $brand-primary;
 }

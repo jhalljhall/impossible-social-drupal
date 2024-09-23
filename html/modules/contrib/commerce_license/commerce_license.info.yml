@@ -1,7 +1,7 @@
 name: Commerce License
 type: module
 description: Provides a framework for selling access to local or remote resources.
-core_version_requirement: ^8.9 || ^9 || ^10
+core_version_requirement: ^9.3 || ^10 || ^11
 package: 'Commerce (contrib)'
 configure: entity.commerce_license.collection
 dependencies:
@@ -16,7 +16,7 @@ config_devel:
   install:
     - views.view.commerce_licenses
 
-# Information added by Drupal.org packaging script on 2023-06-19
-version: '3.0.0'
+# Information added by Drupal.org packaging script on 2024-09-03
+version: '3.0.1'
 project: 'commerce_license'
-datestamp: 1687180710
+datestamp: 1725371433

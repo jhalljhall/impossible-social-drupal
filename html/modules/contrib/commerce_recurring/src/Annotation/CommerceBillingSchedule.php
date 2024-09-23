@@ -31,4 +31,13 @@ class CommerceBillingSchedule extends Plugin {
    */
   public $label;
 
+  /**
+   * The billing schedule description. Optional.
+   *
+   * @ingroup plugin_translatable
+   *
+   * @var \Drupal\Core\Annotation\Translation
+   */
+  public $description = '';
+
 }

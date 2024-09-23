@@ -1,0 +1,20 @@
+langcode: en
+status: true
+dependencies:  
+  config:
+    - commerce_product.commerce_product_variation_type.subscription
+    - field.storage.commerce_product_variation.billing_period
+  module:
+    - commerce
+id: commerce_product_variation.subscription.billing_period
+field_name: billing_period
+entity_type: commerce_product_variation
+bundle: subscription
+label: 'Billing Period'
+description: 'The billing period for the subscription.'
+required: true
+translatable: false
+default_value: {  }
+default_value_callback: ''
+settings: {  }
+field_type: commerce_plugin_item:commerce_billing_period

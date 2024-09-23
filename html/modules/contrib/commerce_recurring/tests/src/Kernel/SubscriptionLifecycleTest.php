@@ -224,12 +224,35 @@ class SubscriptionLifecycleTest extends RecurringKernelTestBase {
 
     // Test deleting the subscription.
     $subscription->delete();
-    $subscription = $this->reloadEntity($subscription);
-    $order_item = $this->reloadEntity($order_item);
-    $order = $this->reloadEntity($order);
-    $this->assertNull($subscription);
-    $this->assertNull($order_item);
-    $this->assertNull($order);
+    $this->assertNull($this->entityTypeManager->getStorage('commerce_subscription')->load($subscription->id()));
+    $this->assertNull($this->entityTypeManager->getStorage('commerce_order_item')->load($order_item->id()));
+    $this->assertNull($this->entityTypeManager->getStorage('commerce_order')->load($order->id()));
+  }
+
+  /**
+   * Tests placing initial order with non-reusable payment method.
+   *
+   * Non-reusable payment methods should allow starting the subscription,
+   * but the payment method on the subscription should not be set.
+   */
+  public function testSubscriptionWithNoReusablePaymentMethod() {
+    $initial_order = $this->createInitialOrder();
+
+    // Make payment non-reusable.
+    $this->paymentMethod->setReusable(FALSE);
+    $this->paymentMethod->save();
+
+    // Set a payment gateway and place the order so the subscription gets
+    // created.
+    $initial_order->set('payment_method', $this->paymentMethod);
+    $initial_order->getState()->applyTransitionById('place');
+    $initial_order->save();
+
+    $subscriptions = Subscription::loadMultiple();
+    $this->assertCount(1, $subscriptions);
+    /** @var \Drupal\commerce_recurring\Entity\SubscriptionInterface $subscription */
+    $subscription = reset($subscriptions);
+    $this->assertNull($subscription->getPaymentMethod());
   }
 
 }

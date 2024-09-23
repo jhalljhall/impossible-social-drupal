@@ -31,7 +31,7 @@ class MeasurementDefaultFormatter extends PhysicalFormatterBase {
     /** @var \Drupal\physical\Plugin\Field\FieldType\MeasurementItem $item */
     foreach ($items as $delta => $item) {
       $number = $this->numberFormatter->format($item->number);
-      $unit = isset($unit_labels[$item->unit]) ? $unit_labels[$item->unit] : $item->unit;
+      $unit = $unit_labels[$item->unit] ?? $item->unit;
 
       $element[$delta] = [
         '#markup' => $number . ' ' . $unit,

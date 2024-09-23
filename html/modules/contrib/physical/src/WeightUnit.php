@@ -12,6 +12,7 @@ final class WeightUnit implements UnitInterface {
   const KILOGRAM = 'kg';
   const OUNCE = 'oz';
   const POUND = 'lb';
+  const CARAT = 'ct';
 
   /**
    * {@inheritdoc}
@@ -23,6 +24,7 @@ final class WeightUnit implements UnitInterface {
       self::KILOGRAM => t('kg'),
       self::OUNCE => t('oz'),
       self::POUND => t('lb'),
+      self::CARAT => t('ct'),
     ];
   }
 
@@ -44,6 +46,7 @@ final class WeightUnit implements UnitInterface {
       self::KILOGRAM => '1',
       self::OUNCE => '0.028349523125',
       self::POUND => '0.45359237',
+      self::CARAT => '0.0002',
     ];
 
     return $factors[$unit];
@@ -54,7 +57,12 @@ final class WeightUnit implements UnitInterface {
    */
   public static function assertExists($unit) {
     $allowed_units = [
-      self::MILLIGRAM, self::GRAM, self::KILOGRAM, self::OUNCE, self::POUND,
+      self::MILLIGRAM,
+      self::GRAM,
+      self::KILOGRAM,
+      self::OUNCE,
+      self::POUND,
+      self::CARAT,
     ];
     if (!in_array($unit, $allowed_units)) {
       throw new \InvalidArgumentException(sprintf('Invalid weight unit "%s" provided.', $unit));

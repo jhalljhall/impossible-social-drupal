@@ -22,6 +22,13 @@ class CronTest extends RecurringKernelTestBase {
   protected $recurringOrderManager;
 
   /**
+   * The used queue.
+   *
+   * @var \Drupal\advancedqueue\Entity\QueueInterface
+   */
+  protected $queue;
+
+  /**
    * {@inheritdoc}
    */
   protected function setUp(): void {
@@ -287,6 +294,52 @@ class CronTest extends RecurringKernelTestBase {
     $this->assertEquals([Job::STATE_QUEUED => 1], $counts);
     $job = $queue->getBackend()->claimJob();
     $this->assertSame(['subscription_id' => $subscription->id()], $job->getPayload());
+
+    // Test for duplications.
+    $this->container->get('commerce_recurring.cron')->run();
+    $counts = array_filter($queue->getBackend()->countJobs());
+    $this->assertEquals([Job::STATE_PROCESSING => 1], $counts);
+  }
+
+  /**
+   * Tests whether no job duplicates are created.
+   */
+  public function testJobDuplicates(): void {
+    $subscription = Subscription::create([
+      'type' => 'product_variation',
+      'store_id' => $this->store->id(),
+      'billing_schedule' => $this->billingSchedule,
+      'uid' => $this->user,
+      'payment_method' => $this->paymentMethod,
+      'purchased_entity' => $this->variation,
+      'title' => $this->variation->getOrderItemTitle(),
+      'unit_price' => new Price('2', 'USD'),
+      'state' => 'active',
+      'starts' => strtotime('2019-02-15 00:00'),
+    ]);
+    $subscription->save();
+    $order = $this->recurringOrderManager->startRecurring($subscription);
+
+    $this->rewindTime(strtotime('2019-03-01 00:00'));
+    // Asset queue status before running cron.
+    $this->assertEquals(0, $order->get('commerce_recurring_queued')->value);
+    // Runs cron twice to test if no duplicates were created.
+    $this->container->get('commerce_recurring.cron')->run();
+    $this->container->get('commerce_recurring.cron')->run();
+    $order = $this->reloadEntity($order);
+    // Assert queue status after running cron.
+    $this->assertEquals(1, $order->get('commerce_recurring_queued')->value);
+
+    // Assert queued jobs.
+    $queue = Queue::load('commerce_recurring');
+    $counts = array_filter($queue->getBackend()->countJobs());
+    $this->assertEquals([Job::STATE_QUEUED => 2], $counts);
+    $first_job = $queue->getBackend()->claimJob();
+    $this->assertSame(['order_id' => $order->id()], $first_job->getPayload());
+    $this->assertEquals('commerce_recurring_order_close', $first_job->getType());
+    $second_job = $queue->getBackend()->claimJob();
+    $this->assertSame(['order_id' => $order->id()], $second_job->getPayload());
+    $this->assertEquals('commerce_recurring_order_renew', $second_job->getType());
   }
 
   /**

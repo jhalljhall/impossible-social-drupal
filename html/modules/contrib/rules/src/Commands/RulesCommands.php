@@ -2,6 +2,8 @@
 
 namespace Drupal\rules\Commands;
 
+// cspell:ignore rlst renb rdis rdel rexp rrev
+
 use Consolidation\OutputFormatters\StructuredData\RowsOfFields;
 use Drupal\Core\Config\CachedStorage;
 use Drupal\Core\Config\ConfigFactoryInterface;

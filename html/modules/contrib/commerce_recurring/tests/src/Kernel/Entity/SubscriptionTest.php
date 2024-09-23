@@ -8,8 +8,8 @@ use Drupal\commerce_recurring\BillingPeriod;
 use Drupal\commerce_recurring\Entity\Subscription;
 use Drupal\commerce_recurring\Plugin\Commerce\SubscriptionType\SubscriptionTypeInterface;
 use Drupal\commerce_recurring\ScheduledChange;
-use Drupal\Tests\commerce_recurring\Kernel\RecurringKernelTestBase;
 use Drupal\Core\Datetime\DrupalDateTime;
+use Drupal\Tests\commerce_recurring\Kernel\RecurringKernelTestBase;
 
 /**
  * Tests the subscription entity.
@@ -53,6 +53,8 @@ class SubscriptionTest extends RecurringKernelTestBase {
    * @covers ::hasOrder
    * @covers ::getCreatedTime
    * @covers ::setCreatedTime
+   * @covers ::getChangedTime
+   * @covers ::setChangedTime
    * @covers ::getNextRenewalTime
    * @covers ::setNextRenewalTime
    * @covers ::getRenewedTime
@@ -198,6 +200,10 @@ class SubscriptionTest extends RecurringKernelTestBase {
     $this->assertEquals(1550250000, $subscription->getCreatedTime());
     $subscription->setCreatedTime(1508002101);
     $this->assertEquals(1508002101, $subscription->getCreatedTime());
+
+    $this->assertNotNull($subscription->getChangedTime());
+    $subscription->setChangedTime(1508002101);
+    $this->assertEquals(1508002101, $subscription->getChangedTime());
 
     $this->assertEquals(0, $subscription->getNextRenewalTime());
     $subscription->setNextRenewalTime(1508002101);

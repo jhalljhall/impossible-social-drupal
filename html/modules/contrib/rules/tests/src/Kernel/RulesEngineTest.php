@@ -8,6 +8,8 @@ use Drupal\rules\Context\ContextDefinition;
 use Drupal\rules\Context\ExecutionState;
 use Drupal\rules\Engine\RulesComponent;
 
+// cspell:ignore valuetest
+
 /**
  * Test using the Rules API to create and evaluate rules.
  *

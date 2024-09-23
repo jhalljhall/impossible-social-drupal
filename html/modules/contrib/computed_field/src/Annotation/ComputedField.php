@@ -3,6 +3,7 @@
 namespace Drupal\computed_field\Annotation;
 
 use Drupal\Component\Annotation\Plugin;
+use Drupal\Core\Field\FieldStorageDefinitionInterface;
 
 /**
  * Defines the Computed Field plugin annotation object.
@@ -43,6 +44,13 @@ class ComputedField extends Plugin {
    * @var bool
    */
   public $no_ui = FALSE;
+
+  /**
+   * The cardinality of the field.
+   *
+   * @var int
+   */
+  public $cardinality = 1;
 
   /**
    * Definition of automatic attachment.

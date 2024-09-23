@@ -28,7 +28,10 @@ class Interval extends FormElement {
    * Process callback.
    */
   public static function process(&$element, FormStateInterface $form_state, &$complete_form) {
-    $value = !empty($element['#default_value']) ? $element['#default_value'] : ['interval' => NULL, 'period' => NULL];
+    $value = !empty($element['#default_value']) ? $element['#default_value'] : [
+      'interval' => NULL,
+      'period' => NULL,
+    ];
 
     $element['interval'] = [
       '#title' => t('@title count', [

@@ -194,9 +194,11 @@ class SubscriptionForm extends ContentEntityForm {
     if ($form_state->getValue(['trial_starts', 0, 'value']) === NULL && !empty($this->entity->getTrialStartTime())) {
       $this->entity->set('trial_starts', NULL);
     }
-    $this->entity->save();
-    $this->messenger()->addMessage($this->t('A subscription been successfully saved.'));
-    $form_state->setRedirect('entity.commerce_subscription.collection');
+    $save = $this->entity->save();
+    $this->messenger()->addMessage($this->t('The subscription has been successfully saved.'));
+    $form_state->setRedirectUrl($this->entity->toUrl());
+
+    return $save;
   }
 
   /**

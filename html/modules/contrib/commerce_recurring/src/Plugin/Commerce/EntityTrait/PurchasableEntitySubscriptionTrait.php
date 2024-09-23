@@ -2,8 +2,8 @@
 
 namespace Drupal\commerce_recurring\Plugin\Commerce\EntityTrait;
 
-use Drupal\entity\BundleFieldDefinition;
 use Drupal\commerce\Plugin\Commerce\EntityTrait\EntityTraitBase;
+use Drupal\entity\BundleFieldDefinition;
 
 /**
  * Provides a trait to enable purchasing of subscriptions.

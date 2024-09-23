@@ -55,6 +55,14 @@ interface ComputedFieldPluginInterface extends PluginInspectionInterface, Deriva
   public function getFieldLabel(): string;
 
   /**
+   * Gets the field cardinality.
+   *
+   * @return int
+   *   The field cardinality.
+   */
+  public function getFieldCardinality(): int;
+
+  /**
    * Gets values for field definition settings.
    *
    * This allows plugins to influence the settings of a computed field.

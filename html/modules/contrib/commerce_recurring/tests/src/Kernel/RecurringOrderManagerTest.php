@@ -426,7 +426,7 @@ class RecurringOrderManagerTest extends RecurringKernelTestBase {
   /**
    * @covers ::closeOrder
    */
-  public function testCloseOrderAlreadyCanceledDoesntAddExtraPayment() {
+  public function testCloseOrderAlreadyCanceledNoExtraPayment() {
     $order = $this->recurringOrderManager->startRecurring($this->activeSubscription);
 
     // We set the order as canceled.

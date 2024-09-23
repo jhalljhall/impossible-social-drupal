@@ -3,8 +3,8 @@
 namespace Drupal\simple_oauth\Service\Filesystem;
 
 use Drupal\Core\StreamWrapper\PublicStream;
-use Drupal\simple_oauth\Service\Exception\FilesystemValidationException;
 use Drupal\simple_oauth\Service\Exception\ExtensionNotLoadedException;
+use Drupal\simple_oauth\Service\Exception\FilesystemValidationException;
 
 /**
  * The file system validator.

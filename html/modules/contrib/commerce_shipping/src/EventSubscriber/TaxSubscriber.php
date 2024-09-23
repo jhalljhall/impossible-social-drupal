@@ -28,7 +28,7 @@ class TaxSubscriber implements EventSubscriberInterface {
   /**
    * {@inheritdoc}
    */
-  public static function getSubscribedEvents() {
+  public static function getSubscribedEvents(): array {
     return [
       'commerce_tax.customer_profile' => ['onCustomerProfile'],
     ];

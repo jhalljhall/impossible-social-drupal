@@ -10,6 +10,8 @@ use Drupal\rules\Engine\RulesComponent;
 use Drupal\rules\Entity\RulesComponentConfig;
 use Drupal\user\Entity\User;
 
+// cspell:ignore klausi
+
 /**
  * Test using Drupal core integration of Rules API.
  *

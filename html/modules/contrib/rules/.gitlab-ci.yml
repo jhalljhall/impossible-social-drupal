@@ -49,6 +49,12 @@ include:
 # variables:
 #   SKIP_ESLINT: '1'
 
+variables:
+  _CSPELL_IGNORE_PATHS: '"phpcs.xml.dist", "d7-tests/*"'
+  _SHOW_ENVIRONMENT_VARIABLES: 1
+  _TARGET_CORE: 10.2
+  OPT_IN_TEST_CURRENT: 1
+  
 
 ###################################################################################
 #

@@ -5,21 +5,21 @@
  * Module file for Legal.
  */
 
-use Drupal\Core\Render\BubbleableMetadata;
-use Drupal\Component\Utility\Xss;
-use Drupal\Core\Url;
-use Drupal\Core\Link;
+use Drupal\Component\Render\PlainTextOutput;
 use Drupal\Component\Serialization\Json;
+use Drupal\Component\Utility\Crypt;
+use Drupal\Component\Utility\Xss;
+use Drupal\Core\Database\Query\Condition;
+use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Form\FormStateInterface;
+use Drupal\Core\Link;
+use Drupal\Core\Render\BubbleableMetadata;
 use Drupal\Core\Routing\RouteMatchInterface;
+use Drupal\Core\Url;
+use Drupal\legal\Entity\Accepted;
+use Drupal\user\Entity\User;
 use Drupal\user\UserInterface;
 use Symfony\Component\HttpFoundation\RedirectResponse;
-use Drupal\Component\Render\PlainTextOutput;
-use Drupal\user\Entity\User;
-use Drupal\Component\Utility\Crypt;
-use Drupal\Core\Entity\EntityInterface;
-use Drupal\legal\Entity\Accepted;
-use Drupal\Core\Database\Query\Condition;
 
 /**
  * Implements hook_help().
@@ -291,6 +291,7 @@ function legal_form_user_form_alter(&$form, FormStateInterface $form_state, $for
   }
 
   // User being edited.
+  /** @var \Drupal\user\Entity\User $account */
   $account = $form_state->getFormObject()->getEntity();
   $uid     = $account->id();
 
@@ -307,18 +308,6 @@ function legal_form_user_form_alter(&$form, FormStateInterface $form_state, $for
 
   if (empty($conditions['conditions'])) {
     return;
-  }
-
-  // Set reminder to change password if coming from one time login link.
-  if (isset($_REQUEST['pass-reset-token'])) {
-
-    $messages        = \Drupal::messenger()->messagesByType('status');
-    $status_messages = $messages['status'] ?? [];
-    $reminder        = t('You have just used your one-time login link. It is no longer necessary to use this link to log in. Please change your password.');
-
-    if (!in_array($reminder, $status_messages)) {
-      \Drupal::messenger()->addMessage($reminder);
-    }
   }
 
   // Current logged in user.
@@ -396,7 +385,7 @@ function legal_form_user_form_alter(&$form, FormStateInterface $form_state, $for
 
   // Enable account owner to accept.
   if ($uid_active == $uid && $accepted != TRUE) {
-    $form['legal']['legal_accept']['#default_value'] = $edit['legal_accept'] ?? '';
+    $form['legal']['legal_accept']['#default_value'] = '';
     $form['legal']['legal_accept']['#required']      = TRUE;
 
     if (!empty($conditions['extras'])) {
@@ -404,7 +393,7 @@ function legal_form_user_form_alter(&$form, FormStateInterface $form_state, $for
 
       foreach ($conditions['extras'] as $key => $label) {
         if (!empty($label)) {
-          $form['legal'][$key]['#default_value'] = $edit[$key] ?? '';
+          $form['legal'][$key]['#default_value'] = '';
           $form['legal'][$key]['#required']      = TRUE;
         }
       }
@@ -477,8 +466,7 @@ function legal_user_login(UserInterface $account) {
   }
 
   // Log the user out and regenerate the Drupal session.
-  \Drupal::logger('user')
-    ->notice('Session closed for %name.', ['%name' => $account->getAccountName()]);
+  \Drupal::logger('user')->notice('Session closed for %name.', ['%name' => $account->getAccountName()]);
 
   \Drupal::moduleHandler()->invokeAll('user_logout', [$account]);
 
@@ -487,14 +475,33 @@ function legal_user_login(UserInterface $account) {
     \Drupal::service('session_manager')->destroy();
   }
 
+  // Route requires "timestamp" and "hash" use dummy values, then remove them.
+  $parameters = [
+    'uid' => $account->id(),
+    'timestamp' => 'dummy',
+    'hash' => 'dummy',
+  ];
+
+  $url = Url::fromRoute('user.reset.login', $parameters)->toString();
+  $checkPath = str_replace('dummy/dummy/login', '', $url);
+
   $query = NULL;
   $path = \Drupal::request()->getpathInfo();
-  $arg = explode('/', $path);
 
   // One time login link - set user edit page as destination after T&Cs.
-  if (isset($arg[1]) && $arg[1] == 'user' && isset($arg[2]) && $arg[2] == 'reset') {
+  if (strpos($path, $checkPath) === 0) {
+    $pass_reset_token = Crypt::randomBytesBase64(55);
+
+    $parameters = [
+      'query' => ['pass-reset-token' => $pass_reset_token],
+      'absolute' => FALSE,
+    ];
+
+    $destination = $account->toUrl('edit-form', $parameters)->toString();
+
     $query = [
-      'destination' => $account->toUrl('edit-form')->toString(),
+      'destination' => $destination,
+      'pass-reset-token' => $pass_reset_token,
     ];
   }
 
@@ -505,8 +512,8 @@ function legal_user_login(UserInterface $account) {
 
   unset($_GET['destination']);
 
+  // Security token and hash.
   $signatory = User::load($uid);
-
   $login    = $signatory->get('login')->value;
   $password = $signatory->get('pass')->value;
   $token    = Crypt::randomBytesBase64();
@@ -516,10 +523,8 @@ function legal_user_login(UserInterface $account) {
   user_cookie_save(['legal_hash' => $hash, 'legal_id' => $uid]);
 
   $query['token'] = $token;
-  $path           = Url::fromUserInput('/legal_accept', ['query' => $query])
-    ->toString();
-
-  $response = new RedirectResponse($path);
+  $path_redirect = Url::fromRoute('legal.legal_login', $query)->toString();
+  $response = new RedirectResponse($path_redirect);
   $response->sendHeaders();
   exit();
 }
@@ -755,7 +760,7 @@ function legal_display_changes($form, $uid) {
 
   foreach ($result as $term) {
 
-    $changes = Xss::filterAdmin($term->changes);
+    $changes = Xss::filterAdmin($term->changes ?? '');
 
     if (!empty($changes)) {
       $bullet_points = array_merge($bullet_points, explode("\r\n", $changes));
@@ -861,13 +866,20 @@ function legal_user_is_exempt($account) {
     return TRUE;
   }
 
+  // Exempt roles specified in settings.
   $settings = \Drupal::config('legal.settings');
-
-  $exempt_roles = $settings->get('except_roles');
-  $account_roles = $account->getRoles(TRUE);
+  $exempt_roles = $settings->get('except_roles') ?? [];
+  $account_roles = $account->getRoles(TRUE) ?? [];
 
   if (count(array_intersect($exempt_roles, $account_roles))) {
     return TRUE;
+  }
+
+  // Masquerading users are also exempt.
+  if (\Drupal::service('module_handler')->moduleExists('masquerade')) {
+    if (\Drupal::service('masquerade')->isMasquerading()) {
+      return TRUE;
+    }
   }
 
   return FALSE;

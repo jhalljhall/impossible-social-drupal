@@ -98,15 +98,15 @@ commerce_recurring.commerce_prorater.plugin.*:
   type: mapping
 
 field.value.commerce_billing_period:
- type: mapping
- label: 'Default value'
- mapping:
-   starts:
-     type: integer
-     label: 'Starts'
-   ends:
-     type: int
-     label: 'Ends'
+  type: mapping
+  label: 'Default value'
+  mapping:
+    starts:
+      type: integer
+      label: 'Starts'
+    ends:
+      type: int
+      label: 'Ends'
 
 field.widget.settings.commerce_recurring_payment_method:
   type: field.widget.settings.entity_reference_autocomplete_tags
@@ -115,6 +115,6 @@ field.formatter.settings.subscription_orders:
   type: mapping
   label: 'Subscription orders formatter'
   mapping:
-   view:
+    view:
       type: string
       label: 'View'

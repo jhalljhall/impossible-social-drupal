@@ -14,7 +14,7 @@ use Drupal\Core\TypedData\DataDefinition;
  *   id = "commerce_shipment_item",
  *   label = @Translation("Shipment Item"),
  *   description = @Translation("Stores shipment items."),
- *   category = @Translation("Commerce"),
+ *   category = "commerce",
  *   list_class = "\Drupal\commerce_shipping\Plugin\Field\FieldType\ShipmentItemList",
  *   no_ui = TRUE,
  *   default_widget = "commerce_shipment_item_default",

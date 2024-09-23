@@ -3,8 +3,8 @@
 namespace Drupal\physical\Element;
 
 use Drupal\Core\Form\FormStateInterface;
-use Drupal\Core\Render\Element\FormElement;
 use Drupal\Core\Render\Element;
+use Drupal\Core\Render\Element\FormElement;
 
 /**
  * Provides a number form element with support for language-specific input.
@@ -34,7 +34,7 @@ class Number extends FormElement {
   public function getInfo() {
     $class = get_class($this);
     return [
-      '#min' => 0,
+      '#min' => NULL,
       '#max' => NULL,
 
       '#size' => 10,

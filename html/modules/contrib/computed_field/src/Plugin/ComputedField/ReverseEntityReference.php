@@ -2,7 +2,9 @@
 
 namespace Drupal\computed_field\Plugin\ComputedField;
 
+use Drupal\Core\StringTranslation\TranslatableMarkup;
 use Drupal\Component\Plugin\ConfigurableInterface;
+use Drupal\computed_field\Attribute\ComputedField;
 use Drupal\computed_field\Field\ComputedFieldDefinitionWithValuePluginInterface;
 use Drupal\Core\Cache\CacheableMetadata;
 use Drupal\Core\Entity\EntityInterface;
@@ -12,13 +14,12 @@ use Drupal\Core\StringTranslation\StringTranslationTrait;
 
 /**
  * Provides a reverse entity reference computed field.
- *
- * @ComputedField(
- *   id = "reverse_entity_reference",
- *   label = @Translation("Reverse entity reference"),
- *   field_type = "entity_reference",
- * )
  */
+#[ComputedField(
+  id: 'reverse_entity_reference',
+  label: new TranslatableMarkup('Reverse entity reference'),
+  field_type: 'entity_reference',
+)]
 class ReverseEntityReference extends ComputedFieldBase implements PluginFormInterface, ConfigurableInterface {
 
   use StringTranslationTrait;

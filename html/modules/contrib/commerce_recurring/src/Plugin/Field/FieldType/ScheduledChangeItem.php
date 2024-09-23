@@ -14,7 +14,7 @@ use Drupal\Core\TypedData\DataDefinition;
  *   id = "commerce_scheduled_change",
  *   label = @Translation("Scheduled change"),
  *   description = @Translation("Stores a a scheduled change"),
- *   category = @Translation("Commerce"),
+ *   category = "commerce",
  *   list_class = "\Drupal\commerce_recurring\Plugin\Field\FieldType\ScheduledChangeItemList",
  *   default_formatter = "commerce_scheduled_change_default",
  * )

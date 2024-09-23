@@ -35,12 +35,12 @@ class SubscriptionOperationsTest extends RecurringKernelTestBase {
    * @covers ::getOperations
    */
   public function testOperations() {
-    $admin_user = $this->createUser(['mail' => $this->randomString() . '@example.com'], ['administer commerce_subscription']);
-    $privileged_user = $this->createUser(['mail' => $this->randomString() . '@example.com'], [
+    $admin_user = $this->createUser(['administer commerce_subscription']);
+    $privileged_user = $this->createUser([
       'view any commerce_subscription',
       'update any commerce_subscription',
     ]);
-    $user = $this->createUser(['mail' => $this->randomString() . '@example.com'], [
+    $user = $this->createUser([
       'view own commerce_subscription',
       'update own commerce_subscription',
     ]);

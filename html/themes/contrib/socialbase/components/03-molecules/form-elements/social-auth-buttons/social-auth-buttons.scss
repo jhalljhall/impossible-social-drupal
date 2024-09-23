@@ -1,15 +1,17 @@
 @import 'settings';
 
 // Ensure that social login buttons are full-width on mobile.
-.social-auth-buttons .btn {
-  display: inline-block;
+.social-auth-buttons .card__block {
+  display: flex;
+  flex-wrap: wrap;
+  margin: 0 -5px -10px;
 
   @include for-phone-only {
-    display: block;
-    margin-left: 0;
+    flex-direction: column;
+  }
 
-    &:not(:last-child) {
-      margin-bottom: .75rem;
-    }
+  .btn {
+    display: inline-block;
+    margin: 0 5px 10px;
   }
 }

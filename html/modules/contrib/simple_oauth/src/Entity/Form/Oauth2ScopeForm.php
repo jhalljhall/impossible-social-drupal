@@ -124,6 +124,11 @@ class Oauth2ScopeForm extends EntityForm {
       ],
       '#default_value' => $scope->getGranularity(),
       '#description' => $this->t('Map scope to a single permission or role.'),
+      '#states' => [
+        'visible' => [
+          '#edit-umbrella' => ['checked' => FALSE],
+        ],
+      ],
     ];
     $form['permission'] = [
       '#type' => 'select',

@@ -15,6 +15,7 @@ use Drupal\Core\Datetime\DrupalDateTime;
  * @CommerceBillingSchedule(
  *   id = "rolling",
  *   label = @Translation("Rolling interval"),
+ *   description = @Translation("Billing periods start at the beginning of the subscription."),
  * )
  */
 class Rolling extends IntervalBase {

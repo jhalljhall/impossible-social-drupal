@@ -33,7 +33,7 @@ class ShippingRateTest extends UnitTestCase {
    * @return array
    *   The definitions.
    */
-  public function invalidDefinitionProvider() {
+  public static function invalidDefinitionProvider() {
     return [
       [[], 'Missing required property shipping_method_id'],
       [['shipping_method_id' => 'standard'], 'Missing required property service'],
@@ -69,6 +69,8 @@ class ShippingRateTest extends UnitTestCase {
    * @covers ::getService
    * @covers ::getOriginalAmount
    * @covers ::setOriginalAmount
+   * @covers ::getPrePromotionAmount
+   * @covers ::setPrePromotionAmount
    * @covers ::getAmount
    * @covers ::setAmount
    * @covers ::getDescription
@@ -88,6 +90,7 @@ class ShippingRateTest extends UnitTestCase {
       'shipping_method_id' => 'standard',
       'service' => new ShippingService('test', 'Test'),
       'original_amount' => new Price('15.00', 'USD'),
+      'pre_promotion_amount' => new Price('15.00', 'USD'),
       'amount' => new Price('10.00', 'USD'),
       'description' => 'Delivery in 3-5 business days.',
       'delivery_date' => $first_date,
@@ -101,6 +104,7 @@ class ShippingRateTest extends UnitTestCase {
     $this->assertEquals($definition['shipping_method_id'], $shipping_rate->getShippingMethodId());
     $this->assertEquals($definition['service'], $shipping_rate->getService());
     $this->assertEquals($definition['original_amount'], $shipping_rate->getOriginalAmount());
+    $this->assertEquals($definition['pre_promotion_amount'], $shipping_rate->getPrePromotionAmount());
     $this->assertEquals($definition['amount'], $shipping_rate->getAmount());
     $this->assertEquals($definition['description'], $shipping_rate->getDescription());
     $this->assertEquals($definition['delivery_date'], $shipping_rate->getDeliveryDate());
@@ -109,6 +113,8 @@ class ShippingRateTest extends UnitTestCase {
 
     $shipping_rate->setOriginalAmount(new Price('14.00', 'USD'));
     $this->assertEquals(new Price('14.00', 'USD'), $shipping_rate->getOriginalAmount());
+    $shipping_rate->setPrePromotionAmount(new Price('12.00', 'USD'));
+    $this->assertEquals(new Price('12.00', 'USD'), $shipping_rate->getPrePromotionAmount());
     $shipping_rate->setAmount(new Price('11.00', 'USD'));
     $this->assertEquals(new Price('11.00', 'USD'), $shipping_rate->getAmount());
     $shipping_rate->setDescription('Arrives yesterday.');
@@ -133,6 +139,7 @@ class ShippingRateTest extends UnitTestCase {
     $shipping_rate = new ShippingRate($definition);
     $this->assertEquals('standard--test', $shipping_rate->getId());
     $this->assertEquals($definition['amount'], $shipping_rate->getOriginalAmount());
+    $this->assertEquals(NULL, $shipping_rate->getPrePromotionAmount());
   }
 
 }

@@ -49,7 +49,7 @@ class ShipmentSubscriber implements EventSubscriberInterface {
   /**
    * {@inheritdoc}
    */
-  public static function getSubscribedEvents() {
+  public static function getSubscribedEvents(): array {
     return [
       'commerce_shipment.ship.post_transition' => ['onShip'],
       ShippingEvents::SHIPMENT_DELETE => ['onShipmentDelete'],
@@ -81,7 +81,7 @@ class ShipmentSubscriber implements EventSubscriberInterface {
    *
    * When a shipment gets deleted, ensure the order no longer references it
    * on destruct(), and make sure the adjustments added by this shipment are
-   * removed. The reason why we're queuing this is to ensure we don't
+   * removed. The reason why we're queueing this is to ensure we don't
    * save the order during an order refresh which potentially causes data loss.
    *
    * @param \Drupal\commerce_shipping\Event\ShipmentEvent $event

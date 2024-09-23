@@ -7,8 +7,10 @@ use Drupal\Component\Render\FormattableMarkup;
 use Drupal\Core\Entity\EntityInterface;
 use Drupal\Tests\commerce_cart\Kernel\CartKernelTestBase;
 
+// cspell:ignore nrpv
+
 /**
- * Tests renewable behaviour on the license.
+ * Tests renewable behavior on the license.
  *
  * @group commerce_license
  */
@@ -131,9 +133,9 @@ class CommerceOrderSyncRenewalTest extends CartKernelTestBase {
       'orderType' => 'license_order_type',
       'traits' => ['commerce_license_order_item_type'],
     ]);
-    $this->traitManager = \Drupal::service('plugin.manager.commerce_entity_trait');
-    $trait = $this->traitManager->createInstance('commerce_license_order_item_type');
-    $this->traitManager->installTrait($trait, 'commerce_order_item', $order_item_type->id());
+    $trait_manager = \Drupal::service('plugin.manager.commerce_entity_trait');
+    $trait = $trait_manager->createInstance('commerce_license_order_item_type');
+    $trait_manager->installTrait($trait, 'commerce_order_item', $order_item_type->id());
 
     // Create a product variation type with the license trait, using our order
     // item type.
@@ -143,8 +145,8 @@ class CommerceOrderSyncRenewalTest extends CartKernelTestBase {
       'orderItemType' => 'license_order_item_type',
       'traits' => ['commerce_license'],
     ]);
-    $trait = $this->traitManager->createInstance('commerce_license');
-    $this->traitManager->installTrait($trait, 'commerce_product_variation', $this->variationType->id());
+    $trait = $trait_manager->createInstance('commerce_license');
+    $trait_manager->installTrait($trait, 'commerce_product_variation', $this->variationType->id());
 
     $this->variationType->setThirdPartySetting('commerce_license', 'allow_renewal', TRUE);
     $this->variationType->setThirdPartySetting('commerce_license', 'interval', '1');
@@ -195,7 +197,7 @@ class CommerceOrderSyncRenewalTest extends CartKernelTestBase {
       'orderItemType' => 'license_order_item_type',
       'traits' => ['commerce_license'],
     ]);
-    $this->traitManager->installTrait($trait, 'commerce_product_variation', $this->nonRenewableVariationType->id());
+    $trait_manager->installTrait($trait, 'commerce_product_variation', $this->nonRenewableVariationType->id());
 
     $this->nonRenewableVariationType->setThirdPartySetting('commerce_license', 'allow_renewal', FALSE);
     $this->nonRenewableVariationType->save();
@@ -204,6 +206,7 @@ class CommerceOrderSyncRenewalTest extends CartKernelTestBase {
     $this->nonRenewableVariation = $this->createEntity('commerce_product_variation', [
       'type' => 'license_nrpv_type',
       'sku' => $this->randomMachineName(),
+      'title' => $this->randomString(),
       'price' => [
         'number' => 999,
         'currency_code' => 'USD',

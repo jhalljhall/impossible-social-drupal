@@ -37,9 +37,9 @@ class SubscriptionAccessTest extends RecurringKernelTestBase {
    * @covers ::checkAccess
    */
   public function testViewAccess() {
-    $admin_user = $this->createUser(['mail' => $this->randomString() . '@example.com'], ['administer commerce_subscription']);
-    $user = $this->createUser(['mail' => $this->randomString() . '@example.com'], ['view own commerce_subscription']);
-    $different_user = $this->createUser(['mail' => $this->randomString() . '@example.com'], ['view own commerce_subscription']);
+    $admin_user = $this->createUser(['administer commerce_subscription']);
+    $user = $this->createUser(['view own commerce_subscription']);
+    $different_user = $this->createUser(['view own commerce_subscription']);
     $anonymous_user = new AnonymousUserSession();
 
     /** @var \Drupal\commerce_recurring\Entity\SubscriptionInterface $subscription */
@@ -69,10 +69,10 @@ class SubscriptionAccessTest extends RecurringKernelTestBase {
    * @dataProvider getCancelOperations
    */
   public function testCancelAccess($operation) {
-    $admin_user = $this->createUser(['mail' => $this->randomString() . '@example.com'], ['administer commerce_subscription']);
-    $privileged_user = $this->createUser(['mail' => $this->randomString() . '@example.com'], ["$operation any commerce_subscription"]);
-    $user = $this->createUser(['mail' => $this->randomString() . '@example.com'], ["$operation own commerce_subscription"]);
-    $different_user = $this->createUser(['mail' => $this->randomString() . '@example.com'], ["$operation own commerce_subscription"]);
+    $admin_user = $this->createUser(['administer commerce_subscription']);
+    $privileged_user = $this->createUser(["$operation any commerce_subscription"]);
+    $user = $this->createUser(["$operation own commerce_subscription"]);
+    $different_user = $this->createUser(["$operation own commerce_subscription"]);
     $anonymous_user = new AnonymousUserSession();
 
     /** @var \Drupal\commerce_recurring\Entity\SubscriptionInterface $subscription */
@@ -100,7 +100,7 @@ class SubscriptionAccessTest extends RecurringKernelTestBase {
   /**
    * Provides the list of operations for canceling a subscription.
    */
-  public function getCancelOperations() {
+  public static function getCancelOperations() {
     return [
       ['cancel'],
       ['update'],

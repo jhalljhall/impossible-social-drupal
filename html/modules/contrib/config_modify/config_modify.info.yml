@@ -7,7 +7,7 @@ dependencies:
   # This is needed for the CUD system.
   - update_helper:update_helper
 
-# Information added by Drupal.org packaging script on 2023-12-22
-version: '1.1.0'
+# Information added by Drupal.org packaging script on 2024-07-17
+version: '1.1.1'
 project: 'config_modify'
-datestamp: 1703248448
+datestamp: 1721212673

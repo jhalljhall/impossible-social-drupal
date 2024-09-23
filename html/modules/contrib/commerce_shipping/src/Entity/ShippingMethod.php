@@ -32,6 +32,7 @@ use Drupal\Core\Field\BaseFieldDefinition;
  *       "default" = "Drupal\commerce_shipping\Form\ShippingMethodForm",
  *       "add" = "Drupal\commerce_shipping\Form\ShippingMethodForm",
  *       "edit" = "Drupal\commerce_shipping\Form\ShippingMethodForm",
+ *       "duplicate" = "Drupal\commerce_shipping\Form\ShippingMethodForm",
  *       "delete" = "Drupal\Core\Entity\ContentEntityDeleteForm"
  *     },
  *     "route_provider" = {
@@ -60,6 +61,7 @@ use Drupal\Core\Field\BaseFieldDefinition;
  *     "add-form" = "/admin/commerce/shipping-methods/add",
  *     "edit-form" = "/admin/commerce/shipping-methods/manage/{commerce_shipping_method}",
  *     "delete-form" = "/admin/commerce/shipping-methods/manage/{commerce_shipping_method}/delete",
+ *     "duplicate-form" = "/admin/commerce/shipping-methods/manage/{commerce_shipping_method}/duplicate",
  *     "collection" =  "/admin/commerce/shipping-methods",
  *     "drupal:content-translation-overview" = "/admin/commerce/shipping-methods/manage/{commerce_shipping_method}/translations",
  *     "drupal:content-translation-add" = "/admin/commerce/shipping-methods/manage/{commerce_shipping_method}/translations/add/{source}/{target}",
@@ -344,7 +346,7 @@ class ShippingMethod extends ContentEntityBase implements ShippingMethodInterfac
       ->setDefaultValue('AND');
 
     $fields['weight'] = BaseFieldDefinition::create('integer')
-      ->setLabel(t('Weight'))
+      ->setLabel(t('Weight', [], ['context' => 'physical']))
       ->setDescription(t('The weight of this shipping method in relation to others.'))
       ->setDefaultValue(0)
       ->setDisplayOptions('view', [

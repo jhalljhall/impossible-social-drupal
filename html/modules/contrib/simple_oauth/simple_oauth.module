@@ -5,16 +5,16 @@
  * Contains simple_oauth.module.
  */
 
+use Drupal\Component\Utility\UrlHelper;
 use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Entity\EntityTypeInterface;
 use Drupal\Core\Field\BaseFieldDefinition;
 use Drupal\Core\Field\FieldStorageDefinitionInterface;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Session\AccountInterface;
+use Drupal\Core\StringTranslation\TranslatableMarkup;
 use Drupal\Core\Url;
 use Drupal\consumers\Entity\ConsumerInterface;
-use Drupal\Core\StringTranslation\TranslatableMarkup;
-use Drupal\Component\Utility\UrlHelper;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 
 /**
@@ -123,7 +123,7 @@ function simple_oauth_entity_base_field_info(EntityTypeInterface $entity_type) {
       ->setDisplayConfigurable('view', TRUE)
       ->setTranslatable(TRUE)
       ->setRequired(TRUE)
-      // todo: Cardinality should be set to: 10, while having the "Add another item" functionality.
+      // @todo Cardinality should be set to: 10, while having the "Add another item" functionality.
       ->setCardinality(FieldStorageDefinitionInterface::CARDINALITY_UNLIMITED)
       // URIs are not length limited by RFC 2616, but we can only store 255
       // characters in our entity DB schema.
@@ -234,7 +234,7 @@ function simple_oauth_form_consumer_form_alter(array &$form, FormStateInterface 
   // Add a custom submit behavior.
   $form['#entity_builders'][] = 'simple_oauth_form_consumer_form_submit';
 
-  // @todo: Implement vertical tabs when this fix lands in core: https://www.drupal.org/project/drupal/issues/1148950.
+  // @todo Implement vertical tabs when this fix lands in core: https://www.drupal.org/project/drupal/issues/1148950.
   $form['authorization_code'] = [
     '#type' => 'details',
     '#title' => t('Authorization Code settings'),
@@ -364,7 +364,7 @@ function simple_oauth_user_form_submit(array &$form, FormStateInterface $form_st
   $user = $form_state->getFormObject()->getEntity();
   $current_user = \Drupal::currentUser();
 
-  // Only when the user is editing his own account on password reset,
+  // Only when the user is editing its own account on password reset,
   // we redirect the user if there is an active authorization in progress.
   if ($current_user->id() === $user->id() && $form_state->get('user_pass_reset')) {
     $temp_store = \Drupal::service('tempstore.shared');

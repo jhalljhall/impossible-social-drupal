@@ -3,12 +3,11 @@
 namespace Drupal\commerce_shipping\Plugin\Field\FieldWidget;
 
 use CommerceGuys\Intl\Formatter\CurrencyFormatterInterface;
+use Drupal\commerce\AjaxFormTrait;
 use Drupal\commerce_checkout\Plugin\Commerce\CheckoutFlow\CheckoutFlowWithPanesInterface;
 use Drupal\commerce_shipping\ShipmentManagerInterface;
 use Drupal\Component\Render\FormattableMarkup;
 use Drupal\Component\Utility\NestedArray;
-use Drupal\Core\Ajax\AjaxResponse;
-use Drupal\Core\Ajax\ReplaceCommand;
 use Drupal\Core\Field\FieldDefinitionInterface;
 use Drupal\Core\Field\FieldItemListInterface;
 use Drupal\Core\Field\WidgetBase;
@@ -31,6 +30,8 @@ use Symfony\Component\Validator\ConstraintViolationListInterface;
  * )
  */
 class ShippingRateWidget extends WidgetBase implements ContainerFactoryPluginInterface {
+
+  use AjaxFormTrait;
 
   /**
    * The currency formatter.
@@ -115,7 +116,7 @@ class ShippingRateWidget extends WidgetBase implements ContainerFactoryPluginInt
     // the order summary is refreshed when selecting a different rate.
     if ($form_state->getFormObject() instanceof CheckoutFlowWithPanesInterface) {
       $element['#ajax'] = [
-        'callback' => [get_called_class(), 'ajaxRefresh'],
+        'callback' => [get_called_class(), 'ajaxRefreshForm'],
       ];
 
       $parents = array_merge($form['#parents'], [$this->fieldDefinition->getName(), 0]);
@@ -130,12 +131,12 @@ class ShippingRateWidget extends WidgetBase implements ContainerFactoryPluginInt
     $element['#default_value'] = $default_rate->getId();
     $element['#options'] = [];
     foreach ($rates as $rate_id => $rate) {
-      $original_amount = $rate->getOriginalAmount();
       $amount = $rate->getAmount();
-      if ($original_amount->greaterThan($amount)) {
+      $pre_promotion_amount = $rate->getPrePromotionAmount();
+      if ($pre_promotion_amount && $pre_promotion_amount->greaterThan($amount)) {
         $rate_label = new FormattableMarkup('@service: <s>@original_amount</s> @amount', [
           '@service' => $rate->getService()->getLabel(),
-          '@original_amount' => $this->currencyFormatter->format($original_amount->getNumber(), $original_amount->getCurrencyCode()),
+          '@original_amount' => $this->currencyFormatter->format($pre_promotion_amount->getNumber(), $pre_promotion_amount->getCurrencyCode()),
           '@amount' => $this->currencyFormatter->format($amount->getNumber(), $amount->getCurrencyCode()),
         ]);
       }
@@ -220,25 +221,6 @@ class ShippingRateWidget extends WidgetBase implements ContainerFactoryPluginInt
       }
     }
     return parent::flagErrors($items, $violations, $form, $form_state);
-  }
-
-  /**
-   * Ajax callback.
-   */
-  public static function ajaxRefresh(array &$form, FormStateInterface $form_state) {
-    $response = new AjaxResponse();
-
-    // Refresh the order summary if present.
-    $order_summary = $form['sidebar']['order_summary'] ?? $form['order_summary'] ?? NULL;
-    if (isset($order_summary)) {
-      $selector = sprintf('[data-drupal-selector="%s"]', $order_summary['#attributes']['data-drupal-selector']);
-      $response->addCommand(new ReplaceCommand($selector, $order_summary));
-    }
-    if (isset($form['shipping_information']['shipments'])) {
-      $response->addCommand(new ReplaceCommand('[data-drupal-selector="' . $form['shipping_information']['shipments']['#attributes']['data-drupal-selector'] . '"]', $form['shipping_information']['shipments']));
-    }
-
-    return $response;
   }
 
 }

@@ -3,9 +3,11 @@
 namespace Drupal\commerce_recurring;
 
 use Drupal\advancedqueue\Entity\QueueInterface;
+use Drupal\advancedqueue\Exception\DuplicateJobException;
 use Drupal\advancedqueue\Job;
 use Drupal\commerce_recurring\Entity\BillingScheduleInterface;
 use Drupal\Component\Datetime\TimeInterface;
+use Drupal\Core\Entity\EntityStorageException;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 
 /**
@@ -69,6 +71,7 @@ class Cron implements CronInterface {
    *   The recurring queue.
    */
   protected function enqueueOrders(QueueInterface $recurring_queue) {
+    /** @var \Drupal\commerce_order\OrderStorageInterface $order_storage */
     $order_storage = $this->entityTypeManager->getStorage('commerce_order');
     $order_ids = $order_storage->getQuery()
       ->condition('type', 'recurring')
@@ -80,15 +83,24 @@ class Cron implements CronInterface {
       return;
     }
 
-    /** @var \Drupal\commerce_order\Entity\OrderInterface[] $orders */
-    $orders = $order_storage->loadMultiple($order_ids);
-    foreach ($orders as $order) {
+    foreach ($order_ids as $order_id) {
+      try {
+        $order = $order_storage->loadForUpdate($order_id);
+      }
+      catch (EntityStorageException $e) {
+        // If order is locked for update skip to next order. Current order will
+        // retry on the next cron run.
+        continue;
+      }
       $subscriptions = $this->recurringOrderManager->collectSubscriptions($order);
       if (!$subscriptions) {
         // The recurring order is malformed. The referenced subscription
         // might have been deleted manually.
         $order->set('state', 'canceled');
         $order->save();
+        continue;
+      }
+      if ($order->get('commerce_recurring_queued')->value) {
         continue;
       }
 
@@ -123,6 +135,11 @@ class Cron implements CronInterface {
         ]);
         $recurring_queue->enqueueJob($renew_job);
       }
+
+      // Flag the order to ensure we don't attempt to requeue the same jobs
+      // multiple times.
+      $order->set('commerce_recurring_queued', TRUE);
+      $order->save();
     }
   }
 
@@ -144,10 +161,15 @@ class Cron implements CronInterface {
     }
 
     foreach ($subscription_ids as $subscription_id) {
-      $activate_job = Job::create('commerce_subscription_activate', [
-        'subscription_id' => $subscription_id,
-      ]);
-      $recurring_queue->enqueueJob($activate_job);
+      try {
+        $activate_job = Job::create('commerce_subscription_activate', [
+          'subscription_id' => $subscription_id,
+        ]);
+        $recurring_queue->enqueueJob($activate_job);
+      }
+      catch (DuplicateJobException $exception) {
+        // Subscription was already queued.
+      }
     }
   }
 
